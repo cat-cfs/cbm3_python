@@ -13,6 +13,8 @@ loghelper.start_logging(os.path.join(local_wd,"update_sbw.log"))
 # load the translations for the disturbance types
 distTypeTranslations = excelhelper.get_worksheet_as_dict(os.path.join(local_wd, "NewDMtranslations.xlsx"), 0)
 distDescTranslations = excelhelper.get_worksheet_as_dict(os.path.join(local_wd, "NewDMtranslations.xlsx"), 0)
+distTypeTranslations = {int(x["DistID"]): x for x in distTypeTranslations}
+distDescTranslations = {int(x["DistID"]): x for x in distDescTranslations}
 
 #1 copy the current op scale archive index databases
 new_sbw_aidb = os.path.join(local_wd, "ArchiveIndex_NIR2018_NDExclusion_newrules_newexes.mdb")
@@ -23,17 +25,20 @@ original_aidbs = [
     { "Language": "French", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\ArchiveIndex_Beta_Install_fr.mdb" },
     { "Language": "Russian", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\ArchiveIndex_Beta_Install_ru.mdb" }
 ]
+makeLocalPath = lambda path : os.path.join(local_wd, os.path.basename(path))
+local_aidbs = [{"Language": x["Language"], "Path": makeLocalPath(x["Path"])} for x in original_aidbs]
 
-local_aidb_paths = [os.path.join(local_wd, os.path.basename(x["Path"])) for x in original_aidbs]
 logging.info("copying original aidbs from network")
 for i in range(len(original_aidbs)):
-    logging.info("{0}->{1}".format(original_aidbs[i]["Path"], local_aidb_paths[i]))
-    shutil.copy(original_aidbs[i]["Path"], local_aidb_paths[i])
+    origPath = original_aidbs[i]["Path"]
+    localPath = local_aidbs[i]["Path"]
+    logging.info("{0}->{1}".format(origPath, localPath))
+    shutil.copy(origPath, localPath)
 
 #2 drop the existing SBW matrices and disturbance types
-for p in local_aidb_paths:
+for p in local_aidbs:
     logging.info("removing old SBW from {0}".format(p))
-    a = AccessDB(p)
+    a = AccessDB(p["Path"])
 
     # 2a get the set of default disturbance types ids, and the set of DMIDs that are associated with, and only with SBW (so that we dont remove 
     res = a.Query("SELECT tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DMID, tblDMAssociationDefault.Name FROM tblDMAssociationDefault")
@@ -64,9 +69,9 @@ for p in local_aidb_paths:
 # 3 add the new SBW disturbance types
 source_aidb = AccessDB(new_sbw_aidb)
 new_dist_ids = [str(x) for x in list(range(240,267))]
-for p in local_aidb_paths:
+for p in local_aidbs:
     logging.info("adding QC SBW to {0}".format(p))
-    a = AccessDB(p, False)
+    a = AccessDB(p["Path"], False)
 
     # 3a disturbance types
     logging.info("copying disturbance types to {}".format(p))
@@ -74,9 +79,9 @@ for p in local_aidb_paths:
         logging.info(dist_type_row.DistTypeName)
         a.ExecuteQuery("INSERT INTO tblDisturbanceTypeDefault (DistTypeID, DistTypeName, OnOffSwitch, Description, IsStandReplacing, IsMultiYear, MultiYearCount) VALUES (?,?,?,?,?,?,?)", 
                       (dist_type_row.DistTypeID,
-                      dist_type_row.DistTypeName,
+                      distTypeTranslations[dist_type_row.DistTypeID][p["Language"]],
                       dist_type_row.OnOffSwitch,
-                      dist_type_row.Description,
+                      distDescTranslations[dist_type_row.DistTypeID][p["Language"]],
                       dist_type_row.IsStandReplacing,
                       dist_type_row.IsMultiYear,
                       dist_type_row.MultiYearCount))
