@@ -22,6 +22,9 @@
     <Compile Include="adhoc\update_SBW.py" />
     <Compile Include="cbm3data\accessdb.py" />
     <Compile Include="cbm3data\aidb.py" />
+    <Compile Include="cbm3data\compact_and_repair.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="cbm3data\projectdb.py" />
     <Compile Include="cbm3data\__init__.py" />
     <Compile Include="util\excelhelper.py">

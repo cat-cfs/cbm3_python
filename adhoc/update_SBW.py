@@ -3,6 +3,7 @@
 #and also drops the old SBW matrices, dist types, and association
 import shutil, os, logging
 from cbm3data.accessdb import AccessDB
+from cbm3data.compact_and_repair import *
 from util import loghelper
 from util import excelhelper
 
@@ -38,92 +39,107 @@ for i in range(len(original_aidbs)):
 #2 drop the existing SBW matrices and disturbance types
 for p in local_aidbs:
     logging.info("removing old SBW from {0}".format(p))
-    a = AccessDB(p["Path"])
+    with AccessDB(p["Path"]) as a:
 
-    # 2a get the set of default disturbance types ids, and the set of DMIDs that are associated with, and only with SBW (so that we dont remove 
-    res = a.Query("SELECT tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DMID, tblDMAssociationDefault.Name FROM tblDMAssociationDefault")
-    sbw_dist_ids = set()
-    sbw_dm_ids = set()
-    non_sbw_dist_ids = set()
-    non_sbw_dm_ids = set()
-    sbw_rows = []
-    non_sbw_rows = []
-    for r in res:
-        if(r.Name.startswith("SBW")):
-            sbw_dist_ids.add(r.DefaultDisturbanceTypeID)
-            sbw_dm_ids.add(r.DMID)
-        else:
-            non_sbw_dist_ids.add(r.DefaultDisturbanceTypeID)
-            non_sbw_dm_ids.add(r.DMID)
+        # 2a get the set of default disturbance types ids, and the set of DMIDs that are associated with, and only with SBW (so that we dont remove 
+        res = a.Query("SELECT tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DMID, tblDMAssociationDefault.Name FROM tblDMAssociationDefault")
+        sbw_dist_ids = set()
+        sbw_dm_ids = set()
+        non_sbw_dist_ids = set()
+        non_sbw_dm_ids = set()
+        sbw_rows = []
+        non_sbw_rows = []
+        for r in res:
+            if(r.Name.startswith("SBW")):
+                sbw_dist_ids.add(r.DefaultDisturbanceTypeID)
+                sbw_dm_ids.add(r.DMID)
+            else:
+                non_sbw_dist_ids.add(r.DefaultDisturbanceTypeID)
+                non_sbw_dm_ids.add(r.DMID)
 
-    # do set differences to make sure we dont delete non-sbw DMs or disturbances
-    sbw_dist_ids = sbw_dist_ids - non_sbw_dist_ids
-    sbw_dm_ids = sbw_dm_ids - non_sbw_dm_ids
+        # do set differences to make sure we dont delete non-sbw DMs or disturbances
+        sbw_dist_ids = sbw_dist_ids - non_sbw_dist_ids
+        sbw_dm_ids = sbw_dm_ids - non_sbw_dm_ids
 
-    # 2b drop all SBW related rows
-    a.ExecuteQuery("delete from tblDMAssociationDefault where Left(NAME,3)='SBW'")
-    a.ExecuteQuery("delete from tblDisturbanceTypeDefault where DistTypeId in({0})".format(",".join([str(x) for x in sbw_dist_ids])))
-    a.ExecuteQuery("delete from tblDM where DMID in({0})".format(",".join([str(x) for x in sbw_dm_ids])))
-    a.ExecuteQuery("delete from tblDMValuesLookup where DMID in({0})".format(",".join([str(x) for x in sbw_dm_ids])))
+        # 2b drop all SBW related rows
+        a.ExecuteQuery("delete from tblDMAssociationDefault where Left(NAME,3)='SBW'")
+        a.ExecuteQuery("delete from tblDisturbanceTypeDefault where DistTypeId in({0})".format(",".join([str(x) for x in sbw_dist_ids])))
+        a.ExecuteQuery("delete from tblDM where DMID in({0})".format(",".join([str(x) for x in sbw_dm_ids])))
+        a.ExecuteQuery("delete from tblDMValuesLookup where DMID in({0})".format(",".join([str(x) for x in sbw_dm_ids])))
 
-# 3 add the new SBW disturbance types
-source_aidb = AccessDB(new_sbw_aidb)
-new_dist_ids = [str(x) for x in list(range(240,267))]
+# 3 load the source data
+with AccessDB(new_sbw_aidb) as source_aidb:
+
+    new_dist_ids = [str(x) for x in list(range(236,267))]
+    source_tblDisturbanceTypeDefault = list(
+        source_aidb.Query("SELECT * FROM tblDisturbanceTypeDefault WHERE DistTypeID in({})".format(",".join(new_dist_ids))))
+
+    source_tblDM = list(source_aidb.Query("""SELECT tblDM.DMID, tblDM.Name, tblDM.Description, tblDM.DMStructureID
+                    FROM tblDM INNER JOIN tblDMAssociationDefault ON tblDM.DMID = tblDMAssociationDefault.DMID
+                    WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID in({})
+                    GROUP BY tblDM.DMID, tblDM.Name, tblDM.Description, tblDM.DMStructureID;
+                    """.format(",".join(new_dist_ids))))
+
+    source_tblDMValuesLookup = list(source_aidb.Query("""SELECT tblDMValuesLookup.DMID, tblDMValuesLookup.DMRow, tblDMValuesLookup.DMColumn, tblDMValuesLookup.Proportion
+                    FROM tblDMAssociationDefault INNER JOIN tblDMValuesLookup ON tblDMAssociationDefault.DMID = tblDMValuesLookup.DMID
+                    WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID in ({})
+                    GROUP BY tblDMValuesLookup.DMID, tblDMValuesLookup.DMRow, tblDMValuesLookup.DMColumn, tblDMValuesLookup.Proportion;
+                    """.format(",".join(new_dist_ids))))
+
+    source_tblDMAssociationDefault = list(source_aidb.Query(""" SELECT tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DefaultEcoBoundaryID, tblDMAssociationDefault.AnnualOrder, tblDMAssociationDefault.DMID, tblDMAssociationDefault.Name, tblDMAssociationDefault.Description
+                    FROM tblDMAssociationDefault WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID In({});
+                    """.format(",".join(new_dist_ids))))
+
+# 4 add the new SBW and firewood disturbance types
 for p in local_aidbs:
     logging.info("adding QC SBW to {0}".format(p))
-    a = AccessDB(p["Path"], False)
+    with AccessDB(p["Path"], False) as a:
 
-    # 3a disturbance types
-    logging.info("copying disturbance types to {}".format(p))
-    for dist_type_row in source_aidb.Query("SELECT * FROM tblDisturbanceTypeDefault WHERE DistTypeID in({})".format(",".join(new_dist_ids))):
-        logging.info(dist_type_row.DistTypeName)
-        a.ExecuteQuery("INSERT INTO tblDisturbanceTypeDefault (DistTypeID, DistTypeName, OnOffSwitch, Description, IsStandReplacing, IsMultiYear, MultiYearCount) VALUES (?,?,?,?,?,?,?)", 
-                      (dist_type_row.DistTypeID,
-                      distTypeTranslations[dist_type_row.DistTypeID][p["Language"]],
-                      dist_type_row.OnOffSwitch,
-                      distDescTranslations[dist_type_row.DistTypeID][p["Language"]],
-                      dist_type_row.IsStandReplacing,
-                      dist_type_row.IsMultiYear,
-                      dist_type_row.MultiYearCount))
+        # 3a disturbance types
+        logging.info("copying disturbance types to {}".format(p))
+        for dist_type_row in source_tblDisturbanceTypeDefault:
+            logging.info(dist_type_row.DistTypeName)
+            a.ExecuteQuery("INSERT INTO tblDisturbanceTypeDefault (DistTypeID, DistTypeName, OnOffSwitch, Description, IsStandReplacing, IsMultiYear, MultiYearCount) VALUES (?,?,?,?,?,?,?)", 
+                          (dist_type_row.DistTypeID,
+                          distTypeTranslations[dist_type_row.DistTypeID][p["Language"]],
+                          dist_type_row.OnOffSwitch,
+                          distDescTranslations[dist_type_row.DistTypeID][p["Language"]],
+                          dist_type_row.IsStandReplacing,
+                          dist_type_row.IsMultiYear,
+                          dist_type_row.MultiYearCount))
 
-    # 3b disturbance matrices (tblDM)
-    logging.info("copying dmids to {}".format(p))
-    for dmrow in source_aidb.Query("""SELECT tblDM.DMID, tblDM.Name, tblDM.Description, tblDM.DMStructureID
-            FROM tblDM INNER JOIN tblDMAssociationDefault ON tblDM.DMID = tblDMAssociationDefault.DMID
-            WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID in({})
-            GROUP BY tblDM.DMID, tblDM.Name, tblDM.Description, tblDM.DMStructureID;
-            """.format(",".join(new_dist_ids))):
-        logging.info(dmrow.Name)
-        a.ExecuteQuery("INSERT INTO tblDM (DMID, Name, Description, DMStructureID) VALUES (?,?,?,?)",
-                       (dmrow.DMID,
-                       dmrow.Name,
-                       dmrow.Description,
-                       dmrow.DMStructureID))
+        # 3b disturbance matrices (tblDM)
+        logging.info("copying dmids to {}".format(p))
+        for dmrow in source_tblDM:
+            logging.info(dmrow.Name)
+            a.ExecuteQuery("INSERT INTO tblDM (DMID, Name, Description, DMStructureID) VALUES (?,?,?,?)",
+                           (dmrow.DMID,
+                           dmrow.Name,
+                           dmrow.Description,
+                           dmrow.DMStructureID))
 
-    # 3c dm values (tblDMValuesLookup)
-    logging.info("copying dmvalues to {}".format(p))
-    for dmvaluerow in source_aidb.Query("""SELECT tblDMValuesLookup.DMID, tblDMValuesLookup.DMRow, tblDMValuesLookup.DMColumn, tblDMValuesLookup.Proportion
-            FROM tblDMAssociationDefault INNER JOIN tblDMValuesLookup ON tblDMAssociationDefault.DMID = tblDMValuesLookup.DMID
-            WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID in ({})
-            GROUP BY tblDMValuesLookup.DMID, tblDMValuesLookup.DMRow, tblDMValuesLookup.DMColumn, tblDMValuesLookup.Proportion;
-            """.format(",".join(new_dist_ids))):
-        logging.info(dmvaluerow)
-        a.ExecuteQuery("INSERT INTO tblDMValuesLookup (DMID, DMRow, DMColumn, Proportion) VALUES (?,?,?,?)",
-                (dmvaluerow.DMID,
-                dmvaluerow.DMRow,
-                dmvaluerow.DMColumn,
-                dmvaluerow.Proportion))
+        # 3c dm values (tblDMValuesLookup)
+        logging.info("copying dmvalues to {}".format(p))
+        for dmvaluerow in source_tblDMValuesLookup:
+            logging.info(dmvaluerow)
+            a.ExecuteQuery("INSERT INTO tblDMValuesLookup (DMID, DMRow, DMColumn, Proportion) VALUES (?,?,?,?)",
+                    (dmvaluerow.DMID,
+                    dmvaluerow.DMRow,
+                    dmvaluerow.DMColumn,
+                    dmvaluerow.Proportion))
 
-    # 3d disturbance matrix associations
-    logging.info("copying dm associations to {}".format(p))
-    for dmassociationRow in source_aidb.Query(""" SELECT tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DefaultEcoBoundaryID, tblDMAssociationDefault.AnnualOrder, tblDMAssociationDefault.DMID, tblDMAssociationDefault.Name, tblDMAssociationDefault.Description
-            FROM tblDMAssociationDefault WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID In({});
-            """.format(",".join(new_dist_ids))):
-        logging.info(dmassociationRow.Name)
-        a.ExecuteQuery("INSERT INTO tblDMAssociationDefault (DefaultDisturbanceTypeID, DefaultEcoBoundaryID, AnnualOrder, DMID, Name, Description) VALUES (?,?,?,?,?,?)",
-                       (dmassociationRow.DefaultDisturbanceTypeID,
-                        dmassociationRow.DefaultEcoBoundaryID,
-                        dmassociationRow.AnnualOrder,
-                        dmassociationRow.DMID,
-                        dmassociationRow.Name,
-                        dmassociationRow.Description))
+        # 3d disturbance matrix associations
+        logging.info("copying dm associations to {}".format(p))
+        for dmassociationRow in source_tblDMAssociationDefault:
+            logging.info(dmassociationRow.Name)
+            a.ExecuteQuery("INSERT INTO tblDMAssociationDefault (DefaultDisturbanceTypeID, DefaultEcoBoundaryID, AnnualOrder, DMID, Name, Description) VALUES (?,?,?,?,?,?)",
+                           (dmassociationRow.DefaultDisturbanceTypeID,
+                            dmassociationRow.DefaultEcoBoundaryID,
+                            dmassociationRow.AnnualOrder,
+                            dmassociationRow.DMID,
+                            dmassociationRow.Name,
+                            dmassociationRow.Description))
+
+for p in local_aidbs:
+    logging.info("run compact and repair on {}".format(p["Path"]))
+    compact_and_repair(p["Path"])

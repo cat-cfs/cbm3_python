@@ -11,14 +11,18 @@ class AccessDB(object):
     def __init__(self, path, log_enabled=True):
         self.path = path
         self.log_enabled = log_enabled
-        connection_string = self.getConnectionString(path)
-        self.connection = pyodbc.connect(connection_string, autocommit=False)        
+        self.connection_string = self.getConnectionString(path)
 
-    def __del__(self):
+    def __enter__(self):
+        self.connection = pyodbc.connect(self.connection_string, autocommit=False)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
     def close(self):
-        self.connection.close()
+        if self.connection:
+            self.connection.close()
 
     def getConnectionString(self, path):
         return "Driver={Microsoft Access Driver (*.mdb, *.accdb)};User Id='admin';Dbq=" + path    
