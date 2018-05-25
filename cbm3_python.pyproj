@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ed5dc488-c8d0-4ab7-82f5-35a905e71134}</ProjectGuid>
     <ProjectHome />
-    <StartupFile />
+    <StartupFile>adhoc\update_SBW.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -19,16 +19,23 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="adhoc\2018\update_SBW.py" />
+    <Compile Include="adhoc\update_SBW.py" />
     <Compile Include="cbm3data\accessdb.py" />
     <Compile Include="cbm3data\aidb.py" />
     <Compile Include="cbm3data\projectdb.py" />
     <Compile Include="cbm3data\__init__.py" />
+    <Compile Include="util\excelhelper.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="util\loghelper.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="util\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="adhoc\" />
-    <Folder Include="adhoc\2018" />
     <Folder Include="cbm3data" />
+    <Folder Include="util\" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|2.7-32" />

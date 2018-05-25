@@ -1,48 +1,20 @@
-import shutil, os, logging, xlrd
+#2018 this script updates the Operational scale archive index databases (in En,Es,Fr,Ru) 
+#with the NIR Firewood collection and Spruce Budworm (QC) matrices and disturbance types
+#and also drops the old SBW matrices, dist types, and association
+import shutil, os, logging
 from cbm3data.accessdb import AccessDB
+from util import loghelper
+from util import excelhelper
 
-def start_logging(fn=".\\script.log",fmode='w', use_console=True):
-    #set up logging to print to console window and to log file
-    #
-    # From http://docs.python.org/2/howto/logging-cookbook.html#logging-cookbook
-    #
-    rootLogger = logging.getLogger()
+local_wd = r"M:\CBM Tools and Development\CBM3\2018\AIDB_SBW_Update"
 
-    logFormatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M')
-
-    fileHandler = logging.FileHandler(fn, fmode)
-    fileHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(fileHandler)
-    if use_console:
-        consoleHandler = logging.StreamHandler()
-        consoleHandler.setFormatter(logFormatter)
-        rootLogger.addHandler(consoleHandler)
-
-    rootLogger.setLevel(logging.INFO)
-
-def load_dict_from_worksheet(sheet):
-    # read header values into the list    
-    keys = [sheet.cell(0, col_index).value for col_index in xrange(sheet.ncols)]
-
-    dict_list = []
-    for row_index in xrange(1, sheet.nrows):
-        d = {keys[col_index]: sheet.cell(row_index, col_index).value 
-             for col_index in xrange(sheet.ncols)}
-        dict_list.append(d)
-    return dict_list
-
-start_logging("update_sbw.log")
+loghelper.start_logging(os.path.join(local_wd,"update_sbw.log"))
 
 # load the translations for the disturbance types
-wb = xlrd.open_workbook(r"c:\dev\AIDB_SBW_Update\NewDMtranslations.xlsx")
-distName_ws = wb.sheet_by_index(0)
-distTypeTranslations = load_dict_from_worksheet(distName_ws)
-distDesc_ws = wb.sheet_by_index(1)
-distDescTranslations = load_dict_from_worksheet(distDesc_ws)
+distTypeTranslations = excelhelper.get_worksheet_as_dict(os.path.join(local_wd, "NewDMtranslations.xlsx"), 0)
+distDescTranslations = excelhelper.get_worksheet_as_dict(os.path.join(local_wd, "NewDMtranslations.xlsx"), 0)
 
 #1 copy the current op scale archive index databases
-local_wd = r"C:\dev\AIDB_SBW_Update"
-
 new_sbw_aidb = os.path.join(local_wd, "ArchiveIndex_NIR2018_NDExclusion_newrules_newexes.mdb")
 
 original_aidbs = [
