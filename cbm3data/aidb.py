@@ -12,8 +12,8 @@ class AIDB(AccessDB):
 
     def InsertRowTo_tblInputDB(self, dir, name, inputDBID):
         return self.ExecuteQuery("INSERT INTO tblInputDB (InputDBID, Name, Description, Path, InputPermArchID)" +
-                                 "VALUES({0}, '{1}', '{2}', '{3}', 1)"
-                                 .format(inputDBID, name, "", dir))
+                                 "VALUES(?, ?, ?, ?, 1)",
+                                 (inputDBID, name, "", dir))
 
     
     def InsertRowTo_tblStandInitialization(self, name, desc, author, inputDBID, 
@@ -31,8 +31,8 @@ class AIDB(AccessDB):
                    InputStandInitializationID,
                    MakelistVersionID
                )
-               VALUES ({0}, '{1}', '{2}', '{3}', 2, 0, {4}, {5}, 1);
-               """.format(standInitializationID, name, desc, author, inputDBID, inputStandInitializationID))
+               VALUES (?, ?, ?, ?, 2, 0, ?, ?, 1);
+               """,(standInitializationID, name, desc, author, inputDBID, inputStandInitializationID))
 
 
     def InsertRowTo_tblCBMRun(self, name, desc, author, inputDBID, cbmRunID, inputCBMRunID):
@@ -49,8 +49,8 @@ class AIDB(AccessDB):
             InputCBMRunID,
             CBMVersionID
         )
-        VALUES ({0}, '{1}', '{2}', '{3}', 2, 0, {4}, {5}, 1);
-        """.format(cbmRunID, name, desc, author, inputDBID, inputCBMRunID))
+        VALUES (?, ?, ?, ?, 2, 0, ?, ?, 1);
+        """,(cbmRunID, name, desc, author, inputDBID, inputCBMRunID))
 
 
     def InsertRowTo_tblSimulation(self, name, desc, author, inputDBID, simulationID, standInitializationID, CBMRunID, inputSimulationID):
@@ -71,9 +71,9 @@ class AIDB(AccessDB):
             YearsInTimeStep
         )
         VALUES (
-            {0},'{1}','{2}','{3}',2,{4},{5},{6},{7},1,4,1
+            ?,?,?,?,2,?,?,?,?,1,4,1
         )
-        """.format(simulationID, name, desc, author, standInitializationID, CBMRunID, inputSimulationID, inputDBID))
+        """,(simulationID, name, desc, author, standInitializationID, CBMRunID, inputSimulationID, inputDBID))
 
 
     def AddProjectToAIDB(self, project, simId=None):
@@ -131,8 +131,8 @@ class AIDB(AccessDB):
             self.ExecuteQuery("DELETE FROM tblCBMRun")
         keys = self.getKeys(simulation_id)
         for item in keys:
-            self.ExecuteQuery("DELETE FROM tblInputDB WHERE InputDBID = {0}"
-                         .format(item.InputDBID))
+            self.ExecuteQuery("DELETE FROM tblInputDB WHERE InputDBID = ?",
+                         (item.InputDBID))
 
 
     def getKeys(self, simulation_id = None):

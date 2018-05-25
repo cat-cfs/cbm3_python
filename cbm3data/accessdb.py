@@ -13,13 +13,13 @@ class AccessDB(object):
         self.log_enabled = log_enabled
         connection_string = self.getConnectionString(path)
         self.connection = pyodbc.connect(connection_string, autocommit=False)        
-        pass    
-    
-    
+
+    def __del__(self):
+        self.close()
+
     def close(self):
         self.connection.close()
 
-        
     def getConnectionString(self, path):
         return "Driver={Microsoft Access Driver (*.mdb, *.accdb)};User Id='admin';Dbq=" + path    
 
@@ -27,16 +27,13 @@ class AccessDB(object):
     def ExecuteQuery(self, query, params=None):
         if self.log_enabled:
             logging.info("{0}\n{1}".format(self.path, query))
-        
         cursor = self.connection.cursor()
         try:
             cursor.execute(query, params) if params else cursor.execute(query)
         except ProgrammingError as e:
             logging.info("{0}".format(query))
             raise
-
         cursor.commit()
-    
 
     def ExecuteMany(self, query, params):
         cursor = self.connection.cursor()
@@ -45,16 +42,13 @@ class AccessDB(object):
         except ProgrammingError as e:
             logging.info("{}".format(query))
             raise
-        
         cursor.commit()
-    
-        
+
     def tableExists(self, tableName):
         cursor = self.connection.cursor()
         for row in cursor.tables():
             if row.table_name.lower() == tableName.lower():
                 return True
-
         return False
 
 
