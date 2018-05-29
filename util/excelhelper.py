@@ -1,7 +1,7 @@
 import xlrd
 
 def load_dict_from_worksheet(sheet):
-    # read header values into the list    
+    # read header values into the list
     keys = [sheet.cell(0, col_index).value for col_index in xrange(sheet.ncols)]
 
     dict_list = []
@@ -13,5 +13,5 @@ def load_dict_from_worksheet(sheet):
 
 def get_worksheet_as_dict(excelPath, worksheetIndex):
     wb = xlrd.open_workbook(excelPath)
-    ws = wb.sheet_by_index(0)
+    ws = wb.sheet_by_index(worksheetIndex)
     return load_dict_from_worksheet(ws)
