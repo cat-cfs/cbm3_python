@@ -30,6 +30,11 @@
     </Compile>
     <Compile Include="cbm3data\projectdb.py" />
     <Compile Include="cbm3data\__init__.py" />
+    <Compile Include="simulation\batchrunner.py" />
+    <Compile Include="simulation\createaccountingrules.py" />
+    <Compile Include="simulation\resultsloader.py" />
+    <Compile Include="simulation\simulator.py" />
+    <Compile Include="simulation\__init__.py" />
     <Compile Include="util\excelhelper.py">
       <SubType>Code</SubType>
     </Compile>
@@ -41,6 +46,7 @@
   <ItemGroup>
     <Folder Include="adhoc\" />
     <Folder Include="cbm3data" />
+    <Folder Include="C:\dev\cbm3_python\simulation\" />
     <Folder Include="util\" />
   </ItemGroup>
   <ItemGroup>
