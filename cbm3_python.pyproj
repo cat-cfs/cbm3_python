@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ed5dc488-c8d0-4ab7-82f5-35a905e71134}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>adhoc\update_SBW.py</StartupFile>
+    <StartupFile>adhoc\update_oilsands_dms.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -19,6 +19,9 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="adhoc\update_oilsands_dms.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="adhoc\update_SBW.py" />
     <Compile Include="cbm3data\accessdb.py" />
     <Compile Include="cbm3data\aidb.py" />
