@@ -91,6 +91,8 @@ class BatchRunner(object):
 
         for error in errors:
             logging.error(error)
+        
+        if len(errors) > 0:
             raise ValueError("validation errors: {0}".format(errors))
 
     def Run(self):
