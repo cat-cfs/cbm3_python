@@ -47,6 +47,7 @@
     <Folder Include="adhoc\" />
     <Folder Include="cbm3data" />
     <Folder Include="C:\dev\cbm3_python\simulation\" />
+    <Folder Include="simulation\" />
     <Folder Include="util\" />
   </ItemGroup>
   <ItemGroup>

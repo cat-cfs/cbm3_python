@@ -1,9 +1,9 @@
 import os, shutil, glob, logging, multiprocessing, subprocess
 from simulator import Simulator
-from aidb import AIDB
-from projectdb import ProjectDB
-from ResultsLoader import ResultsLoader
-from CreateAccountingRules import CreateAccountingRules
+from cbm3data.aidb import AIDB
+from cbm3data.projectdb import ProjectDB
+from simulation.resultsloader import ResultsLoader
+from simulation.createaccountingrules import CreateAccountingRules
 
 def externalExeWorker(executablePath):
     wd = os.getcwd()
@@ -43,19 +43,17 @@ class BatchRunner(object):
         self.cbmDir = cbmDir
         self.projectPath = projectPath
         self.numProcesses = numProcesses
-        aidb = AIDB(self.workingAidbPath, False)
-        aidb.DeleteProjectsFromAIDB()
-        proj = ProjectDB(projectPath, False)
-        self.projectDir = os.path.dirname(projectPath)
-        self.simulationIds = aidb.AddProjectToAIDB(proj)
-        self.simulationIds = self.simulationIds[(scenarioMin-1):scenarioMax]
-        self.rrdbTemplate = os.path.join(os.path.dirname( __file__ ), "RRDB_Template.accdb")
-        self.dist_classes_path = dist_classes_path
-        self.dist_rules_path = dist_rules_path
-        if not os.path.exists(batchRunDir):
-            os.makedirs(batchRunDir)
-        aidb.close()
-        proj.close()
+        with AIDB(self.workingAidbPath, False) as aidb, \
+             ProjectDB(projectPath, False) as proj:
+            aidb.DeleteProjectsFromAIDB()
+            self.projectDir = os.path.dirname(projectPath)
+            self.simulationIds = aidb.AddProjectToAIDB(proj)
+            self.simulationIds = self.simulationIds[(scenarioMin-1):scenarioMax]
+            self.rrdbTemplate = os.path.join(os.path.dirname( __file__ ), "RRDB_Template.accdb")
+            self.dist_classes_path = dist_classes_path
+            self.dist_rules_path = dist_rules_path
+            if not os.path.exists(batchRunDir):
+                os.makedirs(batchRunDir)
 
     def __validateArgs(self, projectPath, toolboxPath, batchRunDir, 
                  aidbPath, cbmDir, outputDir, numProcesses, 
@@ -192,24 +190,22 @@ class BatchRunner(object):
 
 
         for p in paths:
-            proj = ProjectDB(p, False)
-            maxID = proj.GetMaxID("tblSVLAttributes", "SVOID")
-            maxBatchDeleteSize = 10000
-            iterations = maxID / maxBatchDeleteSize
-            remainder = maxID % maxBatchDeleteSize
-            for i in range(0, iterations):
-                min = i * maxBatchDeleteSize
-                max = min + maxBatchDeleteSize
-                proj.ExecuteQuery("DELETE FROM tblSVLAttributes WHERE tblSVLAttributes.SVOID Between {min} And {max};"
-                                  .format(min=min, max=max))
+            with ProjectDB(p, False) as proj:
+                maxID = proj.GetMaxID("tblSVLAttributes", "SVOID")
+                maxBatchDeleteSize = 10000
+                iterations = maxID / maxBatchDeleteSize
+                remainder = maxID % maxBatchDeleteSize
+                for i in range(0, iterations):
+                    min = i * maxBatchDeleteSize
+                    max = min + maxBatchDeleteSize
+                    proj.ExecuteQuery("DELETE FROM tblSVLAttributes WHERE tblSVLAttributes.SVOID Between {min} And {max};"
+                                      .format(min=min, max=max))
     
-            if remainder > 0:
-                min = iterations * maxBatchDeleteSize
-                max = iterations * maxBatchDeleteSize + remainder
-                proj.ExecuteQuery("DELETE FROM tblSVLAttributes WHERE tblSVLAttributes.SVOID Between {min} And {max};"
-                                  .format(min=min, max=max))
-
-            proj.close()
+                if remainder > 0:
+                    min = iterations * maxBatchDeleteSize
+                    max = iterations * maxBatchDeleteSize + remainder
+                    proj.ExecuteQuery("DELETE FROM tblSVLAttributes WHERE tblSVLAttributes.SVOID Between {min} And {max};"
+                                      .format(min=min, max=max))
 
     def SerialCreateCBMFiles(self, simulationIds):
         logging.info("creating CBM input");
@@ -231,18 +227,19 @@ class BatchRunner(object):
             shutil.copytree(os.path.join(self.GetWorkingPath(simulationId), "Makelist"), 
                             os.path.join( self.defaultWorkingDirectory, "Makelist"))
             sim.loadMakelistSVLS()
-            temp_proj = ProjectDB(os.path.join(self.defaultWorkingDirectory, os.path.basename(self.projectPath)), False)
-            cr = CreateAccountingRules(temp_proj, self.dist_classes_path, self.dist_rules_path)
-            cr.create_accounting_rules()
-            temp_proj.close()
-            self.dropMakelistResultsFromProject()
-            sim.CreateCBMFiles()
-            makelistResultsDir = os.path.join(self.GetWorkingPath(simulationId), "Makelist", "output")
-            self.CopyMakelistOutputToCBMInput(makelistResultsDir, os.path.join(cbmRunDir, "input"))
-            workingCBMPath = os.path.join(workingPath, "CBMRun")
-            if os.path.exists(workingCBMPath):
-                shutil.rmtree(workingCBMPath)
-            shutil.copytree(cbmRunDir, workingCBMPath)
+            temp_proj_path = os.path.join(self.defaultWorkingDirectory, os.path.basename(self.projectPath))
+            with ProjectDB(temp_proj_path, False) as temp_proj:
+                cr = CreateAccountingRules(temp_proj, self.dist_classes_path, self.dist_rules_path)
+                cr.create_accounting_rules()
+                temp_proj.close()
+                self.dropMakelistResultsFromProject()
+                sim.CreateCBMFiles()
+                makelistResultsDir = os.path.join(self.GetWorkingPath(simulationId), "Makelist", "output")
+                self.CopyMakelistOutputToCBMInput(makelistResultsDir, os.path.join(cbmRunDir, "input"))
+                workingCBMPath = os.path.join(workingPath, "CBMRun")
+                if os.path.exists(workingCBMPath):
+                    shutil.rmtree(workingCBMPath)
+                shutil.copytree(cbmRunDir, workingCBMPath)
 
     def ParallelRunCBM(self, simulationIds):
         logging.info("Running cbm in parallel");

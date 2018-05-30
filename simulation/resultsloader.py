@@ -5,8 +5,7 @@ import math
 import logging
 import win32com.client
 import csv
-from accessdb import AccessDB
-from projectdb import ProjectDB
+from cbm3data.accessdb import AccessDB
 from math import floor
 
 # A class to load cbm text file output that is too big for ms access mdb files.
@@ -31,27 +30,21 @@ class ResultsLoader(object):
             raise ValueError("Specified projectDBPath '{0}' does not exist".format(projectDBPath))
         if not os.path.exists(aidbPath):
             raise ValueError("Specified aidbPath '{0}' does not exist".format(aidbPath))
-        projectDB = self.getProjectDB(projectDBPath)
-        aidb = self.getAidb(aidbPath)
+        with AccessDB(projectDBPath) as projectDB, \
+             AccessDB(aidbPath) as aidb, \
+             AccessDB(outputDBPath, False) as out_db:
+            self.copyProjectTables(projectDB, outputDBPath)
+            self.copyAidbTables(aidb, outputDBPath)
+            self.addAnnualProcessDistType(out_db)
 
-        self.copyAidbTables(aidb, outputDBPath)
-        self.copyProjectTables(projectDB, outputDBPath)
+            self.cset_dict = {}
+            x = self.BuildCsetLookup(projectDB)
 
-        db = AccessDB(outputDBPath, False)
-        self.addAnnualProcessDistType(db)
+            logging.info("loading output files")
+            self.loadOutputFiles(projectDB, projectSimulationDirectory, outputDBPath, aggregateKf5, kf5RulesPath)
 
-        self.cset_dict = {}
-        x = self.BuildCsetLookup(projectDB)
-
-        logging.info("loading output files")
-        self.loadOutputFiles(projectDB, projectSimulationDirectory, outputDBPath, aggregateKf5, kf5RulesPath)
-
-        logging.info("creating indexes")
-        self.createIndexes(AccessDB(outputDBPath, False))
-
-        projectDB.close()
-        aidb.close()
-        db.close()
+            logging.info("creating indexes")
+            self.createIndexes(out_db)
 
     def loadOutputFiles(self, projectDB, projectSimulationDirectory, dbPath, aggregateKf5, kf5RulesPath):
         for (fileName, table, cols, avgCols, scalarCols, lineProcessor) in (
@@ -208,13 +201,6 @@ class ResultsLoader(object):
     def getResultsFilePath(self, projectSimulationDirectory, resultsFile):
         cbmOutputDir = os.path.join(projectSimulationDirectory, "CBMRun", "output")
         return os.path.join(cbmOutputDir, resultsFile)
-            
-    def getProjectDB(self, project_db_path):
-        # for reading classifier set ids, disturbance types, etc
-        return AccessDB(project_db_path, False)
-
-    def getAidb(self, aidb_path):
-        return AccessDB(aidb_path, False)
 
     def printProgress(self, fileLen, filePath, recordNum):
         print "load file {0}: {1}/{2} ({3})".format(
@@ -279,22 +265,22 @@ class ResultsLoader(object):
                 recordSet.Close()
             db.Close()
         
-        outputDB = AccessDB(dbPath, False)
-        timesteps = [row.ts for row in outputDB.Query("SELECT DISTINCT(timestep) AS ts FROM {} IN '{}'".format(table, tempDBPath))]
-        for ts in timesteps:
-            outputDB.ExecuteQuery("INSERT INTO {table} ({destCols}) SELECT {sourceCols} FROM {table} t IN '{temp_db}' WHERE timestep = {ts} GROUP BY {groupByCols}".format(
-                destCols=",".join(cols),
-                sourceCols=",".join(["SUM(t.{0}) AS {0}".format(col) if col in scalarCols
-                                     else "SUM(t.{col} * (t.area / (SELECT SUM(area) FROM {table} IN '{temp_db}' WHERE timestep = {ts}))) AS {col}".format(
-                                        col=col, table=table, temp_db=tempDBPath, ts=ts) if col in avgCols
-                                     else col
-                                     for col in cols]),
-                groupByCols=",".join(set(cols) - set(scalarCols) - set(avgCols)),
-                table=table,
-                temp_db=tempDBPath,
-                ts=ts))
+        with AccessDB(dbPath, False) as outputDB:
+            timesteps = [row.ts for row in outputDB.Query("SELECT DISTINCT(timestep) AS ts FROM {} IN '{}'".format(table, tempDBPath))]
+            for ts in timesteps:
+                outputDB.ExecuteQuery("INSERT INTO {table} ({destCols}) SELECT {sourceCols} FROM {table} t IN '{temp_db}' WHERE timestep = {ts} GROUP BY {groupByCols}".format(
+                    destCols=",".join(cols),
+                    sourceCols=",".join(["SUM(t.{0}) AS {0}".format(col) if col in scalarCols
+                                         else "SUM(t.{col} * (t.area / (SELECT SUM(area) FROM {table} IN '{temp_db}' WHERE timestep = {ts}))) AS {col}".format(
+                                            col=col, table=table, temp_db=tempDBPath, ts=ts) if col in avgCols
+                                         else col
+                                         for col in cols]),
+                    groupByCols=",".join(set(cols) - set(scalarCols) - set(avgCols)),
+                    table=table,
+                    temp_db=tempDBPath,
+                    ts=ts))
                 
-        os.unlink(tempDBPath)
+            os.unlink(tempDBPath)
 
     def ageIndLineProcessor(self, lineData, kf5Categories=None):
         cset = [int(lineData[x]) for x in range(4, 14) if int(lineData[x]) > 0]
