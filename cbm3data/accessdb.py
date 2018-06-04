@@ -49,6 +49,11 @@ class AccessDB(object):
         cursor.commit()
 
     def tableExists(self, tableName):
+        """
+        check if the specified table name matches the name of an existing
+        table in the database
+        @param tableName the string to evaluate
+        """
         cursor = self.connection.cursor()
         for row in cursor.tables():
             if row.table_name.lower() == tableName.lower():
@@ -65,6 +70,9 @@ class AccessDB(object):
 
 
     def GetMaxID(self, table, IDcolumn):
+        """
+        get the maximum value of a numeric column for the specified table and column names
+        """
         result = self.Query("SELECT Max({0}.{1}) AS MaxID FROM {0};"
                             .format(table, IDcolumn)).fetchone()
         
