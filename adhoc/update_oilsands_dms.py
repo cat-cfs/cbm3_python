@@ -13,9 +13,8 @@ local_wd = r"M:\CBM Tools and Development\CBM3\2018\Oilsands_DM_Update"
 loghelper.start_logging(os.path.join(local_wd,"update_oilsands_matrices.log"))
 
 dms = excelhelper.get_worksheet_as_dict(
-    os.path.join(local_wd, "DRAFT_DMS_FOR_FIRST_PILOT_STUDY_RUN_DEC_16_2016_VScott.xlsx"),
-    2)
-
+    os.path.join(local_wd, "Oilsands_DM_update.xlsx"),
+    0)
 
 dms_by_language = {}
 for d in dms:
@@ -27,7 +26,9 @@ for d in dms:
 
 original_aidbs = [
     { "Language": "English", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20180525\ArchiveIndex_Beta_Install.mdb" },
+    { "Language": "Spanish", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20180525\ArchiveIndex_Beta_Install_es.mdb" },
     { "Language": "French", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20180525\ArchiveIndex_Beta_Install_fr.mdb" },
+    { "Language": "Russian", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20180525\ArchiveIndex_Beta_Install_ru.mdb" }
 ]
 makeLocalPath = lambda path : os.path.join(local_wd, os.path.basename(path))
 local_aidbs = [{"Language": x["Language"], "Path": makeLocalPath(x["Path"])} for x in original_aidbs]
@@ -47,6 +48,7 @@ for p in local_aidbs:
         language = p["Language"]
 
         nextDistTypeID = a.GetMaxID("tblDisturbanceTypeDefault", "DistTypeID") + 1
+        nextDMID = a.GetMaxID("tblDM", "DMID") + 1
         #disturbance types (tblDisturbanceTypeDefault)
         for r in dms_by_language[language]:
             a.ExecuteQuery("INSERT INTO tblDisturbanceTypeDefault (DistTypeID, DistTypeName, OnOffSwitch, Description, IsStandReplacing, IsMultiYear, MultiYearCount) VALUES (?,?,?,?,?,?,?)", 
@@ -57,8 +59,20 @@ for p in local_aidbs:
                           True,
                           False,
                           0))
+
+            #disturbance matrices (tblDM)
+            for dmrow in dms_by_language[language]:
+                logging.info(dmrow.Name)
+                a.ExecuteQuery("INSERT INTO tblDM (DMID, Name, Description, DMStructureID) VALUES (?,?,?,?)",
+                               (nextDMID,
+                               r["Name"],
+                               r["Description"],
+                               2))
+
+            nextDMID += 1
             nextDistTypeID += 1
-        #disturbance matrices (tblDM)
+
+
 
         #disturbance matrix values (tblDMValuesLookup)
 
