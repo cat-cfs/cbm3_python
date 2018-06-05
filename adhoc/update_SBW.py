@@ -13,7 +13,7 @@ loghelper.start_logging(os.path.join(local_wd,"update_sbw.log"))
 
 # load the translations for the disturbance types
 distTypeTranslations = excelhelper.get_worksheet_as_dict(os.path.join(local_wd, "NewDMtranslations.xlsx"), 0)
-distDescTranslations = excelhelper.get_worksheet_as_dict(os.path.join(local_wd, "NewDMtranslations.xlsx"), 0)
+distDescTranslations = excelhelper.get_worksheet_as_dict(os.path.join(local_wd, "NewDMtranslations.xlsx"), 1)
 distTypeTranslations = {int(x["DistID"]): x for x in distTypeTranslations}
 distDescTranslations = {int(x["DistID"]): x for x in distDescTranslations}
 
@@ -21,10 +21,10 @@ distDescTranslations = {int(x["DistID"]): x for x in distDescTranslations}
 new_sbw_aidb = os.path.join(local_wd, "ArchiveIndex_NIR2018_NDExclusion_newrules_newexes.mdb")
 
 original_aidbs = [
-    { "Language": "English", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\ArchiveIndex_Beta_Install.mdb" },
-    { "Language": "Spanish", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\ArchiveIndex_Beta_Install_es.mdb" },
-    { "Language": "French", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\ArchiveIndex_Beta_Install_fr.mdb" },
-    { "Language": "Russian", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\ArchiveIndex_Beta_Install_ru.mdb" }
+    { "Language": "English", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20170824\ArchiveIndex_Beta_Install.mdb" },
+    { "Language": "Spanish", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20170824\ArchiveIndex_Beta_Install_es.mdb" },
+    { "Language": "French", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20170824\ArchiveIndex_Beta_Install_fr.mdb" },
+    { "Language": "Russian", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20170824\ArchiveIndex_Beta_Install_ru.mdb" }
 ]
 makeLocalPath = lambda path : os.path.join(local_wd, os.path.basename(path))
 local_aidbs = [{"Language": x["Language"], "Path": makeLocalPath(x["Path"])} for x in original_aidbs]
@@ -94,7 +94,7 @@ with AccessDB(new_sbw_aidb) as source_aidb:
 for p in local_aidbs:
     logging.info("adding QC SBW to {0}".format(p))
     with AccessDB(p["Path"], False) as a:
-
+        
         # 3a disturbance types
         logging.info("copying disturbance types to {}".format(p))
         for dist_type_row in source_tblDisturbanceTypeDefault:
