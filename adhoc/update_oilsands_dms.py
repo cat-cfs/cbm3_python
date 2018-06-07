@@ -29,11 +29,28 @@ dm_values = excelhelper.get_worksheet_as_dict(
     1)
 
 dm_values_by_id = {}
+unique_dm_values_row_ids = set()
+duplicate_rows = []
 for d in dm_values:
     if d["DMID"] in dm_values_by_id:
         dm_values_by_id[d["DMID"]].append(d)
     else:
         dm_values_by_id[d["DMID"]] = [d]
+    key = (int(d["DMID"]),int(d["DMRow"]),int(d["DMColumn"]))
+    if key in unique_dm_values_row_ids:
+        duplicate_rows.append(key)
+    else:
+        unique_dm_values_row_ids.add(key)
+
+if len(duplicate_rows) > 0:
+
+    with open("duplicate_row_debug.csv", "w") as duplicate_debug_file:
+        for d_row in duplicate_rows:
+            duplicate_debug_file.write(",".join([str(x) for x in d_row]) + "\n")
+    raise AssertionError("duplicate rows exist")
+
+
+
 
 original_aidbs = [
     { "Language": "English", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20180525\ArchiveIndex_Beta_Install.mdb" },
