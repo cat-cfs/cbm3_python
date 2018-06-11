@@ -49,14 +49,11 @@ if len(duplicate_rows) > 0:
             duplicate_debug_file.write(",".join([str(x) for x in d_row]) + "\n")
     raise AssertionError("duplicate rows exist")
 
-
-
-
 original_aidbs = [
-    { "Language": "English", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20180525\ArchiveIndex_Beta_Install.mdb" },
-    { "Language": "Spanish", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20180525\ArchiveIndex_Beta_Install_es.mdb" },
-    { "Language": "French", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20180525\ArchiveIndex_Beta_Install_fr.mdb" },
-    { "Language": "Russian", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20180525\ArchiveIndex_Beta_Install_ru.mdb" }
+    { "Language": "English", "Path": r"M:\CBM Tools and Development\CBM3\2018\AIDB_SBW_Update\ArchiveIndex_Beta_Install.mdb" },
+    { "Language": "Spanish", "Path": r"M:\CBM Tools and Development\CBM3\2018\AIDB_SBW_Update\ArchiveIndex_Beta_Install_es.mdb" },
+    { "Language": "French", "Path": r"M:\CBM Tools and Development\CBM3\2018\AIDB_SBW_Update\ArchiveIndex_Beta_Install_fr.mdb" },
+    { "Language": "Russian", "Path": r"M:\CBM Tools and Development\CBM3\2018\AIDB_SBW_Update\ArchiveIndex_Beta_Install_ru.mdb" }
 ]
 makeLocalPath = lambda path : os.path.join(local_wd, os.path.basename(path))
 local_aidbs = [{"Language": x["Language"], "Path": makeLocalPath(x["Path"])} for x in original_aidbs]

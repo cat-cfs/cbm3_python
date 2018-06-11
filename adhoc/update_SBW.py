@@ -87,14 +87,52 @@ with AccessDB(new_sbw_aidb) as source_aidb:
                     """.format(",".join(new_dist_ids))))
 
     source_tblDMAssociationDefault = list(source_aidb.Query(""" SELECT tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DefaultEcoBoundaryID, tblDMAssociationDefault.AnnualOrder, tblDMAssociationDefault.DMID, tblDMAssociationDefault.Name, tblDMAssociationDefault.Description
-                    FROM tblDMAssociationDefault WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID In({});
-                    """.format(",".join(new_dist_ids))))
+                    FROM tblDMAssociationDefault WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID In({})
+                    ORDER BY tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DMID, tblDMAssociationDefault.DefaultEcoBoundaryID"""
+                    .format(",".join(new_dist_ids))))
+
+    #pad out the ecoboundaries, allowing users to point at the QC matrices from other regions
+    unique_dm_associations = {}
+    unique_dm_associations_first_row = {}
+    for row in source_tblDMAssociationDefault:
+        key = (int(row.DefaultDisturbanceTypeID), (int(row.DMID)))
+        if key in unique_dm_associations:
+            unique_dm_associations[key].add(int(row.DefaultEcoBoundaryID))
+        else:
+            unique_dm_associations[key] = set([(int(row.DefaultEcoBoundaryID))])
+            unique_dm_associations_first_row[key] = row
+
+    source_ecoBoundary_set = set(int(x[0]) for x in source_aidb.Query("""SELECT tblEcoBoundaryDefault.EcoBoundaryID FROM tblEcoBoundaryDefault;"""))
+    for k,v in unique_dm_associations.items():
+        missing_ecos = source_ecoBoundary_set - v
+        for e in missing_ecos:
+            original_row = unique_dm_associations_first_row[k]
+            #creating a row through pyodbc with a query since we have all the values already and it's not easy to copy one
+            append_row = source_aidb.Query(""" 
+                SELECT {DefaultDisturbanceTypeID} as DefaultDisturbanceTypeID,
+                {DefaultEcoBoundaryID} as DefaultEcoBoundaryID,
+                {AnnualOrder} as AnnualOrder, 
+                {DMID} as DMID,
+                '{Name}' as Name,
+                '{Description}' as Description
+                FROM tblDMAssociationDefault""".format(
+                    DefaultDisturbanceTypeID=original_row.DefaultDisturbanceTypeID,
+                    DefaultEcoBoundaryID=e,
+                    AnnualOrder = original_row.AnnualOrder,
+                    DMID = original_row.DMID,
+                    Name = original_row.Name,
+                    Description = original_row.Description,
+                    )).fetchone()
+            source_tblDMAssociationDefault.append(append_row)
+
+
 
 # 4 add the new SBW and firewood disturbance types
 for p in local_aidbs:
     logging.info("adding QC SBW to {0}".format(p))
     with AccessDB(p["Path"], False) as a:
-        
+        new_dmid_dist_type_combinations = {}
+
         # 3a disturbance types
         logging.info("copying disturbance types to {}".format(p))
         for dist_type_row in source_tblDisturbanceTypeDefault:
@@ -132,6 +170,12 @@ for p in local_aidbs:
         logging.info("copying dm associations to {}".format(p))
         for dmassociationRow in source_tblDMAssociationDefault:
             logging.info(dmassociationRow.Name)
+            new_dmid_dist_type_combination_key = (dmassociationRow.DefaultDisturbanceTypeID, dmassociationRow.DMID)
+            if new_dmid_dist_type_combination_key in new_dmid_dist_type_combinations:
+                new_dmid_dist_type_combinations[new_dmid_dist_type_combination_key].add(dmassociationRow.DefaultEcoBoundaryID)
+            else:
+                new_dmid_dist_type_combinations[new_dmid_dist_type_combination_key] = set([dmassociationRow.DefaultEcoBoundaryID])
+
             a.ExecuteQuery("INSERT INTO tblDMAssociationDefault (DefaultDisturbanceTypeID, DefaultEcoBoundaryID, AnnualOrder, DMID, Name, Description) VALUES (?,?,?,?,?,?)",
                            (dmassociationRow.DefaultDisturbanceTypeID,
                             dmassociationRow.DefaultEcoBoundaryID,
@@ -139,6 +183,8 @@ for p in local_aidbs:
                             dmassociationRow.DMID,
                             dmassociationRow.Name,
                             dmassociationRow.Description))
+
+
 
 for p in local_aidbs:
     logging.info("run compact and repair on {}".format(p["Path"]))
