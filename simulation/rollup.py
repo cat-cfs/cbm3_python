@@ -27,7 +27,7 @@
 #
 # ---------------------------------------------------------------------------
 import logging, os, shutil, subprocess, glob, string
-from accessdb import AccessDB
+from cbm3data.accessdb import AccessDB
 
 class Rollup(object):
 
@@ -415,48 +415,47 @@ class Rollup(object):
         #
         
         
-        print 'Rolling up....'
-        rollup = AccessDB(self.OutputPath, False)
-        print sqlLandClass
-        rollup.ExecuteQuery(sqlLandClass)
-        rollup.ExecuteQuery(sqlDistTypeDefault)
-        rollup.ExecuteQuery(sqlSPUDefault)
-        rollup.ExecuteQuery(sqlEcoDefault)
-        rollup.ExecuteQuery(sqlAgeClasses)
-        rollup.ExecuteQuery(sqlAdminDefault)
-        rollup.ExecuteQuery(sqlMakePoolInd)
-        rollup.ExecuteQuery(sqlMakeAgeInd)
-        rollup.ExecuteQuery(sqlMakeDistInd)
-        rollup.ExecuteQuery(sqlMakeFluxInd)
-        rollup.ExecuteQuery(sqlMakeDistNotRealized)
-        for project in self.ProjectPaths:
+        logging.info('Rolling up....')
+        with AccessDB(self.OutputPath, True) as rollup:
+            rollup.ExecuteQuery(sqlLandClass)
+            rollup.ExecuteQuery(sqlDistTypeDefault)
+            rollup.ExecuteQuery(sqlSPUDefault)
+            rollup.ExecuteQuery(sqlEcoDefault)
+            rollup.ExecuteQuery(sqlAgeClasses)
+            rollup.ExecuteQuery(sqlAdminDefault)
+            rollup.ExecuteQuery(sqlMakePoolInd)
+            rollup.ExecuteQuery(sqlMakeAgeInd)
+            rollup.ExecuteQuery(sqlMakeDistInd)
+            rollup.ExecuteQuery(sqlMakeFluxInd)
+            rollup.ExecuteQuery(sqlMakeDistNotRealized)
+            for project in self.ProjectPaths:
 
-            sqlAge = sqlAgeInd1.format(project)
-            logging.info("running age indicators query on project {0}".format(project))
-            rollup.ExecuteQuery(sqlAge)            
+                sqlAge = sqlAgeInd1.format(project)
+                logging.info("running age indicators query on project {0}".format(project))
+                rollup.ExecuteQuery(sqlAge)            
             
-            sqlDist = sqlDistInd.format(project)
-            logging.info("running dist indicators query on project {0}".format(project))
-            rollup.ExecuteQuery(sqlDist)
-
-            
-            sqlFlux = sqlFluxInd.format(project)
-            logging.info("running flux indicators query on project {0}".format(project))
-            rollup.ExecuteQuery(sqlFlux)
+                sqlDist = sqlDistInd.format(project)
+                logging.info("running dist indicators query on project {0}".format(project))
+                rollup.ExecuteQuery(sqlDist)
 
             
-            sqlDistNot = sqlDistNotRealized.format(project)
-           # logging.info("running unrealized disturbances query on project {0}".format(project))
-           # rollup.ExecuteQuery(sqlDistNot)
-            
-            
-            sqlPoolIndInc = sqlPoolInd.format(project)
-            logging.info("running pool indicators query on project {0}".format(project))
-            rollup.ExecuteQuery(sqlPoolIndInc)
+                sqlFlux = sqlFluxInd.format(project)
+                logging.info("running flux indicators query on project {0}".format(project))
+                rollup.ExecuteQuery(sqlFlux)
 
-        print 'I worked'
+            
+                sqlDistNot = sqlDistNotRealized.format(project)
+               # logging.info("running unrealized disturbances query on project {0}".format(project))
+               # rollup.ExecuteQuery(sqlDistNot)
+            
+            
+                sqlPoolIndInc = sqlPoolInd.format(project)
+                logging.info("running pool indicators query on project {0}".format(project))
+                rollup.ExecuteQuery(sqlPoolIndInc)
+
+            logging.info('I worked')
         
-        return rollup.path
+            return rollup.path
 
 
 

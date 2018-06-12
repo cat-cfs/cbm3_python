@@ -33,6 +33,7 @@
     <Compile Include="simulation\batchrunner.py" />
     <Compile Include="simulation\createaccountingrules.py" />
     <Compile Include="simulation\resultsloader.py" />
+    <Compile Include="simulation\rollup.py" />
     <Compile Include="simulation\simulator.py" />
     <Compile Include="simulation\__init__.py" />
     <Compile Include="util\excelhelper.py">
