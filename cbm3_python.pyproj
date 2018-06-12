@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ed5dc488-c8d0-4ab7-82f5-35a905e71134}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>adhoc\update_oilsands_dms.py</StartupFile>
+    <StartupFile>adhoc\run_NIR_with_pre_dist_age.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -19,11 +19,17 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="adhoc\run_NIR_with_pre_dist_age.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="adhoc\update_oilsands_dms.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="adhoc\update_SBW.py" />
     <Compile Include="cbm3data\accessdb.py" />
+    <Compile Include="cbm3data\access_templates\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="cbm3data\aidb.py" />
     <Compile Include="cbm3data\compact_and_repair.py">
       <SubType>Code</SubType>
@@ -50,9 +56,15 @@
     <Folder Include="C:\dev\cbm3_python\simulation\" />
     <Folder Include="simulation\" />
     <Folder Include="util\" />
+    <Folder Include="C:\dev\cbm3_python\cbm3data\access_templates\" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|2.7-32" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="cbm3data\access_templates\blank.accdb" />
+    <Content Include="cbm3data\access_templates\blank.mdb" />
+    <Content Include="cbm3data\access_templates\RRDB_Template.accdb" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>
