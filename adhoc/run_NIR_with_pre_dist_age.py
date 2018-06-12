@@ -5,6 +5,7 @@ from cbm3data.access_templates import *
 from simulation.simulator import Simulator
 from simulation.resultsloader import ResultsLoader
 from simulation.createaccountingrules import CreateAccountingRules
+from simulation.rollup import Rollup
 from util.loghelper import *
 
 def GetAccessDBPathFromDir(dir):
@@ -89,6 +90,12 @@ def load_project_results(results_path, local_aidb_path, local_project_path):
         projectSimulationDirectory=r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp",
         loadPreDistAge=True)
 
+def do_rollup(rrdbs, rollup_output_path, local_aidb_path):
+    copy_rollup_template(rollup_output_path)
+    r = Rollup(rrdbs, rollup_output_path, rollup_output_path, local_aidb_path)
+    r.Roll()
+
+
 def run():
     start_logging("run_nir_with_pre_dist_age.log")
 
@@ -124,5 +131,7 @@ def run():
         dist_rules_path=dist_rules_path)
 
     load_project_results(local_results_path, local_aidb_path, local_project_path)
+
+    do_rollup([local_results_path], os.path.join(local_working_dir, "rollup_db.accdb"), local_aidb_path)
 
 run()

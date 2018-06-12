@@ -31,12 +31,10 @@ from cbm3data.accessdb import AccessDB
 
 class Rollup(object):
 
-    def __init__(self, projectPaths, outputPath, rrdbpath, aidbpath, blankDbPath):
-        self.ProjectPaths = projectPaths
+    def __init__(self, run_results_database_paths, outputPath, aidbpath):
+        self.RRDBPaths = run_results_database_paths
         self.OutputPath = outputPath
-        self.RRDBPath = rrdbpath
         self.AIDBPath = aidbpath
-        self.BlankDBPath = blankDbPath
         
     def Roll(self):
         sqlMakeAgeInd = \
@@ -165,7 +163,21 @@ class Rollup(object):
             HW_Coarse Single,
             HW_Fine Single);"""
             
-
+        sqlMakePreDistAge = """
+        CREATE TABLE tblPreDistAge (
+        SPUID Int,
+        DistTypeID Int,
+        TimeStep Int,
+        UserDefdClassSetID Int,
+        LandClassID Int,
+        kf2 Int,
+        kf3 Int,
+        kf4 Int,
+        kf5 Int,
+        kf6 Int,
+        PreDisturbanceAge Int,
+        AreaDisturbed Single
+        );"""
 
         sqlAgeInd1 = """insert into tblAgeIndicators (
         TimeStep,
@@ -388,28 +400,52 @@ class Rollup(object):
             where tDNR.UnDistArea <> 0 
             group by TimeStep, DefaultDistTypeID, tblSPU.DefaultSPUID"""
         
+
+        sql_predistage = """
+        insert into tblPreDistAge (SPUID, DistTypeID, TimeStep, UserDefdClassSetID, LandClassID, kf2, kf3, kf4, kf5, kf6, PreDisturbanceAge, AreaDisturbed)
+            SELECT 
+            tblSPU.DefaultSPUID,
+            tblDisturbanceType.DefaultDistTypeID,
+            tblPreDistAge.TimeStep,
+            -1 as UserDefdClassSetID
+            tblPreDistAge.LandClassID,
+            tblPreDistAge.kf2,
+            tblPreDistAge.kf3,
+            tblPreDistAge.kf4,
+            IIF(Cint(tblPreDistAge.kf5)<0, -dt_kf5.DefaultDistTypeID, dt_kf5.DefaultDistTypeID) AS kf5, 
+            dt_kf6.DefaultDistTypeID AS kf6,
+            tblPreDistAge.PreDisturbanceAge,
+            Sum(tblPreDistAge.AreaDisturbed) AS AreaDisturbed
+            FROM (tblSPU INNER JOIN (((tblPreDistAge INNER JOIN tblDisturbanceType AS dt_kf5 ON tblPreDistAge.kf5 = dt_kf5.DistTypeID) INNER JOIN tblDisturbanceType AS dt_kf6 ON tblPreDistAge.kf6 = dt_kf6.DistTypeID) INNER JOIN tblDisturbanceType ON tblPreDistAge.DistTypeID = tblDisturbanceType.DistTypeID) ON tblSPU.SPUID = tblPreDistAge.SPUID)
+            in '{0}'
+            GROUP BY 
+            tblSPU.DefaultSPUID,
+            tblDisturbanceType.DefaultDistTypeID,
+            tblPreDistAge.TimeStep,
+            tblPreDistAge.LandClassID,
+            tblPreDistAge.kf2,
+            tblPreDistAge.kf3,
+            tblPreDistAge.kf4,
+            IIF(Cint(tblPreDistAge.kf5)<0, -dt_kf5.DefaultDistTypeID, dt_kf5.DefaultDistTypeID),
+            dt_kf6.DefaultDistTypeID,
+            tblPreDistAge.PreDisturbanceAge;"""
+
+
+
         #
         #   Copy an empty DB to house the Net Net Results.
         #
         
         #   Need more tables for rollup 
         #
-        #   We need tblLandClasses, tblDisturbanceTypeDefault, tblSPUDefault, tblEcoboundaryDefault, tblAgeClasses
+        #   We need tblDisturbanceTypeDefault, tblSPUDefault, tblEcoboundaryDefault
         #   
-        sqlLandClass = """Select * into tblLandClasses from tblLandClasses in '{0}' """.format(self.RRDBPath)
         sqlDistTypeDefault = """Select * into tblDisturbanceTypeDefault from tblDisturbanceTypeDefault in '{0}' """.format(self.AIDBPath)
         sqlSPUDefault = """Select *  into tblSPUDefault from tblSPUDefault in '{0}' """.format(self.AIDBPath)
         sqlEcoDefault = """Select * into tblEcoboundaryDefault from tblEcoboundaryDefault in '{0}' """.format(self.AIDBPath)
-        sqlAgeClasses = """Select * into tblAgeClasses from tblAgeClasses in '{0}' """.format(self.RRDBPath)
         sqlAdminDefault = """Select * into tblAdminBoundaryDefault from tblAdminBoundaryDefault in '{0}' """.format(self.AIDBPath)
         
-        
-        if os.path.exists(self.OutputPath):
-            os.unlink(self.OutputPath)
-        #
-        
-        shutil.copy(self.BlankDBPath, self.OutputPath)
-        
+       
         #
         #  The meat of the Class:
         #
@@ -428,7 +464,8 @@ class Rollup(object):
             rollup.ExecuteQuery(sqlMakeDistInd)
             rollup.ExecuteQuery(sqlMakeFluxInd)
             rollup.ExecuteQuery(sqlMakeDistNotRealized)
-            for project in self.ProjectPaths:
+            rollup.ExecuteQuery(sqlMakePreDistAge)
+            for project in self.RRDBPaths:
 
                 sqlAge = sqlAgeInd1.format(project)
                 logging.info("running age indicators query on project {0}".format(project))
@@ -452,6 +489,9 @@ class Rollup(object):
                 sqlPoolIndInc = sqlPoolInd.format(project)
                 logging.info("running pool indicators query on project {0}".format(project))
                 rollup.ExecuteQuery(sqlPoolIndInc)
+
+                logging.info("running pre dist ages query on project {0}".format(project))
+                rollup.ExecuteQuery(sql_predistage.format(project))
 
             logging.info('I worked')
         
