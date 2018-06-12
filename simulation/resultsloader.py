@@ -22,7 +22,8 @@ class ResultsLoader(object):
                     outputDBPath,
                     aidbPath,
                     projectDBPath,
-                    projectSimulationDirectory):
+                    projectSimulationDirectory,
+                    loadPreDistAge=False):
 
         with AccessDB(projectDBPath, False) as projectDB, \
              AccessDB(aidbPath, False) as aidb, \
@@ -40,6 +41,8 @@ class ResultsLoader(object):
             self.loadPoolInd(projectSimulationDirectory, db)
             self.loadDistInd(projectSimulationDirectory, db)
             self.loadFluxInd(projectSimulationDirectory, db)
+            if loadPreDistAge:
+                self.loadPreDistAge(projectSimulationDirectory, db)
             logging.info("creating indexes")
             self.createIndexes(db)
 
@@ -113,16 +116,10 @@ class ResultsLoader(object):
     def mysplit(self, s, delim=None): # thanks to: http://stackoverflow.com/questions/2197451/why-are-empty-strings-returned-in-split-results
         return [x for x in s.split(delim) if x]
     
-    def tokenize(self, infilePath):
+    def tokenize(self, infilePath, delim=None):
         f_input = open(infilePath)
-    
         for line in f_input:
-            tokenized = []
-            tokens = self.mysplit(line)
-            count = len(tokens)
-            for i in range(0, count):
-                tokenized.append(tokens[i])
-            yield tokenized                
+            yield self.mysplit(line, delim)
 
     def getAgeIndPath(self, cbmOutputDirectory):
         return os.path.join(cbmOutputDirectory, "ageind.out")
@@ -135,6 +132,9 @@ class ResultsLoader(object):
        
     def getPoolIndPath(self, cbmOutputDirectory):
         return os.path.join(cbmOutputDirectory, "poolind.out")
+
+    def getPreDistAgePath(self, cbmOutputDirectory):
+        return os.path.join(cbmOutputDirectory, "predistage.csv")
 
     def getCBMOutputDirectoy(self, projectSimulationDirectory):
         return os.path.join(projectSimulationDirectory, "CBMRun", "output")
@@ -211,10 +211,10 @@ INSERT INTO tblDistIndicators
             accessDB.ExecuteQuery(qryFormatted)
 
     def printProgress(self, fileLen, fluxIndPath, recordNum):
-        if ((recordNum) % 666) == 0:
-            print "load file {0}: {1}/{2} ({3})".format(
+        if ((recordNum) % (fileLen/10)) == 0 or recordNum == fileLen:
+            logging.info("load file {0}: {1}/{2} ({3})".format(
                 fluxIndPath, recordNum, fileLen, 
-                self.floored_percentage(float(recordNum)/fileLen, 2))
+                self.floored_percentage(float(recordNum)/fileLen, 2)))
 
     def loadFluxInd(self, projectSimulationDirectory, accessDB):
         simdir = self.getCBMOutputDirectoy(projectSimulationDirectory)
@@ -268,7 +268,7 @@ VALUES
             cset_id = self.getClassifierSetID(cset)
 
             distTypeId = int(line[2])
-            qryFormatted = qry.format(   
+            qryFormatted = qry.format(
                 FluxIndicatorID = recordNum, TimeStep = int(line[1]), 
                 DistTypeID = distTypeId, SPUID = int(line[3]),
                 UserDefdClassSetID = int(cset_id), 
@@ -340,6 +340,49 @@ VALUES
                       LandClassID = float(line[13]), kf2 = float(line[14]), kf3 = float(line[15]), kf4 = float(line[16]), kf5 = float(line[17]), kf6 = float(line[18]),
                       SW_Merch = float(line[19]), SW_Foliage = float(line[20]), SW_Other = float(line[21]), SW_subMerch = float(line[22]), SW_Coarse = float(line[23]), SW_Fine = float(line[24]),
                       HW_Merch = float(line[25]), HW_Foliage = float(line[26]), HW_Other = float(line[27]), HW_subMerch = float(line[28]), HW_Coarse = float(line[29]), HW_Fine = float(line[30])  )
+
+            accessDB.ExecuteQuery(qryFormatted)
+
+
+    def loadPreDistAge(self, projectSimulationDirectory, accessDB):
+
+        simdir = self.getCBMOutputDirectoy(projectSimulationDirectory)
+        preDistAgePath = self.getPreDistAgePath(simdir)
+
+        qry = """
+INSERT INTO tblPreDistAge
+(PreDistAgeID, SPUID, DistTypeID, TimeStep, UserDefdClassSetID, LandClassID, kf2, kf3, kf4, kf5, kf6, PreDisturbanceAge, AreaDisturbed)
+VALUES
+({PreDistAgeID}, {SPUID}, {DistTypeID}, {TimeStep}, {UserDefdClassSetID}, {LandClassID}, {kf2}, {kf3}, {kf4}, {kf5}, {kf6}, {PreDisturbanceAge}, {AreaDisturbed})"""
+
+        fileLen = self.file_len(preDistAgePath);
+        recordNum = 0
+        firstLine = True
+        for line in self.tokenize(preDistAgePath, ","):
+            if firstLine:#skip header
+                firstLine=False
+                continue
+
+            self.printProgress(fileLen, preDistAgePath, recordNum)
+            recordNum = recordNum + 1
+
+            cset = [int(line[x]) for x in range(3,13) if int(line[x]) > 0]
+            cset_id = self.getClassifierSetID(cset)
+            
+            qryFormatted = qry.format(
+                PreDistAgeID=recordNum,
+                SPUID=int(line[0]),
+                DistTypeID=int(line[1]),
+                TimeStep=int(line[2]),
+                UserDefdClassSetID=cset_id,
+                LandClassID=int(line[14]),
+                kf2=int(line[15]),
+                kf3=int(line[16]),
+                kf4=int(line[17]),
+                kf5=int(line[18]),
+                kf6=int(line[19]),
+                PreDisturbanceAge=int(line[20]),
+                AreaDisturbed=float(line[21]))
 
             accessDB.ExecuteQuery(qryFormatted)
 
