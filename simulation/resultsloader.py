@@ -26,25 +26,23 @@ class ResultsLoader(object):
                     loadPreDistAge=False):
 
         with AccessDB(projectDBPath, False) as projectDB, \
-             AccessDB(aidbPath, False) as aidb, \
-             AccessDB(outputDBPath, False) as db:
+             AccessDB(aidbPath, False) as aidb:
 
             self.copyAidbTables(aidb, outputDBPath)
             self.copyProjectTables(projectDB, outputDBPath)
-
-            self.addAnnualProcessDistType(db)
-        
             self.cset_dict = {}
             x = self.BuildCsetLookup(projectDB)
 
-            self.loadAgeInd(projectSimulationDirectory, db)
-            self.loadPoolInd(projectSimulationDirectory, db)
-            self.loadDistInd(projectSimulationDirectory, db)
-            self.loadFluxInd(projectSimulationDirectory, db)
+        with AccessDB(outputDBPath,False) as load_db:
+            self.addAnnualProcessDistType(load_db)
+            self.loadAgeInd(projectSimulationDirectory, load_db)
+            self.loadPoolInd(projectSimulationDirectory, load_db)
+            self.loadDistInd(projectSimulationDirectory, load_db)
+            self.loadFluxInd(projectSimulationDirectory, load_db)
             if loadPreDistAge:
-                self.loadPreDistAge(projectSimulationDirectory, db)
+                self.loadPreDistAge(projectSimulationDirectory, load_db)
             logging.info("creating indexes")
-            self.createIndexes(db)
+            self.createIndexes(load_db)
 
     def createIndexes(self, db):
         db.ExecuteQuery("CREATE INDEX fluxind_spuid_index ON tblFluxIndicators (SPUID)")
@@ -375,14 +373,14 @@ VALUES
                 DistTypeID=int(line[1]),
                 TimeStep=int(line[2]),
                 UserDefdClassSetID=cset_id,
-                LandClassID=int(line[14]),
-                kf2=int(line[15]),
-                kf3=int(line[16]),
-                kf4=int(line[17]),
-                kf5=int(line[18]),
-                kf6=int(line[19]),
-                PreDisturbanceAge=int(line[20]),
-                AreaDisturbed=float(line[21]))
+                LandClassID=int(line[13]),
+                kf2=int(line[14]),
+                kf3=int(line[15]),
+                kf4=int(line[16]),
+                kf5=int(line[17]),
+                kf6=int(line[18]),
+                PreDisturbanceAge=int(line[19]),
+                AreaDisturbed=float(line[20]))
 
             accessDB.ExecuteQuery(qryFormatted)
 
