@@ -21,11 +21,8 @@ class ResultsLoader(object):
                 pass
         return i + 1
 
-    def loadResults(self, templateDBPath, outputDBPath, aidbPath, projectDBPath, projectSimulationDirectory, aggregateKf5=False, kf5RulesPath=False):
-        if not os.path.exists(os.path.dirname(outputDBPath)):
-            os.makedirs(os.path.dirname(outputDBPath))
+    def loadResults(self, outputDBPath, aidbPath, projectDBPath, projectSimulationDirectory, aggregateKf5=False, kf5RulesPath=False):
 
-        shutil.copyfile(templateDBPath, outputDBPath)
         if not os.path.exists(projectDBPath):
             raise ValueError("Specified projectDBPath '{0}' does not exist".format(projectDBPath))
         if not os.path.exists(aidbPath):

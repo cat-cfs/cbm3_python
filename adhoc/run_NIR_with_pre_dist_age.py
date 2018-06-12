@@ -1,6 +1,7 @@
 import os, shutil
 from cbm3data.accessdb import AccessDB
 from cbm3data.aidb import AIDB
+from cbm3data.access_templates import *
 from simulation.simulator import Simulator
 from simulation.resultsloader import ResultsLoader
 from util.loghelper import *
@@ -18,29 +19,32 @@ def GetAccessDBPathFromDir(dir):
         raise AssertionError("expected a dir containing 1 access database, found {0}.  Directory='{1}'"
                              .format(matchCount, dir))
 
-def get_base_projects(project_prefixes, base_project_path):
-    return { x: GetAccessDBPathFromDir(os.path.join(base_project_path, x)) for x in project_prefixes }
+def get_base_project_path( base_project_dir, project_prefix):
+    return GetAccessDBPathFromDir(os.path.join(base_project_dir, project_prefix))
 
-def get_base_results(project_prefixes, base_project_path):
-    return { x: GetAccessDBPathFromDir(os.path.join(base_project_path, x, "RESULTS")) for x in project_prefixes }
+def get_base_results(base_project_dir, project_prefix):
+    return GetAccessDBPathFromDir(os.path.join(base_project_dir, x, "RESULTS"))
+
+def get_local_project_dir(local_working_dir, project_prefix):
+    return os.path.join(local_working_dir, project_prefix)
+
+def get_local_project_path(local_working_dir, project_prefix, local_name_format="{}.mdb"):
+    return os.path.join(get_local_project_dir(local_working_dir,project_prefix),
+                       local_name_format.format(project_prefix))
 
 def copy_aidb_local(base_aidb_path, local_aidb_path):
     shutil.copy(base_aidb_path, local_aidb_path)
 
-def copy_projects_local(project_prefixes, base_projects, local_working_dir):
-
-    local_projects = {}
-    #copy base projects local
-    for p in project_prefixes:
-        local_project_dir = os.path.join(local_working_dir, p)
-        local_project_path = os.path.join(local_project_dir, "{0}_pre_dist_age.mdb".format(p))
-        if os.path.exists(local_project_path):
-            os.unlink(local_project_path)
-        shutil.copy(base_projects[p], local_project_path)
-        local_projects[p] = local_project_path
+def copy_project_local(local_project_path, base_project_path):
+    if os.path.exists(local_project_path):
+        os.unlink(local_project_path)
+    logging.info("copying project database source: '{0}', dest: '{1}'"
+                     .format(base_project_path, local_project_path))
+    if not os.path.exists(os.path.dirname(local_project_path)):
+        os.makedirs(os.path.dirname(local_project_path))
+    shutil.copy(base_project_path, local_project_path)
 
 def simulate(local_project_path, local_aidb_path, cbm_exe_path):
-    local_project = local_projects[project_prefix]
     with AIDB(local_aidb_path) as aidb, \
          AccessDB(local_project_path) as proj:
         aidb.DeleteProjectsFromAIDB()
@@ -51,15 +55,39 @@ def simulate(local_project_path, local_aidb_path, cbm_exe_path):
                       r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp",
                       r"C:\Program Files (x86)\Operational-Scale CBM-CFS3")
         s.simulate(False)
-        r = ResultsLoader()
-        r.loadResults(
 
+def load_project_results(results_path, local_aidb_path, local_project_path):
+    r = ResultsLoader()
+    copy_accdb_template(results_path)
+    return r.loadResults(results_path, local_aidb_path, local_project_path, r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp")
 
 def run():
+    start_logging("run_nir_with_pre_dist_age.log")
+
     cbm_exe_path = r"M:\CBM Tools and Development\Builds\CBMBuilds\20180611_extended_kf5_passive_rule"
     base_aidb_path = r"M:\NIR_2019\03_Analysis\01_CBM\02_Production\02_SupplementaryData\01_CBMBugFixes\ArchiveIndex_NIR2019_CBMBugFixes.mdb"
 
     local_aidb_path = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\Admin\DBs\ArchiveIndex_Beta_Install.mdb"
-    local_working_dir = r"c:\C:\pre_dist_age_run"
-    base_project_path = r"\\dstore.pfc.forestry.ca\carbon1\NIR_2019\03_Analysis\01_CBM\02_Production\03_Scenarios\01_CBMBugFixes"
-    project_prefixes = ["BCB","BCP","BCMN","BCMS","AB","SK","MB","ONW","ONE","QCG","QCL","QCR","NB","NS","PEI","NF","NWT","LB","YT","SKH","UF","AF"]
+    local_working_dir = r"C:\pre_dist_age_run"
+    base_project_dir = r"\\dstore.pfc.forestry.ca\carbon1\NIR_2019\03_Analysis\01_CBM\02_Production\03_Scenarios\01_CBMBugFixes"
+
+    project_prefixes = ["BCB","BCP","BCMN","BCMS","AB","SK","MB","ONW","ONE",
+                        "QCG","QCL","QCR","NB","NS","PEI","NF","NWT","LB",
+                        "YT","SKH","UF","AF"]
+
+    copy_aidb_local(base_aidb_path, local_aidb_path)
+    
+    local_project_path = get_local_project_path(local_working_dir, "PEI", "{}_pre_dist_age.mdb")
+    base_project_path = get_base_project_path(base_project_dir, "PEI")
+
+    copy_project_local(
+       local_project_path=local_project_path,
+       base_project_path=base_project_path)
+
+    simulate(
+        local_project_path = local_project_path,
+        local_aidb_path=local_aidb_path,
+        cbm_exe_path=cbm_exe_path)
+
+
+run()
