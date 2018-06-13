@@ -54,6 +54,7 @@
     <Folder Include="adhoc\" />
     <Folder Include="cbm3data" />
     <Folder Include="C:\dev\cbm3_python\simulation\" />
+    <Folder Include="cbm3data\access_templates\" />
     <Folder Include="simulation\" />
     <Folder Include="util\" />
     <Folder Include="C:\dev\cbm3_python\cbm3data\access_templates\" />

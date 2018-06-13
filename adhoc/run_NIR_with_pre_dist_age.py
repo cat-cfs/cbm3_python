@@ -95,7 +95,6 @@ def do_rollup(rrdbs, rollup_output_path, local_aidb_path):
     r = Rollup(rrdbs, rollup_output_path, local_aidb_path)
     r.Roll()
 
-
 def run():
     start_logging("run_nir_with_pre_dist_age.log")
 
@@ -114,24 +113,26 @@ def run():
                         "YT","SKH","UF","AF"]
 
     copy_aidb_local(base_aidb_path, local_aidb_path)
+    local_results_paths = []
+    for p in project_prefixes:
+        base_project_path = get_base_project_path(base_project_dir, p)
+        local_project_path = get_local_project_path(local_working_dir, p, "{}_pre_dist_age.mdb")
+        local_results_path = get_local_results_path(local_working_dir, p, "{}_pre_dist_age_results.accdb")
+
+        copy_project_local(
+           local_project_path=local_project_path,
+           base_project_path=base_project_path)
     
-    base_project_path = get_base_project_path(base_project_dir, "PEI")
-    local_project_path = get_local_project_path(local_working_dir, "PEI", "{}_pre_dist_age.mdb")
-    local_results_path = get_local_results_path(local_working_dir, "PEI", "{}_pre_dist_age_results.accdb")
+        simulate(
+            local_project_path = local_project_path,
+            local_aidb_path=local_aidb_path,
+            cbm_exe_path=cbm_exe_path,
+            dist_classes_path=dist_classes_path,
+            dist_rules_path=dist_rules_path)
 
-    copy_project_local(
-       local_project_path=local_project_path,
-       base_project_path=base_project_path)
-    
-    simulate(
-        local_project_path = local_project_path,
-        local_aidb_path=local_aidb_path,
-        cbm_exe_path=cbm_exe_path,
-        dist_classes_path=dist_classes_path,
-        dist_rules_path=dist_rules_path)
+        load_project_results(local_results_path, local_aidb_path, local_project_path)
+        local_results_paths.append(local_results_path)
 
-    load_project_results(local_results_path, local_aidb_path, local_project_path)
-
-    do_rollup([local_results_path], os.path.join(local_working_dir, "rollup_db.accdb"), local_aidb_path)
+    do_rollup(local_results_paths, os.path.join(local_working_dir, "rollup_db.accdb"), local_aidb_path)
 
 run()
