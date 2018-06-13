@@ -43,6 +43,7 @@ class ResultsLoader(object):
                 self.loadPreDistAge(projectSimulationDirectory, load_db)
             logging.info("creating indexes")
             self.createIndexes(load_db)
+        return outputDBPath
 
     def createIndexes(self, db):
         db.ExecuteQuery("CREATE INDEX fluxind_spuid_index ON tblFluxIndicators (SPUID)")

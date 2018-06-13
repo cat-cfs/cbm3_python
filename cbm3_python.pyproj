@@ -38,6 +38,9 @@
     <Compile Include="cbm3data\__init__.py" />
     <Compile Include="simulation\batchrunner.py" />
     <Compile Include="simulation\createaccountingrules.py" />
+    <Compile Include="simulation\nirsimulator.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="simulation\resultsloader.py" />
     <Compile Include="simulation\rollup.py" />
     <Compile Include="simulation\simulator.py" />
