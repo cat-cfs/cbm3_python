@@ -40,15 +40,19 @@ class NIRSimulator(object):
 
 
 
-    def run(self):
+    def run(self, prefix_filter = None):
         c = self.config
 
         self.copy_aidb_local(c["base_aidb_path"], c["local_aidb_path"])
         local_results_paths = []
         for p in c["project_prefixes"]:
+            if not prefix_filter is None:
+                if not p in prefix_filter:
+                    continue
             logging.info("{}: Running CBM".format(p))
-            self.run_cbm(p)
             self.copy_project_local(p)
+            self.run_cbm(p)
+
             logging.info("{}: Load CBM Results".format(p))
             local_results_paths.append(self.load_project_results(p))
 

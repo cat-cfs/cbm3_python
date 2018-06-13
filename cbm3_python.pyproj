@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ed5dc488-c8d0-4ab7-82f5-35a905e71134}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>adhoc\run_NIR_with_pre_dist_age.py</StartupFile>
+    <StartupFile>run_NIR_with_pre_dist_age.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -19,13 +19,13 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="adhoc\run_NIR_with_pre_dist_age.py">
+    <Compile Include="run_NIR_with_pre_dist_age.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="adhoc\update_oilsands_dms.py">
+    <Compile Include="update_oilsands_dms.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="adhoc\update_SBW.py" />
+    <Compile Include="update_SBW.py" />
     <Compile Include="cbm3data\accessdb.py" />
     <Compile Include="cbm3data\access_templates\__init__.py">
       <SubType>Code</SubType>
@@ -54,7 +54,6 @@
     <Compile Include="util\__init__.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="adhoc\" />
     <Folder Include="cbm3data" />
     <Folder Include="C:\dev\cbm3_python\simulation\" />
     <Folder Include="cbm3data\access_templates\" />
