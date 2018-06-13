@@ -92,7 +92,7 @@ def load_project_results(results_path, local_aidb_path, local_project_path):
 
 def do_rollup(rrdbs, rollup_output_path, local_aidb_path):
     copy_rollup_template(rollup_output_path)
-    r = Rollup(rrdbs, rollup_output_path, rollup_output_path, local_aidb_path)
+    r = Rollup(rrdbs, rollup_output_path, local_aidb_path)
     r.Roll()
 
 
@@ -122,7 +122,7 @@ def run():
     copy_project_local(
        local_project_path=local_project_path,
        base_project_path=base_project_path)
-
+    
     simulate(
         local_project_path = local_project_path,
         local_aidb_path=local_aidb_path,

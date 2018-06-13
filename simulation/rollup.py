@@ -407,7 +407,7 @@ class Rollup(object):
             tblSPU.DefaultSPUID,
             tblDisturbanceType.DefaultDistTypeID,
             tblPreDistAge.TimeStep,
-            -1 as UserDefdClassSetID
+            -1 as UserDefdClassSetID,
             tblPreDistAge.LandClassID,
             tblPreDistAge.kf2,
             tblPreDistAge.kf3,
@@ -422,6 +422,7 @@ class Rollup(object):
             tblSPU.DefaultSPUID,
             tblDisturbanceType.DefaultDistTypeID,
             tblPreDistAge.TimeStep,
+            -1,
             tblPreDistAge.LandClassID,
             tblPreDistAge.kf2,
             tblPreDistAge.kf3,
@@ -453,11 +454,9 @@ class Rollup(object):
         
         logging.info('Rolling up....')
         with AccessDB(self.OutputPath, True) as rollup:
-            rollup.ExecuteQuery(sqlLandClass)
             rollup.ExecuteQuery(sqlDistTypeDefault)
             rollup.ExecuteQuery(sqlSPUDefault)
             rollup.ExecuteQuery(sqlEcoDefault)
-            rollup.ExecuteQuery(sqlAgeClasses)
             rollup.ExecuteQuery(sqlAdminDefault)
             rollup.ExecuteQuery(sqlMakePoolInd)
             rollup.ExecuteQuery(sqlMakeAgeInd)
