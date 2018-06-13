@@ -2,25 +2,26 @@ from util.loghelper import *
 
 from cbm3data.accessdb import AccessDB
 from simulation.nirsimulator import NIRSimulator
-import os
+import os, csv
 import numpy as np
 import matplotlib.pyplot as plt
+from statsmodels.stats.weightstats import DescrStatsW
 
 start_logging("run_nir_with_pre_dist_age.log")
 
 def query_to_np_matrix(db_path, query):
     with AccessDB(db_path) as db:
         res = db.Query(query).fetchall()
-        np_result = np.array([[float(y) for y in x] for x in res], dtype=np.float)
-        return np_result
+        if len(res) > 0:
+            np_result = np.array([[float(y) for y in x] for x in res], dtype=np.float)
+            return np_result
+        return None
 
-def compare_disturbance_areas(n, project_prefix, outputdir):
+def compare_disturbance_areas(base_rrdb_path, local_rrdb_path, project_prefix, outputdir):
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
     # compares disturbance areas between the new pre-dist 
     # age indicator and base dist indicators to check for bugs
-    base_rrdb_path = n.get_base_run_results_path(project_prefix)
-    local_rrdb_path = n.get_local_results_path(project_prefix)
 
     local_sql = """
         SELECT tblPreDistAge.TimeStep, Sum(tblPreDistAge.AreaDisturbed) AS SumOfAreaDisturbed
@@ -54,13 +55,31 @@ def compare_disturbance_areas(n, project_prefix, outputdir):
     plt.savefig(os.path.join(outputdir, "disturbances_comparison_{}.png".format(project_prefix)))
     plt.close("all")
 
-    np.savetxt(fname=os.path.join(outputdir, "disturbances_comparison_{}.csv".format(project_prefix)), 
+    np.savetxt(fname=os.path.join(outputdir, "disturbances_comparison_{}.csv".format(project_prefix)),
                X=np.column_stack((local_np_res, base_np_res[:,1], rel_dif[:,1])),
                header="timestep,predistage_area,distindicator_area,relative_difference",
                delimiter=",")
 
+def load_wildfire_disturbance_rules(disturbance_rules_path):
+    disturbance_rules = {}
+    with open('disturbance_rules_path', 'rb') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            if row["disturbance_class"] == "Wildfire":
+                disturbance_rules[int(row["defaultSPUID"])] = int(row["rule_value"])
+    return disturbance_rules
 
+def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, outputdir):
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
 
+    sql = """
+        SELECT tblSPU.DefaultSPUID, tblPreDistAge.TimeStep, tblPreDistAge.PreDisturbanceAge, tblPreDistAge.AreaDisturbed
+        FROM (tblPreDistAge INNER JOIN tblSPU ON tblPreDistAge.SPUID = tblSPU.SPUID)
+        INNER JOIN tblDisturbanceType ON tblPreDistAge.DistTypeID = tblDisturbanceType.DistTypeID
+        WHERE tblDisturbanceType.DefaultDistTypeID = 1;"""
+
+    data = query_to_np_matrix(local_rrdb_path, sql)
 
 
 
@@ -84,4 +103,20 @@ n = NIRSimulator(config)
 #n.load_project_results("MB")
 #n.run(prefix_filter = ["ONW","ONE","QCG","QCL","QCR","NB","NS","PEI","NF","NWT","LB","YT","SKH","UF"])
 for p in ["BCB","BCP","BCMN","BCMS","AB","SK","MB", "PEI"]:
-    compare_disturbance_areas(n, p, r"C:\pre_dist_age_run\validation\disturbance_areas")
+    base_rrdb_path = n.get_base_run_results_path(project_prefix)
+    local_rrdb_path = n.get_local_results_path(project_prefix)
+    #compare_disturbance_areas(
+    #    base_rrdb_path = base_rrdb_path,
+    #    local_rrdb_path = local_rrdb_path,
+    #    project_prefix = p,
+    #    outputdir=os.path.join(
+    #        config["local_working_dir"],
+    #        "validation",
+    #        "disturbance_areas")
+    plot_project_level_pre_dist_age(
+        local_rrdb_path=local_rrdb_path,
+        project_prefix=p,
+        outputdir=os.path.join(
+            config["local_working_dir"],
+            "validation",
+            "project_level_pre_dist_age")
