@@ -62,14 +62,14 @@ def compare_disturbance_areas(base_rrdb_path, local_rrdb_path, project_prefix, o
 
 def load_wildfire_disturbance_rules(disturbance_rules_path):
     disturbance_rules = {}
-    with open('disturbance_rules_path', 'rb') as csvfile:
+    with open(disturbance_rules_path, 'rb') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             if row["disturbance_class"] == "Wildfire":
                 disturbance_rules[int(row["defaultSPUID"])] = int(row["rule_value"])
     return disturbance_rules
 
-def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, outputdir):
+def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, dist_rules, outputdir):
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
 
@@ -80,6 +80,44 @@ def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, outputdir):
         WHERE tblDisturbanceType.DefaultDistTypeID = 1;"""
 
     data = query_to_np_matrix(local_rrdb_path, sql)
+    if data is None:
+        return
+    unique_default_spu = np.unique(data[:,0])
+    unique_default_spu_timesteps = np.unique(data[:,[0,1]], axis=0)
+    by_spu_stats = np.zeros(shape=(len(unique_default_spu), 7))
+    by_spu_timestep_stats = np.zeros(shape=(len(unique_default_spu_timesteps),8))
+
+    for i,u in enumerate(unique_default_spu):
+        rows = data[np.where(data[:,0]==u)]
+        by_spu_stats_row = DescrStatsW(data=rows[:,2],weights=rows[:,3])
+        by_spu_stats[i,:]=np.array(
+            [
+                u, 
+                dist_rules[u],
+                by_spu_stats_row.mean,
+                by_spu_stats_row.data.max(),
+                by_spu_stats_row.data.min(),
+                by_spu_stats_row.std,
+                by_spu_stats_row.var
+            ],
+           dtype=np.float)
+
+    for i,u in enumerate(unique_default_spu_timesteps):
+        rows = data[np.where((data[:,0]==u[0]) & (data[:,1]==u[1]))]
+        by_timestep_stats_row = DescrStatsW(data=rows[:,2],weights=rows[:,3])
+        by_spu_timestep_stats[i,:] = np.array(
+            [
+                u[0],
+                u[1],
+                dist_rules[u[0]],
+                by_timestep_stats_row.mean,
+                by_timestep_stats_row.data.max(),
+                by_timestep_stats_row.data.min(),
+                by_timestep_stats_row.std,
+                by_timestep_stats_row.var
+            ],
+           dtype=np.float)
+
 
 
 
@@ -103,8 +141,8 @@ n = NIRSimulator(config)
 #n.load_project_results("MB")
 #n.run(prefix_filter = ["ONW","ONE","QCG","QCL","QCR","NB","NS","PEI","NF","NWT","LB","YT","SKH","UF"])
 for p in ["BCB","BCP","BCMN","BCMS","AB","SK","MB", "PEI"]:
-    base_rrdb_path = n.get_base_run_results_path(project_prefix)
-    local_rrdb_path = n.get_local_results_path(project_prefix)
+    base_rrdb_path = n.get_base_run_results_path(p)
+    local_rrdb_path = n.get_local_results_path(p)
     #compare_disturbance_areas(
     #    base_rrdb_path = base_rrdb_path,
     #    local_rrdb_path = local_rrdb_path,
@@ -112,11 +150,12 @@ for p in ["BCB","BCP","BCMN","BCMS","AB","SK","MB", "PEI"]:
     #    outputdir=os.path.join(
     #        config["local_working_dir"],
     #        "validation",
-    #        "disturbance_areas")
+    #        "disturbance_areas"))
     plot_project_level_pre_dist_age(
         local_rrdb_path=local_rrdb_path,
         project_prefix=p,
+        dist_rules = load_wildfire_disturbance_rules(config["dist_rules_path"]),
         outputdir=os.path.join(
             config["local_working_dir"],
             "validation",
-            "project_level_pre_dist_age")
+            "project_level_pre_dist_age"))
