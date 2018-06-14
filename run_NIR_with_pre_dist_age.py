@@ -84,8 +84,8 @@ def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, dist_rules,
         return
     unique_default_spu = np.unique(data[:,0])
     unique_default_spu_timesteps = np.unique(data[:,[0,1]], axis=0)
-    by_spu_stats = np.zeros(shape=(len(unique_default_spu), 7))
-    by_spu_timestep_stats = np.zeros(shape=(len(unique_default_spu_timesteps),8))
+    by_spu_stats = np.zeros(shape=(len(unique_default_spu), 8))
+    by_spu_timestep_stats = np.zeros(shape=(len(unique_default_spu_timesteps),9))
 
     for i,u in enumerate(unique_default_spu):
         rows = data[np.where(data[:,0]==u)]
@@ -95,6 +95,7 @@ def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, dist_rules,
                 u, 
                 dist_rules[u],
                 by_spu_stats_row.mean,
+                by_spu_stats_row.data.size,
                 by_spu_stats_row.data.max(),
                 by_spu_stats_row.data.min(),
                 by_spu_stats_row.std,
@@ -105,12 +106,14 @@ def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, dist_rules,
     for i,u in enumerate(unique_default_spu_timesteps):
         rows = data[np.where((data[:,0]==u[0]) & (data[:,1]==u[1]))]
         by_timestep_stats_row = DescrStatsW(data=rows[:,2],weights=rows[:,3])
+
         by_spu_timestep_stats[i,:] = np.array(
             [
                 u[0],
                 u[1],
                 dist_rules[u[0]],
                 by_timestep_stats_row.mean,
+                by_timestep_stats_row.data.size,
                 by_timestep_stats_row.data.max(),
                 by_timestep_stats_row.data.min(),
                 by_timestep_stats_row.std,
@@ -119,7 +122,50 @@ def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, dist_rules,
            dtype=np.float)
 
 
+    np.savetxt(fname=os.path.join(outputdir, "wildfire_pre_dist_ages_spu_{}.csv".format(project_prefix)),
+               X=by_spu_stats,
+               header="defaultSPU,reentry_rule_value,area_weighted_mean_age,n_disturbances,max_age,min_age,std_age,var_age",
+               delimiter=",")
 
+    np.savetxt(fname=os.path.join(outputdir, "wildfire_pre_dist_ages_spu_timestep_{}.csv".format(project_prefix)),
+               X=by_spu_timestep_stats,
+               header="defaultSPU,timestep,reentry_rule_value,area_weighted_mean_age,n_disturbances,max_age,min_age,std_age,var_age",
+               delimiter=",")
+
+    plt.figure(figsize=(15,12))
+
+    legend = []
+    markers = ['v','^','<','>','1','2','3','4','s','p', '*']
+    colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+    for i, u in enumerate(unique_default_spu):
+        rows = by_spu_timestep_stats[np.where(by_spu_timestep_stats[:,0]==u)]
+        plt.plot(rows[:,1], rows[:,2], color=colors[i], marker=markers[i], markerfacecolor='None')
+        plt.plot(rows[:,1], rows[:,3], color=colors[i], marker=markers[i], markerfacecolor='None', linestyle = 'None')
+        legend.append("re-entry rule SPU {}".format(int(u)))
+        legend.append("area weighted mean age at fire SPU {}".format(int(u)))
+    
+
+    plt.title("NIR Project '{}' pre dist area weighted mean age by year for multiple default SPUs".format(project_prefix))
+    plt.ylabel("Area weighted mean age [years]")
+    plt.xlabel("Year")
+    plt.legend(legend, loc="upper left") 
+    plt.tight_layout()
+    plt.savefig(os.path.join(outputdir, "pre_dist_age_by_year_{}.png".format(project_prefix)))
+    plt.close("all")
+
+    plt.figure(figsize=(15,12))
+    plt.plot(by_spu_stats[:,0], by_spu_stats[:,1], marker='*', markerfacecolor='None', linestyle = 'None')
+    plt.plot(by_spu_stats[:,0], by_spu_stats[:,2], marker='*', markerfacecolor='None', linestyle = 'None')
+    legend.append("re-entry rule values".format(int(u)))
+    legend.append("area weighted mean age".format(int(u)))
+
+    plt.title("NIR Project '{}' pre dist area weighted mean age by default SPU".format(project_prefix))
+    plt.ylabel("Area weighted mean age, or re-entry rule value [years]")
+    plt.xlabel("Spatial Unit ID")
+    plt.legend(legend, loc="upper left")
+    plt.tight_layout()
+    plt.savefig(os.path.join(outputdir, "pre_dist_age_by_spu_{}.png".format(project_prefix)))
+    plt.close("all")
 
 config = {
     "cbm_exe_path": r"M:\CBM Tools and Development\Builds\CBMBuilds\20180611_extended_kf5_passive_rule",
@@ -138,24 +184,22 @@ config = {
 }
 
 n = NIRSimulator(config)
-#n.load_project_results("MB")
 #n.run(prefix_filter = ["ONW","ONE","QCG","QCL","QCR","NB","NS","PEI","NF","NWT","LB","YT","SKH","UF"])
-for p in ["BCB","BCP","BCMN","BCMS","AB","SK","MB", "PEI"]:
+for p in ["BCB","BCP","BCMN","BCMS","AB","SK","MB","ONW","ONE","QCG","QCL","QCR","NB","NS","PEI"]:
     base_rrdb_path = n.get_base_run_results_path(p)
     local_rrdb_path = n.get_local_results_path(p)
-    #compare_disturbance_areas(
-    #    base_rrdb_path = base_rrdb_path,
-    #    local_rrdb_path = local_rrdb_path,
-    #    project_prefix = p,
-    #    outputdir=os.path.join(
-    #        config["local_working_dir"],
-    #        "validation",
-    #        "disturbance_areas"))
+    compare_disturbance_areas(
+        base_rrdb_path = base_rrdb_path,
+        local_rrdb_path = local_rrdb_path,
+        project_prefix = p,
+        outputdir=os.path.join(
+            config["local_working_dir"],
+            "validation",
+            "disturbance_areas"))
     plot_project_level_pre_dist_age(
         local_rrdb_path=local_rrdb_path,
         project_prefix=p,
         dist_rules = load_wildfire_disturbance_rules(config["dist_rules_path"]),
         outputdir=os.path.join(
             config["local_working_dir"],
-            "validation",
             "project_level_pre_dist_age"))
