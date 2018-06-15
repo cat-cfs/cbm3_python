@@ -416,7 +416,16 @@ class Rollup(object):
             dt_kf6.DefaultDistTypeID AS kf6,
             tblPreDistAge.PreDisturbanceAge,
             Sum(tblPreDistAge.AreaDisturbed) AS AreaDisturbed
-            FROM (tblSPU INNER JOIN (((tblPreDistAge INNER JOIN tblDisturbanceType AS dt_kf5 ON tblPreDistAge.kf5 = dt_kf5.DistTypeID) INNER JOIN tblDisturbanceType AS dt_kf6 ON tblPreDistAge.kf6 = dt_kf6.DistTypeID) INNER JOIN tblDisturbanceType ON tblPreDistAge.DistTypeID = tblDisturbanceType.DistTypeID) ON tblSPU.SPUID = tblPreDistAge.SPUID)
+            FROM (tblSPU INNER JOIN 
+            (
+                (
+                    (tblPreDistAge INNER JOIN tblDisturbanceType AS dt_kf5 ON abs(Cint(tblPreDistAge.kf5)) = dt_kf5.DistTypeID)
+                    INNER JOIN tblDisturbanceType AS dt_kf6 ON tblPreDistAge.kf6 = dt_kf6.DistTypeID
+                ) 
+                INNER JOIN tblDisturbanceType ON tblPreDistAge.DistTypeID = tblDisturbanceType.DistTypeID
+                )
+               ON tblSPU.SPUID = tblPreDistAge.SPUID
+            )
             in '{0}'
             GROUP BY 
             tblSPU.DefaultSPUID,

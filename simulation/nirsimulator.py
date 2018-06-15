@@ -69,7 +69,7 @@ class NIRSimulator(object):
         if project_prefix == "AF":
 
             prepare_afforestation_db(self.get_local_project_path(project_prefix),
-                                     self.config["start_year"], self.config["end_year"])
+                                     self.config["af_start_year"], self.config["af_end_year"])
             self.run_af_simulation( 
                 local_project_path = self.get_local_project_path(project_prefix),
                 local_aidb_path=self.config["local_aidb_path"],

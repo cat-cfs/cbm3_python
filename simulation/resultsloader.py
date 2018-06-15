@@ -210,7 +210,7 @@ INSERT INTO tblDistIndicators
             accessDB.ExecuteQuery(qryFormatted)
 
     def printProgress(self, fileLen, fluxIndPath, recordNum):
-        if ((recordNum) % (fileLen/10)) == 0 or recordNum == fileLen:
+        if ((recordNum-1) % (fileLen/10)) == 0 or recordNum == fileLen:
             logging.info("load file {0}: {1}/{2} ({3})".format(
                 fluxIndPath, recordNum, fileLen, 
                 self.floored_percentage(float(recordNum)/fileLen, 2)))
