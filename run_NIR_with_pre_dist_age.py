@@ -156,7 +156,7 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
 
-    sql = "SELECT tblPreDistAge.PreDisturbanceAge, tblPreDistAge.AreaDisturbed FROM tblPreDistAge;"
+    sql = "SELECT tblPreDistAge.PreDisturbanceAge, tblPreDistAge.AreaDisturbed FROM tblPreDistAge where tblPreDistAge.DistTypeID = 1;"
     data_national = query_to_np_matrix(rollup_path, sql)
     national_stats = DescrStatsW(data = data_national[:,0], weights=data_national[:,1])
     with open(os.path.join(outputdir, "national_level.csv"), 'w') as csvfile:
@@ -191,12 +191,12 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
             admin_filter_sql = """
                 SELECT tblSPUDefault.AdminBoundaryID, tblPreDistAge.PreDisturbanceAge, tblPreDistAge.AreaDisturbed
                 FROM tblPreDistAge INNER JOIN tblSPUDefault ON tblPreDistAge.SPUID = tblSPUDefault.SPUID
-                WHERE tblSPUDefault.AdminBoundaryID=?;
+                WHERE tblSPUDefault.AdminBoundaryID=? and tblPreDistAge.DistTypeID = 1;
             """
             data_admin = query_to_np_matrix(rollup_path, admin_filter_sql, (admin.AdminBoundaryID,))
             if data_admin is None:
                 continue
-            national_admin_stats = DescrStatsW(data = data_admin[:,0], weights=data_admin[:,1])
+            national_admin_stats = DescrStatsW(data = data_admin[:,1], weights=data_admin[:,2])
             writer.writerow({
                 "admin_boundary": admin.AdminBoundaryName,
                 "weighted_mean_age": national_admin_stats.mean,
@@ -214,12 +214,12 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
             eco_filter_sql = """
                 SELECT tblSPUDefault.EcoBoundaryID, tblPreDistAge.PreDisturbanceAge, tblPreDistAge.AreaDisturbed
                 FROM tblPreDistAge INNER JOIN tblSPUDefault ON tblPreDistAge.SPUID = tblSPUDefault.SPUID
-                WHERE tblSPUDefault.EcoBoundaryID=?;
+                WHERE tblSPUDefault.EcoBoundaryID=? and tblPreDistAge.DistTypeID = 1;
                 """
             data_eco = query_to_np_matrix(rollup_path, eco_filter_sql, (eco.EcoBoundaryID,))
             if data_eco is None:
                 continue
-            national_eco_stats = DescrStatsW(data = data_eco[:,0], weights=data_eco[:,1])
+            national_eco_stats = DescrStatsW(data = data_eco[:,1], weights=data_eco[:,2])
             writer.writerow({
                 "eco_boundary": eco.EcoBoundaryName,
                 "weighted_mean_age": national_eco_stats.mean,
@@ -237,16 +237,16 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
             spu_filter_sql = """
                 SELECT tblSPUDefault.SPUID, tblPreDistAge.PreDisturbanceAge, tblPreDistAge.AreaDisturbed
                 FROM tblPreDistAge INNER JOIN tblSPUDefault ON tblPreDistAge.SPUID = tblSPUDefault.SPUID
-                WHERE tblSPUDefault.SPUID=?;
+                WHERE tblSPUDefault.SPUID=? and tblPreDistAge.DistTypeID = 1;
                 """
             data_spu = query_to_np_matrix(rollup_path, spu_filter_sql, (spu.SPUID,))
             if data_spu is None:
                 continue
-            national_spu_stats = DescrStatsW(data = data_spu[:,0], weights=data_spu[:,1])
+            national_spu_stats = DescrStatsW(data = data_spu[:,1], weights=data_spu[:,2])
             writer.writerow({
-                "reporting_unit_id": spus.SPUID,
-                "admin_boundary": spus.AdminBoundaryName,
-                "eco_boundary": spus.EcoBoundaryName,
+                "reporting_unit_id": spu.SPUID,
+                "admin_boundary": spu.AdminBoundaryName,
+                "eco_boundary": spu.EcoBoundaryName,
                 "weighted_mean_age": national_spu_stats.mean,
                 "n_events": national_spu_stats.data.size, 
                 "max_age": national_spu_stats.data.max(),
