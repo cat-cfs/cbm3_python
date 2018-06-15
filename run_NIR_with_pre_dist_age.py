@@ -194,6 +194,8 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
                 WHERE tblSPUDefault.AdminBoundaryID=?;
             """
             data_admin = query_to_np_matrix(rollup_path, admin_filter_sql, (admin.AdminBoundaryID,))
+            if data_admin is None:
+                continue
             national_admin_stats = DescrStatsW(data = data_admin[:,0], weights=data_admin[:,1])
             writer.writerow({
                 "admin_boundary": admin.AdminBoundaryName,
@@ -215,6 +217,8 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
                 WHERE tblSPUDefault.EcoBoundaryID=?;
                 """
             data_eco = query_to_np_matrix(rollup_path, eco_filter_sql, (eco.EcoBoundaryID,))
+            if data_eco is None:
+                continue
             national_eco_stats = DescrStatsW(data = data_eco[:,0], weights=data_eco[:,1])
             writer.writerow({
                 "eco_boundary": eco.EcoBoundaryName,
@@ -236,7 +240,9 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
                 WHERE tblSPUDefault.SPUID=?;
                 """
             data_spu = query_to_np_matrix(rollup_path, spu_filter_sql, (spu.SPUID,))
-            national_spu_stats = DescrStatsW(data = data_eco[:,0], weights=data_eco[:,1])
+            if data_spu is None:
+                continue
+            national_spu_stats = DescrStatsW(data = data_spu[:,0], weights=data_spu[:,1])
             writer.writerow({
                 "reporting_unit_id": spus.SPUID,
                 "admin_boundary": spus.AdminBoundaryName,
