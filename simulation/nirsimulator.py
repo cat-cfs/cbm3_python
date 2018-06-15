@@ -6,7 +6,8 @@ from simulation.simulator import Simulator
 from simulation.resultsloader import ResultsLoader
 from simulation.createaccountingrules import CreateAccountingRules
 from simulation.rollup import Rollup
-
+from nir_sql.afforestation_fixes import *
+from nir_sql.unmanaged_forest_fixes import *
 class NIRSimulator(object):
 
     def __init__(self, config):
@@ -55,18 +56,20 @@ class NIRSimulator(object):
             self.run_cbm(p)
 
             logging.info("{}: Load CBM Results".format(p))
-            local_results_paths.append(self.load_project_results(p))
+            rp = self.load_project_results(p)
+            if p == "UF":
+                run_uf_results_fixes(rp)
+            if p == "AF":
+                run_af_results_fixes(rp)
+            local_results_paths.append(rp)
 
-        result["local_rollup_path"] = os.path.join(c["local_working_dir"], c["local_rollup_filename"])
-        logging.info("Rolling up CBM Results")
-        self.do_rollup(
-            rrdbs=local_results_paths,
-            rollup_output_path= result["local_rollup_path"],
-            local_aidb_path= c["local_aidb_path"])
-        logging.info("CBM runs complete")
+        return local_results_paths
 
     def run_cbm(self, project_prefix):
         if project_prefix == "AF":
+
+            prepare_afforestation_db(self.get_local_project_path(project_prefix),
+                                     self.config["start_year"], self.config["end_year"])
             self.run_af_simulation( 
                 local_project_path = self.get_local_project_path(project_prefix),
                 local_aidb_path=self.config["local_aidb_path"],
@@ -93,14 +96,12 @@ class NIRSimulator(object):
                           cbm_wd,
                           r"C:\Program Files (x86)\Operational-Scale CBM-CFS3")
             s.CleanupRunDirectory()
-            s.CopyToWorkingDir(os.path.join(ProjectDir,ProjectFileName))
+            s.CopyToWorkingDir(local_project_path)
             s.CreateCBMFiles()
             
             s.CopyCBMExecutable()
             s.DumpMakelistSVLs()
             s.RunCBM()
-            s.LoadCBMResults()
-            s.CopyTempFiles()
 
     def run_cbm_simulation(self, local_project_path, local_aidb_path,
                            cbm_exe_path, dist_classes_path, dist_rules_path):

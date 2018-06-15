@@ -217,6 +217,8 @@ config = {
     "local_results_format": "{}_pre_dist_age_results.accdb",
     "local_rollup_filename": "rollup_db.accdb",
 
+    "start_year": 1990,
+    "end_year": 2016,
     "project_prefixes": ["BCB","BCP","BCMN","BCMS","AB","SK","MB","ONW","ONE","QCG","QCL","QCR","NB","NS","PEI","NF","NWT","LB","YT","SKH","UF","AF"]
 }
 
