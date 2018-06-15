@@ -9,13 +9,59 @@ from statsmodels.stats.weightstats import DescrStatsW
 
 start_logging("run_nir_with_pre_dist_age.log")
 
-def query_to_np_matrix(db_path, query):
+def query_to_np_matrix(db_path, query, params=None):
     with AccessDB(db_path) as db:
-        res = db.Query(query).fetchall()
+        res = db.Query(query,params).fetchall()
         if len(res) > 0:
             np_result = np.array([[float(y) for y in x] for x in res], dtype=np.float)
             return np_result
         return None
+
+def qaqc_comparison_plot_wide_data(data1, data2, legend_labels, plot_title, xlabel, ylabel, out_img_path):
+    """
+    plot a comparison between 2 numeric tables of data
+    with columns:
+    x, y0, y1, ..., yn
+
+    The pair of tables must have equivalent columns and rows
+
+    Creates 2 plots 
+    1: the value of each y column with x as the x axis
+
+    2: the relative difference of the corresponding y columns for each table
+    """
+
+    if data1.shape != data2.shape:
+        raise AssertionError("data1 and data2 must have equivalent shape")
+    n_y = data1.shape[1] - 1 
+    rel_dif = np.abs((data1 - data2) / (data1 + data2)/2)
+    rel_dif[:,0] = data1[:,0]
+    f, arr = plt.subplots(2, 1)
+    f.set_figwidth(11)
+    f.set_figheight(7)
+    
+    arr[0].set_title(plot_title)
+    arr[1].set_title("{} relative differences".format(plot_title))
+    arr[0].set_ylabel(ylabel)
+    arr[1].set_ylabel("relative differences")
+    arr[0].set_xlabel(xlabel)
+    arr[1].set_xlabel(xlabel)
+    for y in range(0,n_y):
+        col_idx = y+1
+
+        arr[0].plot(data1[:,0], data1[:,col_idx], linestyle='--')
+        arr[0].plot(data2[:,0], data2[:,col_idx], linestyle=':')
+        arr[1].plot(rel_dif[:,0], rel_dif[:,col_idx])
+
+    arr[0].legend(legend_labels, loc="upper left") 
+    plt.tight_layout()
+    plt.savefig(out_img_path)
+    plt.close("all")
+#   
+
+#def qaqc_comparison_plot_long_data(data1, data2):
+#    if data1.shape != data2.shape:
+#        raise AssertionError
 
 def compare_forest_areas(base_rrdb_path, local_rrdb_path, project_prefix, outputdir):
     if not os.path.exists(outputdir):
@@ -105,6 +151,104 @@ def load_wildfire_disturbance_rules(disturbance_rules_path):
             if row["disturbance_class"] == "Wildfire":
                 disturbance_rules[int(row["defaultSPUID"])] = int(row["rule_value"])
     return disturbance_rules
+
+def plot_national_level_pre_dist_age(rollup_path, outputdir):
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
+
+    sql = "SELECT tblPreDistAge.PreDisturbanceAge, tblPreDistAge.AreaDisturbed FROM tblPreDistAge;"
+    data_national = query_to_np_matrix(rollup_path, sql)
+    national_stats = DescrStatsW(data = data_national[:,0], weights=data_national[:,1])
+    with open(os.path.join(outputdir, "national_level.csv"), 'w') as csvfile:
+        fieldnames = ["weighted_mean_age", "n_events", "max_age", "min_age", "weighted_std_dev", "weighted_variance"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator='\n')
+        writer.writeheader()
+        writer.writerow({
+            "weighted_mean_age": national_stats.mean,
+            "n_events": national_stats.data.size, 
+            "max_age": national_stats.data.max(),
+            "min_age": national_stats.data.min(),
+            "weighted_std_dev": national_stats.std,
+             "weighted_variance": national_stats.var})
+
+    sql_admin = "SELECT tblAdminBoundaryDefault.AdminBoundaryID, tblAdminBoundaryDefault.AdminBoundaryName FROM tblAdminBoundaryDefault;"
+    sql_eco = "SELECT tblEcoboundaryDefault.EcoBoundaryID, tblEcoboundaryDefault.EcoBoundaryName FROM tblEcoboundaryDefault;" 
+    sql_spu = """
+        SELECT tblSPUDefault.SPUID, tblAdminBoundaryDefault.AdminBoundaryName, tblEcoboundaryDefault.EcoBoundaryName
+        FROM (tblSPUDefault INNER JOIN tblAdminBoundaryDefault ON tblSPUDefault.AdminBoundaryID = tblAdminBoundaryDefault.AdminBoundaryID) INNER JOIN tblEcoboundaryDefault ON tblSPUDefault.EcoBoundaryID = tblEcoboundaryDefault.EcoBoundaryID
+        ORDER BY tblSPUDefault.SPUID;"""
+
+    with AccessDB(rollup_path) as rrdb:
+        admin_boundaries = list(rrdb.Query(sql_admin))
+        eco_boundaries = list(rrdb.Query(sql_eco))
+        spus = list(rrdb.Query(sql_spu))
+
+    with open(os.path.join(outputdir, "national_level_by_admin.csv"), 'w') as csvfile:
+        fieldnames = ["admin_boundary", "weighted_mean_age", "n_events", "max_age", "min_age", "weighted_std_dev", "weighted_variance"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator='\n')
+        writer.writeheader()
+        for admin in admin_boundaries:
+            admin_filter_sql = """
+                SELECT tblSPUDefault.AdminBoundaryID, tblPreDistAge.PreDisturbanceAge, tblPreDistAge.AreaDisturbed
+                FROM tblPreDistAge INNER JOIN tblSPUDefault ON tblPreDistAge.SPUID = tblSPUDefault.SPUID
+                WHERE tblSPUDefault.AdminBoundaryID=?;
+            """
+            data_admin = query_to_np_matrix(rollup_path, admin_filter_sql, (admin.AdminBoundaryID,))
+            national_admin_stats = DescrStatsW(data = data_admin[:,0], weights=data_admin[:,1])
+            writer.writerow({
+                "admin_boundary": admin.AdminBoundaryName,
+                "weighted_mean_age": national_admin_stats.mean,
+                "n_events": national_admin_stats.data.size, 
+                "max_age": national_admin_stats.data.max(),
+                "min_age": national_admin_stats.data.min(),
+                "weighted_std_dev": national_admin_stats.std,
+                 "weighted_variance": national_admin_stats.var})
+
+    with open(os.path.join(outputdir, "national_level_by_eco.csv"), 'w') as csvfile:
+        fieldnames = ["eco_boundary", "weighted_mean_age", "n_events", "max_age", "min_age", "weighted_std_dev", "weighted_variance"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator='\n')
+        writer.writeheader()
+        for eco in eco_boundaries:
+            eco_filter_sql = """
+                SELECT tblSPUDefault.EcoBoundaryID, tblPreDistAge.PreDisturbanceAge, tblPreDistAge.AreaDisturbed
+                FROM tblPreDistAge INNER JOIN tblSPUDefault ON tblPreDistAge.SPUID = tblSPUDefault.SPUID
+                WHERE tblSPUDefault.EcoBoundaryID=?;
+                """
+            data_eco = query_to_np_matrix(rollup_path, eco_filter_sql, (eco.EcoBoundaryID,))
+            national_eco_stats = DescrStatsW(data = data_eco[:,0], weights=data_eco[:,1])
+            writer.writerow({
+                "eco_boundary": eco.EcoBoundaryName,
+                "weighted_mean_age": national_eco_stats.mean,
+                "n_events": national_eco_stats.data.size, 
+                "max_age": national_eco_stats.data.max(),
+                "min_age": national_eco_stats.data.min(),
+                "weighted_std_dev": national_eco_stats.std,
+                 "weighted_variance": national_eco_stats.var})
+
+    with open(os.path.join(outputdir, "national_level_by_spu.csv"), 'w') as csvfile:
+        fieldnames = ["reporting_unit_id", "admin_boundary", "eco_boundary", "weighted_mean_age", "n_events", "max_age", "min_age", "weighted_std_dev", "weighted_variance"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator='\n')
+        writer.writeheader()
+        for spu in spus:
+            spu_filter_sql = """
+                SELECT tblSPUDefault.SPUID, tblPreDistAge.PreDisturbanceAge, tblPreDistAge.AreaDisturbed
+                FROM tblPreDistAge INNER JOIN tblSPUDefault ON tblPreDistAge.SPUID = tblSPUDefault.SPUID
+                WHERE tblSPUDefault.SPUID=?;
+                """
+            data_spu = query_to_np_matrix(rollup_path, spu_filter_sql, (spu.SPUID,))
+            national_spu_stats = DescrStatsW(data = data_eco[:,0], weights=data_eco[:,1])
+            writer.writerow({
+                "reporting_unit_id": spus.SPUID,
+                "admin_boundary": spus.AdminBoundaryName,
+                "eco_boundary": spus.EcoBoundaryName,
+                "weighted_mean_age": national_spu_stats.mean,
+                "n_events": national_spu_stats.data.size, 
+                "max_age": national_spu_stats.data.max(),
+                "min_age": national_spu_stats.data.min(),
+                "weighted_std_dev": national_spu_stats.std,
+                 "weighted_variance": national_spu_stats.var})
+
+
 
 def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, dist_rules, outputdir):
     if not os.path.exists(outputdir):
@@ -217,29 +361,37 @@ config = {
     "local_results_format": "{}_pre_dist_age_results.accdb",
     "local_rollup_filename": "rollup_db.accdb",
 
-    "start_year": 1990,
-    "end_year": 2016,
+    "af_start_year": 1970,
+    "af_end_year": 2016,
     "project_prefixes": ["BCB","BCP","BCMN","BCMS","AB","SK","MB","ONW","ONE","QCG","QCL","QCR","NB","NS","PEI","NF","NWT","LB","YT","SKH","UF","AF"]
 }
 
 n = NIRSimulator(config)
-n.run(prefix_filter = ["AF"])
+#n.run(prefix_filter = ["UF"])
+rollup_path = os.path.join(config["local_working_dir"],"pre_dist_age_rollup.mdb")
+
 #n.do_rollup(
 #    rrdbs = [n.get_local_results_path(x) for x in config["project_prefixes"]],
-#    rollup_output_path = os.path.join(config["local_working_dir"],"pre_dist_age_rollup.mdb"),
+#    rollup_output_path = rollup_path,
 #    local_aidb_path= config["local_aidb_path"])
 
-for p in ["BCB","BCP","BCMN","BCMS","AB","SK","MB","ONW","ONE","QCG","QCL","QCR","NB","NS","PEI","NF","NWT","LB","YT","SKH","UF"]:
+for p in ["AF"]: #config["project_prefixes"]:
     base_rrdb_path = n.get_base_run_results_path(p)
     local_rrdb_path = n.get_local_results_path(p)
-    compare_forest_areas(
-        base_rrdb_path = base_rrdb_path,
-        local_rrdb_path = local_rrdb_path,
-        project_prefix = p,
+    plot_national_level_pre_dist_age(
+        rollup_path= rollup_path,
         outputdir=os.path.join(
             config["local_working_dir"],
-            "validation",
-            "forest_areas"))
+            "national_level_pre_dist_age"))
+    #compare_forest_areas(
+    #    base_rrdb_path = base_rrdb_path,
+    #    local_rrdb_path = local_rrdb_path,
+    #    project_prefix = p,
+    #    outputdir=os.path.join(
+    #        config["local_working_dir"],
+    #        "validation",
+    #        "forest_areas"))
+    #
     #compare_disturbance_areas(
     #    base_rrdb_path = base_rrdb_path,
     #    local_rrdb_path = local_rrdb_path,
@@ -248,6 +400,7 @@ for p in ["BCB","BCP","BCMN","BCMS","AB","SK","MB","ONW","ONE","QCG","QCL","QCR"
     #        config["local_working_dir"],
     #        "validation",
     #        "disturbance_areas"))
+    #
     #plot_project_level_pre_dist_age(
     #    local_rrdb_path=local_rrdb_path,
     #    project_prefix=p,
