@@ -3,7 +3,15 @@ import logging
 
 def run_uf_results_fixes(uf_rrdb_path):
 
+
     sql =[
+        "CREATE TABLE tblFixLandClasses (FromClass Int, OldToClass Int, NewToClass Int);",
+        "INSERT INTO tblFixLandClasses (FromClass,OldToClass,NewToClass) VALUES (16,13,19);",
+        "INSERT INTO tblFixLandClasses (FromClass,OldToClass,NewToClass) VALUES (16,14,20);",
+        "INSERT INTO tblFixLandClasses (FromClass,OldToClass,NewToClass) VALUES (19,0,3);",
+        "INSERT INTO tblFixLandClasses (FromClass,OldToClass,NewToClass) VALUES (20,0,4);",
+
+
         """SELECT tblFixLandClasses.*, * INTO tblFixLandClasses
         FROM tblFixLandClasses IN '\\dstore.pfc.forestry.ca\nfcmars\NIR_VAULT\NIR2015_6March2015\03_Analysis\02_Production\02_Scenarios\07_HarvestUpdate\UF\20\20_Final_For_Rollup.mdb';""",
 
