@@ -17,6 +17,43 @@ def query_to_np_matrix(db_path, query):
             return np_result
         return None
 
+def compare_forest_areas(base_rrdb_path, local_rrdb_path, project_prefix, outputdir):
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
+    # compares disturbance areas between the new pre-dist 
+    # age indicator and base dist indicators to check for bugs
+
+    sql = """
+        SELECT tblAgeIndicators.TimeStep, Sum(tblAgeIndicators.Area) AS SumOfArea, tblAgeIndicators.LandClassID
+        FROM tblAgeIndicators
+        GROUP BY tblAgeIndicators.TimeStep, tblAgeIndicators.LandClassID
+        HAVING (((tblAgeIndicators.LandClassID)=0));
+        """
+
+    local_np_res = query_to_np_matrix(local_rrdb_path, sql)
+    base_np_res = query_to_np_matrix(base_rrdb_path, sql)
+    rel_dif = np.abs((local_np_res - base_np_res) / (local_np_res + base_np_res)/2)
+    rel_dif[:,0] = local_np_res[:,0]
+    np.savetxt(fname=os.path.join(outputdir, "forest_area_comparison_{}.csv".format(project_prefix)),
+               X=np.column_stack((local_np_res, base_np_res[:,1], rel_dif[:,1])),
+               header="timestep,predistage_area,distindicator_area,relative_difference",
+               delimiter=",")
+    f, arr = plt.subplots(2, 1)
+    f.set_figwidth(11)
+    f.set_figheight(7)
+    arr[0].set_title("{} Forest Areas Validation: Comparison between base run, and local run".format(project_prefix))
+    arr[0].set_ylabel("Area [ha]")
+    arr[0].plot(local_np_res[:,0], local_np_res[:,1], linestyle='--')
+    arr[0].plot(base_np_res[:,0], base_np_res[:,1], linestyle=':')
+    arr[1].set_title("{} Forest Areas Validation: Differences".format(project_prefix))
+    arr[1].set_ylabel("Area Relative Differences [ha]")
+    arr[1].plot(rel_dif[:,0], rel_dif[:,1])
+
+    arr[0].legend(["local_run", "base_run"], loc="upper left") 
+    plt.tight_layout()
+    plt.savefig(os.path.join(outputdir, "forest_area_comparison_{}.png".format(project_prefix)))
+    plt.close("all")
+
 def compare_disturbance_areas(base_rrdb_path, local_rrdb_path, project_prefix, outputdir):
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
@@ -184,27 +221,35 @@ config = {
 }
 
 n = NIRSimulator(config)
-#n.run(prefix_filter = None)
-n.do_rollup(
-    rrdbs = [n.get_local_results_path(x) for x in config["project_prefixes"]],
-    rollup_output_path = os.path.join(config["local_working_dir"],"pre_dist_age_rollup.mdb"),
-    local_aidb_path= config["local_aidb_path"])
+n.run(prefix_filter = ["AF"])
+#n.do_rollup(
+#    rrdbs = [n.get_local_results_path(x) for x in config["project_prefixes"]],
+#    rollup_output_path = os.path.join(config["local_working_dir"],"pre_dist_age_rollup.mdb"),
+#    local_aidb_path= config["local_aidb_path"])
 
-for p in ["BCB","BCP","BCMN","BCMS","AB","SK","MB","ONW","ONE","QCG","QCL","QCR","NB","NS","PEI"]:
+for p in ["BCB","BCP","BCMN","BCMS","AB","SK","MB","ONW","ONE","QCG","QCL","QCR","NB","NS","PEI","NF","NWT","LB","YT","SKH","UF"]:
     base_rrdb_path = n.get_base_run_results_path(p)
     local_rrdb_path = n.get_local_results_path(p)
-    compare_disturbance_areas(
+    compare_forest_areas(
         base_rrdb_path = base_rrdb_path,
         local_rrdb_path = local_rrdb_path,
         project_prefix = p,
         outputdir=os.path.join(
             config["local_working_dir"],
             "validation",
-            "disturbance_areas"))
-    plot_project_level_pre_dist_age(
-        local_rrdb_path=local_rrdb_path,
-        project_prefix=p,
-        dist_rules = load_wildfire_disturbance_rules(config["dist_rules_path"]),
-        outputdir=os.path.join(
-            config["local_working_dir"],
-            "project_level_pre_dist_age"))
+            "forest_areas"))
+    #compare_disturbance_areas(
+    #    base_rrdb_path = base_rrdb_path,
+    #    local_rrdb_path = local_rrdb_path,
+    #    project_prefix = p,
+    #    outputdir=os.path.join(
+    #        config["local_working_dir"],
+    #        "validation",
+    #        "disturbance_areas"))
+    #plot_project_level_pre_dist_age(
+    #    local_rrdb_path=local_rrdb_path,
+    #    project_prefix=p,
+    #    dist_rules = load_wildfire_disturbance_rules(config["dist_rules_path"]),
+    #    outputdir=os.path.join(
+    #        config["local_working_dir"],
+    #        "project_level_pre_dist_age"))

@@ -13,10 +13,17 @@ class NIRSimulator(object):
         self.config = config
 
     def get_base_project_path(self, project_prefix):
+        
         return self.GetAccessDBPathFromDir(
             os.path.join(self.config["base_project_dir"], project_prefix))
 
     def get_base_run_results_path(self, project_prefix, results_dir="RESULTS"):
+        if project_prefix == "UF" or project_prefix == "AF":
+            #special case: uf and af have nonstandard queries and 2 copies of RRDB
+            return self.GetAccessDBPathFromDir(
+                        os.path.join(self.config["base_project_dir"],
+                        project_prefix, results_dir), newest = True)
+
         return self.GetAccessDBPathFromDir(
             os.path.join(self.config["base_project_dir"], 
                          project_prefix, results_dir))
@@ -59,6 +66,13 @@ class NIRSimulator(object):
         logging.info("CBM runs complete")
 
     def run_cbm(self, project_prefix):
+        if project_prefix == "AF":
+            self.run_af_simulation( 
+                local_project_path = self.get_local_project_path(project_prefix),
+                local_aidb_path=self.config["local_aidb_path"],
+                cbm_exe_path= self.config["cbm_exe_path"])
+            return
+
         self.run_cbm_simulation(
             local_project_path = self.get_local_project_path(project_prefix),
             local_aidb_path=self.config["local_aidb_path"],
@@ -66,6 +80,27 @@ class NIRSimulator(object):
             dist_classes_path=self.config["dist_classes_path"],
             dist_rules_path=self.config["dist_rules_path"])
 
+    def run_af_simulation(self,local_project_path, local_aidb_path,
+                           cbm_exe_path):
+        with AIDB(local_aidb_path) as aidb, \
+             AccessDB(local_project_path) as proj:
+            aidb.DeleteProjectsFromAIDB()
+            simId = aidb.AddProjectToAIDB(proj)
+            cbm_wd = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp"
+            s = Simulator(cbm_exe_path,
+                          simId,
+                          os.path.dirname(local_project_path),
+                          cbm_wd,
+                          r"C:\Program Files (x86)\Operational-Scale CBM-CFS3")
+            s.CleanupRunDirectory()
+            s.CopyToWorkingDir(os.path.join(ProjectDir,ProjectFileName))
+            s.CreateCBMFiles()
+            
+            s.CopyCBMExecutable()
+            s.DumpMakelistSVLs()
+            s.RunCBM()
+            s.LoadCBMResults()
+            s.CopyTempFiles()
 
     def run_cbm_simulation(self, local_project_path, local_aidb_path,
                            cbm_exe_path, dist_classes_path, dist_rules_path):
@@ -97,17 +132,19 @@ class NIRSimulator(object):
             s.CopyCBMExecutable()
             s.RunCBM()
 
-    def GetAccessDBPathFromDir(self, dir):
-        matchCount = 0
-        match = ""
+    def GetAccessDBPathFromDir(self, dir, newest=False):
+        matches = []
         for i in os.listdir(dir):
             if i.lower().endswith(".mdb"):
-                matchCount += 1
-                match = os.path.join(dir, i)
-        if matchCount == 1:
-            return match
-        else: 
-            raise AssertionError("expected a dir containing 1 access database, found {0}.  Directory='{1}'"
+                matches.append(os.path.join(dir, i))
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1 and newest:
+            return sorted(matches, key= lambda x: os.path.getmtime(x), reverse=True)[0]
+        elif len(matches) > 1 and not newest:
+            raise AssertionError("found more than one access database.  Directory='{0}'".format(dir))
+        else:
+            raise AssertionError("expected a dir containing at least one access database, found {0}.  Directory='{1}'"
                                  .format(matchCount, dir))
 
     def copy_aidb_local(self, base_aidb_path, local_aidb_path):
