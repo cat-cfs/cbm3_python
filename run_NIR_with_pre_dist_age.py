@@ -184,7 +184,12 @@ config = {
 }
 
 n = NIRSimulator(config)
-#n.run(prefix_filter = ["ONW","ONE","QCG","QCL","QCR","NB","NS","PEI","NF","NWT","LB","YT","SKH","UF"])
+#n.run(prefix_filter = None)
+n.do_rollup(
+    rrdbs = [n.get_local_results_path(x) for x in config["project_prefixes"]],
+    rollup_output_path = os.path.join(config["local_working_dir"],"pre_dist_age_rollup.mdb"),
+    local_aidb_path= config["local_aidb_path"])
+
 for p in ["BCB","BCP","BCMN","BCMS","AB","SK","MB","ONW","ONE","QCG","QCL","QCR","NB","NS","PEI"]:
     base_rrdb_path = n.get_base_run_results_path(p)
     local_rrdb_path = n.get_local_results_path(p)

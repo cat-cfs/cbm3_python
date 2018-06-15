@@ -34,12 +34,6 @@ class NIRSimulator(object):
             self.get_local_project_dir(project_prefix),
             "results", self.config["local_results_format"].format(project_prefix))
 
-    def get_local_rollup_path(self):
-        return os.path.join(self.config["local_working_dir"],
-                            self.config["local_rollup_filename"])
-
-
-
     def run(self, prefix_filter = None):
         c = self.config
 
