@@ -23,7 +23,7 @@
 #  
 # ---------------------------------------------------------------------------
 # Import system modules
-import logging, os, shutil, subprocess, glob, sys
+import logging, os, shutil, subprocess, glob, sys, re
 
 
 class Simulator(object):
@@ -105,6 +105,39 @@ class Simulator(object):
         for f in glob.iglob(os.path.join(self.CBMTemp, r'Makelist\output\*.ini')):
             shutil.copy2(f, CBMinpath)
 
+    def CopySVLFromPreviousRun(self, previousRunCBMOutputDir):
+        linebreak='\n'
+        logging.info("\n\n Copying svl data from previous CBMRun output dir {0}".format(previousRunCBMOutputDir))
+        srcPaths = []
+        split = lambda string : re.findall('[\S]+', string)
+        previousRunCBMOutputDir = os.path.abspath(previousRunCBMOutputDir)
+        for filename in os.listdir(previousRunCBMOutputDir):
+            #collect the svl###.dat files
+            if filename.startswith("svl") and filename.endswith(".dat"):
+                srcPaths.append(os.path.join(previousRunCBMOutputDir, filename))
+        for srcpath in srcPaths:
+            CBMinpath = os.path.join(self.CBMTemp, r'CBMRun\input')
+            newFileName = os.path.join(CBMinpath,"{0}.ini".format(os.path.splitext(os.path.basename(srcpath))[0]))
+            with open(srcpath, 'r') as fInput:
+                fInput.readline() #skip line 1
+                with open(newFileName, 'w') as fOutput:
+                    fOutput.write("0 0" + linebreak)
+                    for srcline in fInput:
+                        tokens = split(srcline)
+                        
+                        line1 = " ".join(tokens[0:5] + ['0'])
+                        softwood = " ".join(tokens[5:18])
+                        hardwood = " ".join(tokens[18:31])
+                        dom = " ".join(tokens[31:45])
+                        cset = " ".join([x for x in tokens[45:55] if x != "-99"])
+                        kyotoflags = " ".join(['0', '1', '1990', '0', '0', '0'] if tokens[55:61] == ['0','0','0','0','0','0'] else tokens[55:61])
+
+                        outlines = [line1, softwood, hardwood, dom, "  ".join([cset, kyotoflags])]
+
+                        for outline in outlines:
+                            fOutput.write(outline + linebreak)
+                        fOutput.write(linebreak) #extra line break
+                        
 
     def CreateCBMFiles(self):
         logging.info("\n\n Creating CBM files...\n")
@@ -177,5 +210,4 @@ class Simulator(object):
             self.LoadCBMResults()
 
         self.CopyTempFiles()
-
 
