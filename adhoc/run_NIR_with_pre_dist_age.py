@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../')
+
 from util.loghelper import *
 
 from cbm3data.accessdb import AccessDB

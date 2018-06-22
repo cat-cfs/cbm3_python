@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../')
+
 #2018 this script updates the Operational scale archive index databases (in En,Es,Fr,Ru) 
 #with the NIR Firewood collection and Spruce Budworm (QC) matrices and disturbance types
 #and also drops the old SBW matrices, dist types, and association
