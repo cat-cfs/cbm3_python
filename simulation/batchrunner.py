@@ -2,8 +2,8 @@ import os, shutil, glob, logging, multiprocessing, subprocess
 from simulator import Simulator
 from cbm3data.aidb import AIDB
 from cbm3data.projectdb import ProjectDB
-from simulation.resultsloader import ResultsLoader
-from simulation.createaccountingrules import CreateAccountingRules
+from cbm3data.resultsloader import ResultsLoader
+from simulation.tools.createaccountingrules import CreateAccountingRules
 
 def externalExeWorker(executablePath):
     wd = os.getcwd()

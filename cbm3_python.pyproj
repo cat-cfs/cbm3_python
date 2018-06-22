@@ -5,7 +5,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ed5dc488-c8d0-4ab7-82f5-35a905e71134}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>run_NIR_with_pre_dist_age.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -19,7 +20,13 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="run_NIR_with_pre_dist_age.py">
+    <Compile Include="adhoc\run_NIR_with_pre_dist_age.py" />
+    <Compile Include="adhoc\update_oilsands_dms.py" />
+    <Compile Include="adhoc\update_SBW.py" />
+    <Compile Include="cbm3data\hwpinput.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="cbm3data\hwp_input.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="simulation\nir_sql\afforestation_fixes.py">
@@ -31,10 +38,17 @@
     <Compile Include="simulation\nir_sql\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="update_oilsands_dms.py">
+    <Compile Include="simulation\tools\avgdisturbanceextender.py" />
+    <Compile Include="simulation\tools\disturbanceeventstransformer.py" />
+    <Compile Include="simulation\tools\disturbanceextender.py" />
+    <Compile Include="simulation\tools\disturbanceextension.py" />
+    <Compile Include="simulation\tools\disturbancegeneratorconfig.py" />
+    <Compile Include="simulation\tools\qaqc.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="update_SBW.py" />
+    <Compile Include="simulation\tools\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="cbm3data\accessdb.py" />
     <Compile Include="cbm3data\access_templates\__init__.py">
       <SubType>Code</SubType>
@@ -46,12 +60,12 @@
     <Compile Include="cbm3data\projectdb.py" />
     <Compile Include="cbm3data\__init__.py" />
     <Compile Include="simulation\batchrunner.py" />
-    <Compile Include="simulation\createaccountingrules.py" />
+    <Compile Include="simulation\tools\createaccountingrules.py" />
     <Compile Include="simulation\nirsimulator.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="simulation\resultsloader.py" />
-    <Compile Include="simulation\rollup.py" />
+    <Compile Include="cbm3data\resultsloader.py" />
+    <Compile Include="cbm3data\rollup.py" />
     <Compile Include="simulation\simulator.py" />
     <Compile Include="simulation\__init__.py" />
     <Compile Include="util\excelhelper.py">
@@ -66,7 +80,9 @@
     <Folder Include="cbm3data" />
     <Folder Include="C:\dev\cbm3_python\simulation\" />
     <Folder Include="cbm3data\access_templates\" />
+    <Folder Include="C:\dev\cbm3_python\adhoc\" />
     <Folder Include="simulation\" />
+    <Folder Include="C:\dev\cbm3_python\simulation\tools\" />
     <Folder Include="simulation\nir_sql\" />
     <Folder Include="util\" />
     <Folder Include="C:\dev\cbm3_python\cbm3data\access_templates\" />

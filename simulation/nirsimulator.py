@@ -2,10 +2,11 @@ import os, shutil, logging
 from cbm3data.accessdb import AccessDB
 from cbm3data.aidb import AIDB
 from cbm3data.access_templates import *
+from cbm3data.resultsloader import ResultsLoader
+from cbm3data.rollup import Rollup
+
 from simulation.simulator import Simulator
-from simulation.resultsloader import ResultsLoader
-from simulation.createaccountingrules import CreateAccountingRules
-from simulation.rollup import Rollup
+from simulation.tools.createaccountingrules import CreateAccountingRules
 from nir_sql.afforestation_fixes import *
 from nir_sql.unmanaged_forest_fixes import *
 class NIRSimulator(object):
