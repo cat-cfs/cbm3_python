@@ -44,9 +44,8 @@ class NIRSimulator(object):
             "results", self.config["local_results_format"].format(project_prefix))
 
     def run(self, prefix_filter = None):
-        c = self.config
 
-        self.copy_aidb_local(c["base_aidb_path"], c["local_aidb_path"])
+        self.copy_aidb_local()
         local_results_paths = []
         for p in c["project_prefixes"]:
             if not prefix_filter is None:
@@ -149,8 +148,9 @@ class NIRSimulator(object):
             raise AssertionError("expected a dir containing at least one access database, found {0}.  Directory='{1}'"
                                  .format(matchCount, dir))
 
-    def copy_aidb_local(self, base_aidb_path, local_aidb_path):
-        shutil.copy(base_aidb_path, local_aidb_path)
+    def copy_aidb_local(self):
+        shutil.copy(self.config["base_aidb_path"],
+                    self.config["local_aidb_path"])
 
     def copy_project_local(self, project_prefix):
         base_project_path = self.get_base_project_path(project_prefix) 
@@ -162,6 +162,7 @@ class NIRSimulator(object):
         if not os.path.exists(os.path.dirname(local_project_path)):
             os.makedirs(os.path.dirname(local_project_path))
         shutil.copy(base_project_path, local_project_path)
+        return local_project_path
 
     def load_project_results(self, project_prefix):
         local_results_path =  self.get_local_results_path(project_prefix)
@@ -176,7 +177,9 @@ class NIRSimulator(object):
             projectSimulationDirectory=r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp",
             loadPreDistAge=True)
 
-    def do_rollup(self, rrdbs, rollup_output_path, local_aidb_path):
-        copy_rollup_template(rollup_output_path)
-        r = Rollup(rrdbs, rollup_output_path, local_aidb_path)
+    def do_rollup(self, rrdbs):
+        local_rollup_path = os.path.join(
+            config["local_working_dir"], config["local_rollup_filename"])
+        copy_rollup_template(local_rollup_path)
+        r = Rollup(rrdbs, local_rollup_path, self.config["local_aidb_path"])
         r.Roll()

@@ -82,3 +82,6 @@ def update_random_seed(projectDB):
 
     projectDB.ExecuteQuery("INSERT INTO tblRandomSeed (CBMRunID, RandomSeed, OnOffSwitch) VALUES ({0},{1},{2})"
                     .format(1,result.RandomSeed,True))
+
+def set_classifiers_off(project_db):
+    projectDB.ExecuteQuery("UPDATE tblClassifiersOnOff SET IsOn = NO")

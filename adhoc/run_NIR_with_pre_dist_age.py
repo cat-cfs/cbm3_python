@@ -376,44 +376,44 @@ config = {
 }
 
 n = NIRSimulator(config)
-#n.run(prefix_filter = ["UF"])
+n.run()
 rollup_path = os.path.join(config["local_working_dir"],"pre_dist_age_rollup.mdb")
 
-#n.do_rollup(
-#    rrdbs = [n.get_local_results_path(x) for x in config["project_prefixes"]],
-#    rollup_output_path = rollup_path,
-#    local_aidb_path= config["local_aidb_path"])
+n.do_rollup(
+    rrdbs = [n.get_local_results_path(x) for x in config["project_prefixes"]])
 
-for p in ["AF"]: #config["project_prefixes"]:
+for p in config["project_prefixes"]:
     base_rrdb_path = n.get_base_run_results_path(p)
     local_rrdb_path = n.get_local_results_path(p)
+
     plot_national_level_pre_dist_age(
         rollup_path= rollup_path,
         outputdir=os.path.join(
             config["local_working_dir"],
             "national_level_pre_dist_age"))
-    #compare_forest_areas(
-    #    base_rrdb_path = base_rrdb_path,
-    #    local_rrdb_path = local_rrdb_path,
-    #    project_prefix = p,
-    #    outputdir=os.path.join(
-    #        config["local_working_dir"],
-    #        "validation",
-    #        "forest_areas"))
-    #
-    #compare_disturbance_areas(
-    #    base_rrdb_path = base_rrdb_path,
-    #    local_rrdb_path = local_rrdb_path,
-    #    project_prefix = p,
-    #    outputdir=os.path.join(
-    #        config["local_working_dir"],
-    #        "validation",
-    #        "disturbance_areas"))
-    #
-    #plot_project_level_pre_dist_age(
-    #    local_rrdb_path=local_rrdb_path,
-    #    project_prefix=p,
-    #    dist_rules = load_wildfire_disturbance_rules(config["dist_rules_path"]),
-    #    outputdir=os.path.join(
-    #        config["local_working_dir"],
-    #        "project_level_pre_dist_age"))
+
+    compare_forest_areas(
+        base_rrdb_path = base_rrdb_path,
+        local_rrdb_path = local_rrdb_path,
+        project_prefix = p,
+        outputdir=os.path.join(
+            config["local_working_dir"],
+            "validation",
+            "forest_areas"))
+    
+    compare_disturbance_areas(
+        base_rrdb_path = base_rrdb_path,
+        local_rrdb_path = local_rrdb_path,
+        project_prefix = p,
+        outputdir=os.path.join(
+            config["local_working_dir"],
+            "validation",
+            "disturbance_areas"))
+    
+    plot_project_level_pre_dist_age(
+        local_rrdb_path=local_rrdb_path,
+        project_prefix=p,
+        dist_rules = load_wildfire_disturbance_rules(config["dist_rules_path"]),
+        outputdir=os.path.join(
+            config["local_working_dir"],
+            "project_level_pre_dist_age"))
