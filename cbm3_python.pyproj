@@ -32,6 +32,9 @@
     <Compile Include="simulation\nir_sql\afforestation_fixes.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="simulation\nir_sql\nir_project_queries.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="simulation\nir_sql\unmanaged_forest_fixes.py">
       <SubType>Code</SubType>
     </Compile>
@@ -77,6 +80,7 @@
     <Compile Include="util\__init__.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="adhoc\" />
     <Folder Include="cbm3data" />
     <Folder Include="C:\dev\cbm3_python\simulation\" />
     <Folder Include="cbm3data\access_templates\" />
@@ -84,6 +88,7 @@
     <Folder Include="simulation\" />
     <Folder Include="C:\dev\cbm3_python\simulation\tools\" />
     <Folder Include="simulation\nir_sql\" />
+    <Folder Include="simulation\tools\" />
     <Folder Include="util\" />
     <Folder Include="C:\dev\cbm3_python\cbm3data\access_templates\" />
   </ItemGroup>
