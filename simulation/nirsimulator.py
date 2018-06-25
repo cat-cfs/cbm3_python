@@ -43,6 +43,10 @@ class NIRSimulator(object):
             self.get_local_project_dir(project_prefix),
             "results", self.config["local_results_format"].format(project_prefix))
 
+    def get_local_rollup_db_path(self):
+        return os.path.join(
+            config["local_working_dir"], config["local_rollup_filename"])
+
     def run(self, prefix_filter = None):
 
         self.copy_aidb_local()
@@ -178,8 +182,7 @@ class NIRSimulator(object):
             loadPreDistAge=True)
 
     def do_rollup(self, rrdbs):
-        local_rollup_path = os.path.join(
-            config["local_working_dir"], config["local_rollup_filename"])
+        local_rollup_path = self.get_local_rollup_db_path()
         copy_rollup_template(local_rollup_path)
         r = Rollup(rrdbs, local_rollup_path, self.config["local_aidb_path"])
         r.Roll()
