@@ -23,10 +23,7 @@
     <Compile Include="adhoc\run_NIR_with_pre_dist_age.py" />
     <Compile Include="adhoc\update_oilsands_dms.py" />
     <Compile Include="adhoc\update_SBW.py" />
-    <Compile Include="cbm3data\hwpinput.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="cbm3data\hwp_input.py">
+    <Compile Include="simulation\nir_sql\hwpinput.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="simulation\nir_sql\afforestation_fixes.py">
@@ -39,6 +36,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="simulation\nir_sql\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="simulation\runnation.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="simulation\tools\avgdisturbanceextender.py" />
