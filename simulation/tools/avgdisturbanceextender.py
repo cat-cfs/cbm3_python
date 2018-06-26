@@ -23,8 +23,7 @@ class AvgDisturbanceExtender(object):
             if not self.__checkForEvent(project, event):
                 logging.info(
                     """
-                    Tried to extend {0} from {1},
-                    but no occurrences found in that year.
+                    Tried to extend {0}, but no occurrences found.
                     """.format(event.getTitle(), event.getFromYear()))
                 continue
                     
@@ -39,8 +38,7 @@ class AvgDisturbanceExtender(object):
 
     def __checkForEvent(self, project, event):
         '''
-        Checks that a disturbance event occurs in the target database for the
-        year it should be extended from.
+        Checks that a disturbance event occurs in the target database.
         '''
         sql = \
             """
@@ -53,9 +51,7 @@ class AvgDisturbanceExtender(object):
                 ON tblDisturbanceGroupScenario.DisturbanceGroupScenarioID
                     = tblDisturbanceEvents.DisturbanceGroupScenarioID
             WHERE tblDisturbanceType.DefaultDistTypeID IN ({0})
-                AND tblDisturbanceEvents.TimeStepStart = {1}
-            """.format(",".join([str(a) for a in event.getDefaultDistTypeIDs()]),
-                       event.getFromYear() - 1989)
+            """.format(",".join([str(a) for a in event.getDefaultDistTypeIDs()]))
 
         result = project.Query(sql).fetchone()
         
@@ -66,18 +62,14 @@ class AvgDisturbanceExtender(object):
         Extends a disturbance event into the future.
         '''
         idsToExtend = event.getDefaultDistTypeIDs()
+        yearsToAverage = event.getFromYear() - 1989
         
         # Calculates the average yearly target for the disturbances by SPUGroupID.
-        avgTargetsBySpuGroup = self.__getAvgTargetsBySpuGroup(project, idsToExtend)
+        avgTargetsBySpuGroup = self.__getAvgTargetsBySpuGroup(project, idsToExtend, yearsToAverage)
         for i, groupTarget in enumerate(avgTargetsBySpuGroup):
             isFirstGroup = (i == 0)
-            
-            # Determines the year to start from when extending disturbances.
-            lastYear = groupTarget.lastDisturbedYear
-            
-            startYear = event.getFromYear() + 1 if event.getFromYear() is not None \
-                else lastYear + 1
-                
+           
+            startYear = event.getFromYear() + 1
             endYear = event.getToYear()
             
             logging.info(
@@ -85,7 +77,7 @@ class AvgDisturbanceExtender(object):
                     id=groupTarget.SPUGroupID,
                     start=startYear,
                     end=endYear,
-                    last=lastYear))
+                    last=groupTarget.lastDisturbedYear))
             
             for j, year in enumerate(range(startYear, endYear + 1)):
                 isFirstYear = (j == 0)
@@ -95,35 +87,17 @@ class AvgDisturbanceExtender(object):
             
                 self.createDisturbanceYear(project=project,
                                            newYear=year - 1989,
-                                           templateYear=lastYear - 1989,
+                                           templateYear=groupTarget.lastDisturbedYear,
                                            defaultDistTypeIds=idsToExtend,
                                            target=groupTarget,
                                            createTable=createTable)
 
-    def __getAvgTargetsBySpuGroup(self, project, defaultDistTypeIds):
+    def __getAvgTargetsBySpuGroup(self, project, defaultDistTypeIds, yearsToAverage):
         '''
         Calculates the average annual target for the disturbance type from
         the data available.
         '''
         idSqlPlaceholders = ",".join("?" * len(defaultDistTypeIds))
-        
-        # Calculates the number of years to average the disturbance target over.
-        sql = """
-              SELECT MIN(1989 + de.TimeStepStart) AS firstDisturbedYear,
-                     MAX(1989 + de.TimeStepStart) AS finalDisturbedYear
-              FROM tblDisturbanceEvents de
-              INNER JOIN (
-                tblDisturbanceGroupScenario dgs
-                INNER JOIN tblDisturbanceType dt
-                    ON dgs.DistTypeID = dt.DistTypeID
-              ) ON de.DisturbanceGroupScenarioID = dgs.DisturbanceGroupScenarioID
-              WHERE dt.DefaultDistTypeID IN ({})
-              """.format(idSqlPlaceholders)
-        
-        disturbancePeriod = project.Query(sql, defaultDistTypeIds).fetchone()
-        firstDisturbedYear = disturbancePeriod.firstDisturbedYear
-        finalDisturbedYear = disturbancePeriod.finalDisturbedYear
-        yearsToAverage = finalDisturbedYear - firstDisturbedYear + 1
         
         # Calculates the average annual target for the disturbance by SPUGroupID
         # using the calculated number of years.
@@ -142,10 +116,7 @@ class AvgDisturbanceExtender(object):
               GROUP BY dgs.SPUGroupID
               """.format(idSqlPlaceholders)
         
-        params = []
-        params.append(yearsToAverage)
-        params.append(yearsToAverage)
-        params.extend(defaultDistTypeIds)
+        params = [yearsToAverage, yearsToAverage] + defaultDistTypeIds
         
         avgTargetsBySpuGroup = project.Query(sql, params)
         
@@ -188,15 +159,12 @@ class AvgDisturbanceExtender(object):
                         ON dgs.DistTypeID = dt.DistTypeID
                   ) ON de.DisturbanceGroupScenarioID = dgs.DisturbanceGroupScenarioID
                   WHERE dt.DefaultDistTypeID IN ({placeholders})
-                      AND de.TimeStepStart = ?
+                      AND de.TimeStepStart + 1989 = ?
                       AND dgs.SPUGroupID = ?
                   """.format(outputTable=self.OUTPUT_TABLE,
                              placeholders=idSqlPlaceholders)
         
-        params = []
-        params.extend(defaultDistTypeIds)
-        params.append(templateYear)
-        params.append(target.SPUGroupID)
+        params = defaultDistTypeIds + [templateYear, target.SPUGroupID]
         project.ExecuteQuery(sql, params)
         
         # Updates the newly-copied rows with the next year's data.
@@ -206,7 +174,7 @@ class AvgDisturbanceExtender(object):
                   TimeStepFinish = ?,
                   DistArea = ?,
                   MerchCarbonToDisturb = ?
-              WHERE TimeStepStart = ?
+              WHERE TimeStepStart + 1989 = ?
                   AND SPUGroupID = ?
                   AND DefaultDistTypeID IN ({placeholders})
               """.format(outputTable=self.OUTPUT_TABLE,
