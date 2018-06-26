@@ -10,6 +10,7 @@ from simulation.tools.disturbanceextension import DisturbanceExtension
 from simulation.tools import qaqc
 from util import loghelper
 
+
 def load_json(path):
     with open(path, 'r') as f:
         return json.loads(f.read())
