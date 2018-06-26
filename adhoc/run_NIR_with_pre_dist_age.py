@@ -368,7 +368,7 @@ config = {
     "local_working_dir": r"C:\pre_dist_age_run",
     "local_project_format": "{}_pre_dist_age.mdb",
     "local_results_format": "{}_pre_dist_age_results.accdb",
-    "local_rollup_filename": "rollup_db.accdb",
+    "local_rollup_filename": "local_rollup_filename.accdb",
 
     "af_start_year": 1970,
     "af_end_year": 2016,

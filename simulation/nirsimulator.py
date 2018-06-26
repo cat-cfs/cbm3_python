@@ -45,7 +45,7 @@ class NIRSimulator(object):
 
     def get_local_rollup_db_path(self):
         return os.path.join(
-            config["local_working_dir"], config["local_rollup_filename"])
+            self.config["local_working_dir"], self.config["local_rollup_filename"])
 
     def run(self, prefix_filter = None):
 
@@ -61,10 +61,6 @@ class NIRSimulator(object):
 
             logging.info("{}: Load CBM Results".format(p))
             rp = self.load_project_results(p)
-            if p == "UF":
-                run_uf_results_fixes(rp)
-            if p == "AF":
-                run_af_results_fixes(rp)
             local_results_paths.append(rp)
 
         return local_results_paths
@@ -174,12 +170,16 @@ class NIRSimulator(object):
         local_aidb_path = self.config["local_aidb_path"]
         r = ResultsLoader()
         copy_rrdb_template(local_results_path)
-        return r.loadResults(
+        output = r.loadResults(
             outputDBPath=local_results_path,
             aidbPath=local_aidb_path,
             projectDBPath=local_project_path,
             projectSimulationDirectory=r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp",
-            loadPreDistAge=True)
+            loadPreDistAge=False)
+        if project_prefix == "UF":
+            run_uf_results_fixes(local_results_path)
+        if project_prefix == "AF":
+            run_af_results_fixes(local_results_path)
 
     def do_rollup(self, rrdbs):
         local_rollup_path = self.get_local_rollup_db_path()

@@ -27,9 +27,9 @@ def __create_worksheet_task(worksheet_name, insertion_cell, query_template_name,
         worksheet_name=worksheet_name,
         insertion_cell=insertion_cell,
         query_template_name = query_template_name,
-        datasource_parameters="".join(
+        parameters="".join(
             [__get_datasource_parameter(p["name"], p["value"])
-            for p in datasource_parameters]))
+            for p in data_source_parameters]))
 
 def __create_config(query_template_path, excel_template_path, excel_output_path, work_sheet_tasks):
          return """<?xml version="1.0" encoding="utf-8"?>
@@ -48,7 +48,7 @@ def __create_config(query_template_path, excel_template_path, excel_output_path,
     query_template_path=query_template_path,
     excel_template_path=excel_template_path,
     excel_output_path=excel_output_path,
-    work_sheet_tasks="".join([
+    worksheet_tasks="".join([
         __create_worksheet_task(
             worksheet_name=x["worksheet_name"],
             insertion_cell=x["insertion_cell"],
@@ -133,7 +133,7 @@ def run_qaqc(executable_path, query_template_path, excel_template_path, excel_ou
 
     xmlconfig_path = os.path.join(
         os.path.dirname(excel_output_path),
-        os.path.splitext(os.path.basename(excel_output_path)) + "config.xml")
+        os.path.splitext(os.path.basename(excel_output_path))[0]) + ".xml" 
 
     config = __create_config(
             query_template_path,
@@ -157,5 +157,5 @@ def run_qaqc(executable_path, query_template_path, excel_template_path, excel_ou
             excel_template_path=excel_template_path,
             excel_output_path=excel_output_path))
 
-    cmd = '{0} "{1}"'.format(executeable_path, xmlconfig_path)
+    cmd = '{0} "{1}"'.format(executable_path, xmlconfig_path)
     subprocess.check_call(cmd)

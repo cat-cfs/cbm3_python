@@ -1,4 +1,4 @@
-import os, sys, shutil, argparse, json, logging
+import os, sys, shutil, argparse, json, logging, datetime
 from cbm3data.accessdb import AccessDB
 from simulation.nirsimulator import NIRSimulator
 from simulation.nir_sql import nir_project_queries
@@ -6,6 +6,7 @@ from simulation.nir_sql import hwpinput
 from simulation.tools.avgdisturbanceextender import AvgDisturbanceExtender
 from simulation.tools.disturbanceextender import DisturbanceExtender
 from simulation.tools.disturbancegeneratorconfig import DisturbanceGeneratorConfig
+from simulation.tools.disturbanceextension import DisturbanceExtension
 from simulation.tools import qaqc
 from util import loghelper
 
@@ -13,16 +14,16 @@ def load_json(path):
     with open(path, 'r') as f:
         return json.loads(f.read())
 
-def preprocess(config, project_path):
+def preprocess(config, project_prefix, project_path):
     with AccessDB(project_path) as nir_project_db:
         events_to_delete = config["EventsToDelete"]
         if len(events_to_delete)>0:
             sql_delete_events = nir_project_queries.sql_delete_disturbance_events(events_to_delete)
-            nir_project_db.ExecuteQuery(sql_delete_events)
+            nir_project_db.ExecuteQuery(query=sql_delete_events[0], params=sql_delete_events[1])
 
         post_delete_year = config["postDeleteYear"]
         sql_post_delete_year = nir_project_queries.sql_delete_post_year_events(post_delete_year)
-        nir_project_db.ExecuteQuery(sql_post_delete_year)
+        nir_project_db.ExecuteQuery(query=sql_post_delete_year[0], params=sql_post_delete_year[1])
 
         disturbance_extender_config = config["DisturbanceExtender"]
         if isinstance(disturbance_extender_config, list):
@@ -49,11 +50,12 @@ def preprocess(config, project_path):
                 os.path.abspath(disturbance_generator_config["DefaultsPath"]),
                 config["local_aidb_path"],
                 disturbance_generator_config["Tasks"],
-                projectTag, project.path)
+                project_prefix, project_path)
             disturbancegenerator.Run()
         else: logging.info("disturbance generator skipped")
 
-        nir_project_queries.sql_set_run_project_run_length(config["numTimeSteps"])
+        sql_run_length = nir_project_queries.sql_set_run_project_run_length(config["numTimeSteps"])
+        nir_project_db.ExecuteQuery(query=sql_run_length[0], params=sql_run_length[1])
         nir_project_queries.run_simulation_id_cleanup(nir_project_db)
         nir_project_queries.update_random_seed(nir_project_db)
 
@@ -63,31 +65,31 @@ def main():
         parser = argparse.ArgumentParser(description="RunNation v2 script: processes and runs a batch of NIR simulations")
         parser.add_argument("--configuration", help="run nation configuration file")
         parser.add_argument("--prefix_filter", help="optional comma delimited prefixes, if included only the specified projects will be included")
-        parser.add_argument("--copy_local", help="if present, copy the projects and archive index to the local working dir")
-        parser.add_argument("--preprocess", help="if present, run the pre-processing steps on the local copies of project databases")
-        parser.add_argument("--simulate", help="if present, run the simulations for each of the local copies of project databases")
-        parser.add_argument("--load_python", help="if present, load the simulation results using the python loader")
-        parser.add_argument("--rollup", help="if present, run the simulation rollup")
-        parser.add_argument("--hwp_input", help="if specified hwp input is generated")
-        parser.add_argument("--qaqc", help="if specified project level qaqc spreadsheets are generated")
-        parser.add_argument("--copy_to_final_results_dir", help="if present results are copied to the final results dir (which is specified in config)."
+        parser.add_argument("--copy_local", action="store_true", dest="copy_local", help="if present, copy the projects and archive index to the local working dir")
+        parser.add_argument("--preprocess", action="store_true", dest="preprocess", help="if present, run the pre-processing steps on the local copies of project databases")
+        parser.add_argument("--simulate", action="store_true", dest="simulate", help="if present, run the simulations for each of the local copies of project databases")
+        parser.add_argument("--rollup", action="store_true", dest="rollup", help="if present, run the simulation rollup")
+        parser.add_argument("--hwp_input", action="store_true", dest="hwp_input", help="if specified hwp input is generated")
+        parser.add_argument("--qaqc", action="store_true", dest="qaqc", help="if specified project level qaqc spreadsheets are generated")
+        parser.add_argument("--copy_to_final_results_dir", action="store_true", dest="copy_to_final_results_dir", help="if present results are copied to the final results dir (which is specified in config)."
                            "If unspecified no copy will occur")
 
         args = parser.parse_args()
 
         config_path = os.path.abspath(args.configuration)
         config = load_json(args.configuration)
-        working_dir = os.path.abspath(config["working_dir"])
-
+        working_dir = os.path.abspath(config["local_working_dir"])
+        if not os.path.exists(working_dir):
+            os.makedirs(working_dir)
         logpath = os.path.join(working_dir,
                 "".join([datetime.datetime.now().strftime("%Y-%m-%d %H_%M_%S"),
-                        config["logFileName"]]))
+                        "{}.log".format(config["Name"])]))
         loghelper.start_logging(logpath, 'w+')
 
         project_prefixes = config["project_prefixes"] \
             if not args.prefix_filter else \
             [x for x in config["project_prefixes"] 
-             if config["project_prefixes"] in args.prefix_filter.split(",")]
+             if x in args.prefix_filter.split(",")]
 
         ns = NIRSimulator(config)
 
@@ -98,15 +100,14 @@ def main():
 
         if args.preprocess:
             for p in project_prefixes:
+                if p == "AF":
+                    continue
                 local_project_path = ns.get_local_project_path(p)
-                preprocess(config, local_project_path)
+                preprocess(config, p, local_project_path)
 
         if args.simulate:
             for p in project_prefixes:
                 ns.run_cbm(p)
-
-        if args.load_python:
-            for p in project_prefixes:
                 ns.load_project_results(p)
 
         if args.rollup:
@@ -122,17 +123,17 @@ def main():
         if args.qaqc:
             for p in project_prefixes:
                 local_dir = ns.get_local_project_dir(p)
+                label = "{0}_{1}".format(p, config["Name"])
                 qaqc.run_qaqc(
                     executable_path = config["QaqcExecutablePath"],
                     query_template_path = config["QaqcQueryTemplatePath"],
                     excel_template_path = config["QaqcExcelTemplatePath"],
                     excel_output_path = os.path.join(local_dir, "{}_qaqc.xlsx".format(p)),
-                    label = "{0}_{1}".format(p, config["Name"]),
-                    worksheet_tasks = qaqc.get_nir_worksheet_tasks(
+                    work_sheet_tasks = qaqc.get_nir_worksheet_tasks(
                         RRDB_A_Label = "base_run",
                         RRDB_A_Path = ns.get_base_run_results_path(p),
                         RRDB_B_Label = label,
-                        RRDB_B_Path = ns.get_base_run_results_path(p),
+                        RRDB_B_Path = ns.get_local_results_path(p),
                         ProjectLabel = label,
                         ProjectPath = ns.get_local_project_path(p),
                         GWP_CH4=config["GWP_CH4"],
@@ -177,5 +178,5 @@ def main():
         logging.exception("")
 
 
-if __name__ == 'main':
+if __name__ == '__main__':
     main()

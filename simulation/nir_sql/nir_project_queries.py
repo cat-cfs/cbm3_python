@@ -54,12 +54,27 @@ def sql_set_run_project_run_length(numTimeStep):
 def run_simulation_id_cleanup(projectDB):
 
     queries = [
+        #clean run ids
+        "DELETE FROM tblRunTable WHERE tblRunTable.RunID Not In((select max(runID) from tblSimulation))",
+        "DELETE from tblRunTableDetails where runID <> (select max(runID) from tblSimulation)",
+        
+        #set run id to 1
         "UPDATE tblRunTable SET runID=1;",
         "UPDATE tblRunTableDetails SET runID=1;",
+
+        #clean sim ids
         "DELETE * FROM tblSimulation WHERE runID <> (SELECT max(runID) FROM tblSimulation);",
+
+        #set sim id to 1
         "UPDATE tblSimulation SET SimulationID=1;",
+
+        #clean tblRunDisturbanceScenario
         "DELETE * from tblRunDisturbanceScenario as tRDS WHERE tRDS.RunDisturbanceScenarioID <> (SELECT max(RunDisturbanceScenarioID) FROM tblRunTable);",
+
+        #set tblRunDisturbanceScenario to 1
         "UPDATE tblRunDisturbanceScenario SET RunDisturbanceScenarioID=1;",
+
+
         "DELETE * from tblDisturbanceGroupScenario as tDGS WHERE tDGS.DisturbanceGroupScenarioID NOT IN (SELECT distinct DisturbanceGroupScenarioID FROM tblRunDisturbanceScenarioLookup);"
     ]
 
