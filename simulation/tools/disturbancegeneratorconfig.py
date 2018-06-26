@@ -62,6 +62,7 @@ class DisturbanceGeneratorConfig(object):
 """<?xml version="1.0"?>
 <DGConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <DGTaskSet>
+    <NewDistTypeFormatString>{{0}}</NewDistTypeFormatString>
     <ArchiveIndexPath>{0}</ArchiveIndexPath>
     <DisturbanceDBs>
         {1}

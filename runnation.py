@@ -14,9 +14,11 @@ from util import loghelper
 def load_json(path):
     with open(path, 'r') as f:
         return json.loads(f.read())
+def get_date_stamp():
+    return datetime.datetime.now().strftime("%Y-%m-%d %H_%M_%S")
 
 def preprocess(config, project_prefix, project_path):
-    with AccessDB(project_path) as nir_project_db:
+    with AccessDB(project_path, False) as nir_project_db:
         events_to_delete = config["EventsToDelete"]
         if len(events_to_delete)>0:
             sql_delete_events = nir_project_queries.sql_delete_disturbance_events(events_to_delete)
@@ -82,9 +84,9 @@ def main():
         working_dir = os.path.abspath(config["local_working_dir"])
         if not os.path.exists(working_dir):
             os.makedirs(working_dir)
+
         logpath = os.path.join(working_dir,
-                "".join([datetime.datetime.now().strftime("%Y-%m-%d %H_%M_%S"),
-                        "{}.log".format(config["Name"])]))
+                 "{0}_{1}.log".format(get_date_stamp(), config["Name"]))
         loghelper.start_logging(logpath, 'w+')
 
         #check that the user provided filter items actually exist in the config
@@ -149,39 +151,11 @@ def main():
                         GWP_N2O=config["GWP_N2O"]))
 
         if args.copy_to_final_results_dir:
-            final_results_dir = config["final_results_dir"]
-
-            #copy the rollup
-            local_rollup_path = ns.get_local_rollup_db_path()
-            if os.path.exists(local_rollup_path):
-                final_rollup_path = os.path.join(final_results_dir, os.path.basename(local_rollup_path))
-                shutil.copy(local_rollup_path, final_rollup_path)
-            
-            #copy projects and results
-            for p in project_prefixes:
-                local_project = ns.get_local_project_path(p)
-                final_project_path = os.path.join(final_results_dir, p, os.path.basename(local_project))
-                shutil.copy(local_project, final_project_path)
-
-                local_results = ns.get_local_results_path(p)
-                final_results_path = os.path.join(final_results_dir, p, "results", os.path.basename(local_results))
-                shutil.copy(local_results, final_project_path)
-
-            #copy qaqc spreadsheets
-            for p in project_prefixes:
-                local_spreadsheet_path = os.path.join(local_dir, "{}_qaqc.xlsx".format(p))
-                final_spreadsheet_path = os.path.join(final_results_dir, p, os.path.basename(local_spreadsheet_path))
-                shutil.copy(local_spreadsheet_path, final_spreadsheet_path)
-
-            #copy hwp inputs
-            for p in project_prefixes:
-                local_hwp_results = [
-                    hwpinput.get_hwp_clearcut_filepath(local_dir),
-                    hwpinput.get_hwp_deforestation_filepath(local_dir),
-                    hwpinput.get_hwp_firewood_filepath(local_dir)]
-                final_hwp_results = [os.path.join(final_results_dir, os.path.basename(x)) for x in local_hwp_results]
-                for i in range(len(local_hwp_results)):
-                    shutil.copy(local_hwp_results[i], final_hwp_results[i])
+            final_results_dir = os.path.abspath(config["final_results_dir"])
+            if not os.path.exists(final_results_dir):
+                os.makedirs(final_results_dir)
+            final_results_subdir = os.path.join(final_results_dir, get_date_stamp())
+            shutil.copytree(working_dir, final_results_subdir)
 
     except Exception as ex:
         logging.exception("")

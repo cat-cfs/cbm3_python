@@ -85,8 +85,8 @@ class NIRSimulator(object):
 
     def run_af_simulation(self,local_project_path, local_aidb_path,
                            cbm_exe_path):
-        with AIDB(local_aidb_path) as aidb, \
-             AccessDB(local_project_path) as proj:
+        with AIDB(local_aidb_path, False) as aidb, \
+             AccessDB(local_project_path, False) as proj:
             aidb.DeleteProjectsFromAIDB()
             simId = aidb.AddProjectToAIDB(proj)
             cbm_wd = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp"
@@ -106,8 +106,8 @@ class NIRSimulator(object):
     def run_cbm_simulation(self, local_project_path, local_aidb_path,
                            cbm_exe_path, dist_classes_path, dist_rules_path):
 
-        with AIDB(local_aidb_path) as aidb, \
-             AccessDB(local_project_path) as proj:
+        with AIDB(local_aidb_path, False) as aidb, \
+             AccessDB(local_project_path, False) as proj:
             aidb.DeleteProjectsFromAIDB()
             simId = aidb.AddProjectToAIDB(proj)
             cbm_wd = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp"
