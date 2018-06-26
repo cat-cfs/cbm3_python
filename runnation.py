@@ -87,10 +87,18 @@ def main():
                         "{}.log".format(config["Name"])]))
         loghelper.start_logging(logpath, 'w+')
 
+        #check that the user provided filter items actually exist in the config
+        if args.prefix_filter:
+            for x in args.prefix_filter.split(","):
+                if not x in config["project_prefixes"]:
+                    raise AssertionError(
+                        "specified prefix filter item {} does not exist in configuration project_prefixes".format(x))
+        
         project_prefixes = config["project_prefixes"] \
             if not args.prefix_filter else \
             [x for x in config["project_prefixes"] 
              if x in args.prefix_filter.split(",")]
+
 
         ns = NIRSimulator(config)
 
