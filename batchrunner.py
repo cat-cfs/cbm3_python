@@ -1,5 +1,5 @@
 import os, shutil, glob, logging, multiprocessing, subprocess
-from simulator import Simulator
+from simulation.simulator import Simulator
 from cbm3data.aidb import AIDB
 from cbm3data.projectdb import ProjectDB
 from cbm3data.resultsloader import ResultsLoader
