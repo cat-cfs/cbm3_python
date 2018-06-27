@@ -38,26 +38,47 @@ def run_af_results_fixes(af_rrdb_path):
     #MH, 20 sept 2017: Gary's CBM fix for the afforestation project uses a non-UFCCC land class code (23), but the rest
     #                  of the NIR process uses the correct UNFCCC landclass 1 (CLCL) so we need to change 23 back to 1
     #                  for the post-proicessing and rollup to work as intended.
-    sql=[
-        "UPDATE tblAgeIndicators SET LandClassID=1 where LandClassID=23;",
-        "UPDATE tblAgeIndicators SET TimeStep = TimeStep-20, kf3 = kf3-20, kf4 = kf4-20;",
-        "UPDATE tblAgeIndicators SET kf4 = 0 WHERE kf4 < 1990;",
 
-        "UPDATE tblDistIndicators SET LandClassID=1 where LandClassID=23;",
-        "UPDATE tblDistIndicators SET TimeStep = TimeStep-20, kf3 = kf3-20, kf4 = kf4-20;",
-        "UPDATE tblDistIndicators SET kf4 = 0 WHERE kf4 < 1990;",
-        "UPDATE tblFluxIndicators SET LandClassID=1 where LandClassID=23;",
+    #doing these update queries in batches since pyodbc has trouble running them all at once
+    sql_groups=[
+        {
+            "table": "tblAgeIndicators",
+            "id_col": "AgeIndID",
+            "queries": [
+                "UPDATE tblAgeIndicators SET LandClassID=1 where LandClassID=23 and AgeIndID Between ? And ?;",
+                "UPDATE tblAgeIndicators SET TimeStep = TimeStep-20, kf3 = kf3-20, kf4 = kf4-20 where AgeIndID Between ? And ?;",
+                "UPDATE tblAgeIndicators SET kf4 = 0 WHERE kf4 < 1990 and AgeIndID Between ? And ?;"
+            ]
+        },
+        {
+            "table": "tblDistIndicators",
+            "id_col": "DistIndID",
+            "queries": [
+                "UPDATE tblDistIndicators SET LandClassID=1 where LandClassID=23 and DistIndID Between ? And ?;",
+                "UPDATE tblDistIndicators SET TimeStep = TimeStep-20, kf3 = kf3-20, kf4 = kf4-20 where DistIndID Between ? And ?;",
+                "UPDATE tblDistIndicators SET kf4 = 0 WHERE kf4 < 1990 and DistIndID Between ? And ?;",
 
-        "UPDATE tblFluxIndicators SET TimeStep = TimeStep-20, kf3 = kf3-20, kf4 = kf4-20;",
-
-        "UPDATE tblFluxIndicators SET kf4 = 0 WHERE kf4 < 1990;",
-
-        "UPDATE tblPoolIndicators SET LandClassID=1 where LandClassID=23;",
-
-        "UPDATE tblPoolIndicators SET TimeStep = TimeStep-20, kf3 = kf3-20, kf4 = kf4-20;",
-
-        "UPDATE tblPoolIndicators SET kf4 = 0 WHERE kf4 < 1990;",
-
+            ]
+        },
+        {
+            "table": "tblFluxIndicators",
+            "id_col": "FluxIndicatorID",
+            "queries": [
+                "UPDATE tblFluxIndicators SET LandClassID=1 where LandClassID=23 and FluxIndicatorID Between ? And ?;",
+                "UPDATE tblFluxIndicators SET TimeStep = TimeStep-20, kf3 = kf3-20, kf4 = kf4-20 where FluxIndicatorID Between ? And ?;",
+                "UPDATE tblFluxIndicators SET kf4 = 0 WHERE kf4 < 1990 and FluxIndicatorID Between ? And ?;"
+            ]
+        },
+        {
+            "table": "tblPoolIndicators",
+            "id_col": "PoolIndID",
+            "queries": [
+                "UPDATE tblPoolIndicators SET LandClassID=1 where LandClassID=23 and PoolIndID Between ? And ?;",
+                "UPDATE tblPoolIndicators SET TimeStep = TimeStep-20, kf3 = kf3-20, kf4 = kf4-20 where PoolIndID Between ? And ?;",
+                "UPDATE tblPoolIndicators SET kf4 = 0 WHERE kf4 < 1990 and PoolIndID Between ? And ?;",
+            ]
+        }
+        
         #"""UPDATE tblNIRSpecialOutput
         #   SET LandClass_From=1 where LandClass_From=23;""",
         #"""UPDATE tblNIRSpecialOutput 
@@ -65,6 +86,23 @@ def run_af_results_fixes(af_rrdb_path):
     ]
 
     with AccessDB(af_rrdb_path) as rrdb:
-        for q in sql:
-            rrdb.ExecuteQuery(q)
+        for sql_group in sql_groups:
+            max_id = rrdb.GetMaxID(sql_group["table"], sql_group["id_col"])
+            maxBatchDeleteSize = 50000
+            iterations = max_id / maxBatchDeleteSize
+            remainder = max_id % maxBatchDeleteSize
+            ranges = [{
+                "min": x*maxBatchDeleteSize,
+                "max": x*maxBatchDeleteSize+maxBatchDeleteSize-1 #between is inclusive
+                } for x in range(iterations)]
+            if remainder>0:
+               ranges.append({
+                   "min": iterations * maxBatchDeleteSize,
+                   "max": iterations * maxBatchDeleteSize + remainder
+                })
+            for r in ranges:
+                for sql in sql_group["queries"]:
+                    rrdb.ExecuteQuery(query=sql, params=(r["min"], r["max"]))
+
+
 
