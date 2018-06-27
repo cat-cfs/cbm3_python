@@ -149,6 +149,10 @@ class NIRSimulator(object):
                                  .format(matchCount, dir))
 
     def copy_aidb_local(self):
+        logging.info("copying archive index - source: '{0}', dest: '{1}'"
+                     .format(self.config["base_aidb_path"],
+                             self.config["local_aidb_path"]))
+
         shutil.copy(self.config["base_aidb_path"],
                     self.config["local_aidb_path"])
 

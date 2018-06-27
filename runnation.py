@@ -32,7 +32,7 @@ def preprocess(config, project_prefix, project_path):
         if isinstance(disturbance_extender_config, list):
             avgDisturbanceExtender = AvgDisturbanceExtender()
             simpleDisturbanceExtender = DisturbanceExtender()
-            logging.info("step 4 - run disturbance extender")
+            logging.info("running disturbance extender")
             for mode, extender in (("Simple", simpleDisturbanceExtender),
                                     ("Avg", avgDisturbanceExtender)):
                 disturbanceExtensions = [DisturbanceExtension(
@@ -43,11 +43,12 @@ def preprocess(config, project_prefix, project_path):
                     for extension in disturbance_extender_config
                     if extension["Mode"] == mode]
                 extender.Run(nir_project_db, disturbanceExtensions)
-        else: logging.info("disturbance extender generator skipped")
+            logging.info("disturbance extender finished")
+        else: logging.info("disturbance extender skipped")
 
         disturbance_generator_config = config["DisturbanceGenerator"]
         if isinstance(disturbance_generator_config, dict):
-            logging.info("step 5 - run disturbance generator")
+            logging.info("running disturbance generator")
             disturbancegenerator = DisturbanceGeneratorConfig(
                 os.path.abspath(disturbance_generator_config["ExePath"]),
                 os.path.abspath(disturbance_generator_config["DefaultsPath"]),
@@ -55,6 +56,7 @@ def preprocess(config, project_prefix, project_path):
                 disturbance_generator_config["Tasks"],
                 project_prefix, project_path)
             disturbancegenerator.Run()
+            logging.info("disturbance generator finished")
         else: logging.info("disturbance generator skipped")
 
         sql_run_length = nir_project_queries.sql_set_run_project_run_length(config["numTimeSteps"])
@@ -105,6 +107,7 @@ def main():
         ns = NIRSimulator(config)
 
         if args.copy_local:
+            logging.info("copying databases to working dir")
             ns.copy_aidb_local()
             for p in project_prefixes:
                 ns.copy_project_local(p)
@@ -113,25 +116,34 @@ def main():
             for p in project_prefixes:
                 if p == "AF":
                     continue
+                logging.info("pre-processing {}".format(p))
                 local_project_path = ns.get_local_project_path(p)
                 preprocess(config, p, local_project_path)
+                logging.info("finished pre-processing {}".format(p))
 
         if args.simulate:
             for p in project_prefixes:
+                logging.info("simulating {}".format(p))
                 ns.run_cbm(p)
+                logging.info("finished simulating {}. Loading results".format(p))
                 ns.load_project_results(p)
+                logging.info("{} simulation finished".format(p))
 
         if args.rollup:
             rrdbs = [ns.get_local_results_path(p) for p in project_prefixes]
+            logging.info("rolling up results dbs \n    {}".format("\n    ".join(rrdbs)))
             ns.do_rollup(rrdbs)
 
         if args.hwp_input:
+            logging.info("generating hwp input in dir {}".format(working_dir))
             with AccessDB(ns.get_local_rollup_db_path()) as rollupDB:
                 hwpinput.GeneratHWPInput(
                     rollupDB=rollupDB,
                     workingDir = working_dir)
+            logging.info("generate hwp finished")
 
         if args.qaqc:
+            logging.info("generating qaqc spreadsheets")
             for p in project_prefixes:
                 local_dir = ns.get_local_project_dir(p)
                 label = "{0}_{1}".format(p, config["Name"])
@@ -149,13 +161,18 @@ def main():
                         ProjectPath = ns.get_local_project_path(p),
                         GWP_CH4=config["GWP_CH4"],
                         GWP_N2O=config["GWP_N2O"]))
+            logging.info("generating qaqc spreadsheets finished")
 
         if args.copy_to_final_results_dir:
+            
             final_results_dir = os.path.abspath(config["final_results_dir"])
             if not os.path.exists(final_results_dir):
                 os.makedirs(final_results_dir)
             final_results_subdir = os.path.join(final_results_dir, get_date_stamp())
+            logging.info("copying all contents of '{src}' to '{dest}'"
+                         .format(src=working_dir, dest=final_results_subdir))
             shutil.copytree(working_dir, final_results_subdir)
+            logging.info("finished copying")
 
     except Exception as ex:
         logging.exception("")
