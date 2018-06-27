@@ -84,9 +84,10 @@ def run_af_results_fixes(af_rrdb_path):
         #"""UPDATE tblNIRSpecialOutput 
         #   SET TimeStep = TimeStep-20, CalendarYear = CalendarYear-20;"""
     ]
-
-    with AccessDB(af_rrdb_path) as rrdb:
+    logging.info("running afforestation results fixes on {}".format(af_rrdb_path))
+    with AccessDB(af_rrdb_path, False) as rrdb:
         for sql_group in sql_groups:
+            logging.info(sql_group["table"])
             max_id = rrdb.GetMaxID(sql_group["table"], sql_group["id_col"])
             maxBatchDeleteSize = 50000
             iterations = max_id / maxBatchDeleteSize
@@ -104,5 +105,5 @@ def run_af_results_fixes(af_rrdb_path):
                 for sql in sql_group["queries"]:
                     rrdb.ExecuteQuery(query=sql, params=(r["min"], r["max"]))
 
-
+    logging.info("finished running afforestation results fixes.")
 
