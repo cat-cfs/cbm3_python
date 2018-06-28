@@ -34,6 +34,9 @@ class ResultsLoader(object):
             x = self.BuildCsetLookup(projectDB)
 
         with AccessDB(outputDBPath,False) as load_db:
+            logging.info("creating indexes")
+            self.createIndexes(load_db)
+
             self.addAnnualProcessDistType(load_db)
             self.loadAgeInd(projectSimulationDirectory, load_db)
             self.loadPoolInd(projectSimulationDirectory, load_db)
@@ -41,8 +44,7 @@ class ResultsLoader(object):
             self.loadFluxInd(projectSimulationDirectory, load_db)
             if loadPreDistAge:
                 self.loadPreDistAge(projectSimulationDirectory, load_db)
-            logging.info("creating indexes")
-            self.createIndexes(load_db)
+
         return outputDBPath
 
     def createIndexes(self, db):
