@@ -69,6 +69,7 @@ def main():
     try:
         parser = argparse.ArgumentParser(description="RunNation v2 script: processes and runs a batch of NIR simulations")
         parser.add_argument("--configuration", help="run nation configuration file")
+        parser.add_argument("--local_working_dir", help="local working directory")
         parser.add_argument("--prefix_filter", help="optional comma delimited prefixes, if included only the specified projects will be included")
         parser.add_argument("--copy_local", action="store_true", dest="copy_local", help="if present, copy the projects and archive index to the local working dir")
         parser.add_argument("--preprocess", action="store_true", dest="preprocess", help="if present, run the pre-processing steps on the local copies of project databases")
@@ -81,14 +82,16 @@ def main():
 
         args = parser.parse_args()
 
+        date_stamp = get_date_stamp()
+
         config_path = os.path.abspath(args.configuration)
         config = load_json(args.configuration)
-        working_dir = os.path.abspath(config["local_working_dir"])
+        working_dir = os.path.abspath(args.local_working_dir)
         if not os.path.exists(working_dir):
             os.makedirs(working_dir)
 
         logpath = os.path.join(working_dir,
-                 "{0}_{1}.log".format(get_date_stamp(), config["Name"]))
+                 "{0}_{1}.log".format(date_stamp, config["Name"]))
         loghelper.start_logging(logpath, 'w+')
 
         #check that the user provided filter items actually exist in the config
@@ -103,7 +106,7 @@ def main():
             [x for x in config["project_prefixes"] 
              if x in args.prefix_filter.split(",")]
 
-
+        config["local_working_dir"] = working_dir
         ns = NIRSimulator(config)
 
         if args.copy_local:
@@ -168,7 +171,7 @@ def main():
             final_results_dir = os.path.abspath(config["final_results_dir"])
             if not os.path.exists(final_results_dir):
                 os.makedirs(final_results_dir)
-            final_results_subdir = os.path.join(final_results_dir, get_date_stamp())
+            final_results_subdir = os.path.join(final_results_dir, date_stamp)
             logging.info("copying all contents of '{src}' to '{dest}'"
                          .format(src=working_dir, dest=final_results_subdir))
             shutil.copytree(working_dir, final_results_subdir)
