@@ -102,6 +102,7 @@ class NIRSimulator(object):
             s.CopyCBMExecutable()
             s.DumpMakelistSVLs()
             s.RunCBM()
+            s.CopyTempFiles()
 
     def run_cbm_simulation(self, local_project_path, local_aidb_path,
                            cbm_exe_path, dist_classes_path, dist_rules_path):
@@ -132,6 +133,7 @@ class NIRSimulator(object):
             s.CreateCBMFiles()
             s.CopyCBMExecutable()
             s.RunCBM()
+            s.CopyTempFiles()
 
     def GetAccessDBPathFromDir(self, dir, newest=False):
         matches = []
