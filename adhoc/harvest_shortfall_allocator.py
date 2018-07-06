@@ -7,9 +7,10 @@ first_projection_year = 28
 simdir = r"M:\2018_ETR\05_working\02_BAU\Simulation\2018-07-06 05_00_12"
 report_fil = r"1\Tempfiles\CBMRun\output\report.fil"
 mined_report_fil = r"1\Tempfiles\CBMRun\output\mined_report.fil.csv"
-project_prefixes = ["BCB" ] #, "BCMN", "BCMS", "BCP"]
-
+project_prefixes = ["BCB", "BCMN", "BCMS", "BCP"]
+output_file_path = r"M:\2018_ETR\05_working\00_Harvest\shifted_harvest_BC.csv"
 mined_report_fil_paths = {}
+
 #0 mine report.fils
 for p in project_prefixes:
     inpath = os.path.join(simdir, p, report_fil)
@@ -110,3 +111,20 @@ for d_a in adequate_dist_groups:
     d_a["harvest_proportion"] = new_proportion
 
 #8 write out the results
+with open(output_file_path, 'wb') as csvfile:
+    writer = csv.writer(csvfile)
+    rows = [
+        [
+            x["disturbance_group"][0],
+            x["disturbance_group"][1],
+            x["harvest_proportion"]
+        ] for x in adequate_dist_groups]
+    rows.extend([
+        [
+            x["disturbance_group"][0],
+            x["disturbance_group"][1],
+            x["harvest_proportion"]
+        ] for x in inadequate_dist_groups])
+    rows.sort(key=lambda x: (x[0],x[1]))
+    for r in rows:
+        writer.writerow(r)
