@@ -8,7 +8,7 @@ def filterRow(row, column):
     if row[column['Default Disturbance Type']] in [ '4', '185', '195', '196' ] :
         return True
         
-def run(inputFile, outputFile, delimiter=','):
+def analyse_report_fil(inputFile, outputFile, delimiter=','):
     fileContents = inputFile.read() #read entire file into memory... it's the only way to use regex this way apparently
     # match on the blocks of disturbance reconciliation... please see http://docs.python.org/library/re.html
     matches = re.findall('Disturbance Reconciliation.+?Records Changed:[ \t0-9]+', fileContents, re.DOTALL) 
@@ -52,5 +52,5 @@ if __name__ == "__main__":
 
     with open(sys.argv[1], 'r') as inputFile:
         with open(sys.argv[2], 'w') as outputFile:
-            run(inputFile, outputFile)
+            analyse_report_fil(inputFile, outputFile)
     
