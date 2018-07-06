@@ -54,7 +54,7 @@ for k,v in grouped_data.items():
 #5. reduce the inadequate group's harvest target by the cumulative shortfall + error margin (distributed evenly across projection years)
 for d in inadequate_dist_groups:
     dist_group = d["disturbance_group"]
-    reduction = d["cumulative_shortfall"] * (1.0 + error_margin)
+    reduction = d["cumulative_shortfall"] * (1.0 + error_margin/100.0)
     timesteps = sorted([x for x in grouped_data[dist_group].keys()
                         if x >= max(d["shortfall_year"], first_projection_year)])
     per_timestep_reduction = reduction / len(timesteps)
