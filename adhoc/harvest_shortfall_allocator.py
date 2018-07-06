@@ -37,15 +37,23 @@ for k,v in grouped_data.items():
 
 #3. compute the cumulative shortfall for each identified inadequate group
 for d in inadequate_dist_groups:
-    timesteps = sorted([x for x in grouped_data[d].keys() if x >= d["shortfall_year"]])
+    dist_group = d["disturbance_group"]
+    timesteps = sorted([x for x in grouped_data[dist_group].keys() if x >= d["shortfall_year"]])
     cumulative_shorfall = 0
     for t in timesteps:
-        cumulative_shorfall += float(grouped_data[d][t]["Target Biomass C"])
+        cumulative_shorfall += float(grouped_data[dist_group][t]["Target Biomass C"])
     d["cumulative_shorfall"] = cumulative_shorfall
 
 #4. identify the adequate groups by finding the final simulation point surplus for those disturbance groups that have remaining biomass
+adequate_dist_groups = []
+for k,v in grouped_data.items():
+    if k in inadequate_dist_groups:
+        continue
+    last_timestep = sorted(v.keys())[-1]
+    adequate_dist_groups.append({"disturbance_group": k, "end_surplus": float(v[t]["Surplus Biomass C"])})
 
-#5. reduce the inadequate group's harvest target by the cumulative shortfall (distributed evenly across projection years)
+#5. reduce the inadequate group's harvest target by the cumulative shortfall + error margin (distributed evenly across projection years)
+
 
 #6. allocate the amount reduced first weighted by the remaining biomass, then distributed across projection years to the adequate groups
 

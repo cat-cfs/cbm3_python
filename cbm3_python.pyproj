@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ed5dc488-c8d0-4ab7-82f5-35a905e71134}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>runnation.py</StartupFile>
+    <StartupFile>adhoc\harvest_shortfall_allocator.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -22,6 +22,8 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="adhoc\analyse_report_fil.py" />
+    <Compile Include="adhoc\harvest_shortfall_allocator.py" />
     <Compile Include="adhoc\run_NIR_with_pre_dist_age.py" />
     <Compile Include="adhoc\update_oilsands_dms.py" />
     <Compile Include="adhoc\update_SBW.py" />
