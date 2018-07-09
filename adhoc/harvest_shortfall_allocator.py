@@ -8,20 +8,23 @@ def load_json(path):
     with open(path, 'r') as f:
         return json.loads(f.read())
 
-def mine_report_fils(config, project_prefixes):
+def mine_report_fils(config, project_prefixes, do_mining):
     mined_report_fil_paths = {}
     for p in project_prefixes:
         inpath = config["report_fil_path_format"].format(project_prefix=p)
         outpath =  config["mined_report_fil_path_format"].format(project_prefix=p)
 
-        with open(inpath, 'r') as infile, \
-             open(outpath, 'w') as outfile:
-            logging.info("{0}: reading cbm report.fil '{1}'".format(p, inpath))
-            analyse_report_fil(
-                inputFile=infile,
-                outputFile=outfile,
-                delimiter=",")
-            mined_report_fil_paths[p] = outpath
+        if do_mining:
+            with open(inpath, 'r') as infile, \
+                 open(outpath, 'w') as outfile:
+
+                logging.info("{0}: reading cbm report.fil '{1}'".format(p, inpath))
+                analyse_report_fil(
+                    inputFile=infile,
+                    outputFile=outfile,
+                    delimiter=",")
+
+        mined_report_fil_paths[p] = outpath
     return mined_report_fil_paths
 
 def load_report_fil_data(mined_report_fil_paths):
@@ -120,12 +123,21 @@ def compute_new_harvest_proportions(adequate_dist_groups):
         new_proportion = new_target / d_a["total_projection_target"]
         d_a["harvest_proportion"] = new_proportion
 
-def write_results(adequate_dist_groups, output_file_path, disturbance_group_spugroup_map):
+def write_results(adequate_dist_groups, inadequate_dist_groups, output_file_path, disturbance_group_spugroup_map):
     with open(output_file_path, 'wb') as csvfile:
         writer = csv.writer(csvfile)
     
         get_project_prefix = lambda x: x["disturbance_group"][0]
-        get_spugroup = lambda x: disturbance_group_spugroup_map[get_project_prefix(x)][str(x["disturbance_group"][1])]
+        def get_spugroup(x):
+            project_prefix = get_project_prefix(x)
+            project_map = disturbance_group_spugroup_map[project_prefix]
+            report_fil_disturbance_group = str(x["disturbance_group"][1])
+            if report_fil_disturbance_group not in project_map:
+                raise ValueError("specified report fil disturbacne group not in project '{}' map. Disturbance group {}"
+                                 .format(project_prefix, report_fil_disturbance_group))
+            cbm_spugroup = project_map[report_fil_disturbance_group]
+            return cbm_spugroup
+
         get_harvest_proportion = lambda x: x["harvest_proportion"]
     
         rows = [
@@ -144,7 +156,7 @@ def write_results(adequate_dist_groups, output_file_path, disturbance_group_spug
         for r in rows:
             writer.writerow(r)
 
-def run_harvest_reallocator(config_path):
+def run_harvest_reallocator(config_path, do_mining=True):
     config = load_json(config_path)
     error_margin = config["error_margin_percent"]
     first_projection_year = config["first_projection_year"]
@@ -155,8 +167,9 @@ def run_harvest_reallocator(config_path):
 
     disturbance_group_spugroup_map = config["disturbance_group_spugroup_map"]
 
+
     #0 mine report.fils
-    mined_report_fil_paths = mine_report_fils(config, project_prefixes)
+    mined_report_fil_paths = mine_report_fils(config, project_prefixes, do_mining)
 
     #1. load the mined report.fil data
     data = load_report_fil_data(mined_report_fil_paths)
@@ -183,18 +196,21 @@ def run_harvest_reallocator(config_path):
     compute_new_harvest_proportions(adequate_dist_groups)
 
     #8 write out the results
-    write_results(adequate_dist_groups, output_file_path, disturbance_group_spugroup_map)
+    write_results(adequate_dist_groups, inadequate_dist_groups, output_file_path, disturbance_group_spugroup_map)
 
 def main():
     try:
         parser = argparse.ArgumentParser(description="projected harvest reallocator")
         parser.add_argument("--configuration", help="path to json config file")
+        parser.add_argument("--mine_report_fil", action="store_true",
+                            dest="mine_report_fil", help="if true mine report.fil files specified in config")
         args = parser.parse_args()
         
         logpath = os.path.join( os.getcwd(), "harvest_shortfall_allocator_{}.log".format(
             datetime.datetime.now().strftime("%Y-%m-%d %H_%M_%S")))
         loghelper.start_logging(logpath, 'w+')
-        run_harvest_reallocator(args.configuration)
+
+        run_harvest_reallocator(args.configuration, args.mine_report_fil)
 
     except Exception as ex:
         logging.exception("")
