@@ -126,7 +126,7 @@ def compute_new_harvest_proportions(adequate_dist_groups):
 def write_results(adequate_dist_groups, inadequate_dist_groups, output_file_path, disturbance_group_spugroup_map):
     with open(output_file_path, 'wb') as csvfile:
         writer = csv.writer(csvfile)
-    
+        writer.writerow(["project","spugroupid","shifted_harvest_proportion"])
         get_project_prefix = lambda x: x["disturbance_group"][0]
         def get_spugroup(x):
             project_prefix = get_project_prefix(x)
