@@ -101,7 +101,8 @@ def identify_adequate_groups(first_projection_year, grouped_data, inadequate_dis
 
 def reduce_harvest_targets(inadequate_dist_groups, error_margin, first_projection_year, grouped_data, disturbance_group_spugroup_map):
 
-    summary_file_path = "harvest_reduction_summary.csv"
+    summary_file_path = os.path.abspath("harvest_reduction_summary.csv")
+    logging.info("harvest reduction summary file {}".format(summary_file_path))
     with open(summary_file_path, 'wb') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["project", "spugroup", "cumulative_shortfall", "harvest_shift", "total_projection_target", "new_projection_target", "proportion"])
@@ -125,20 +126,59 @@ def reduce_harvest_targets(inadequate_dist_groups, error_margin, first_projectio
             writer.writerow([dist_group[0],spu_group, d["cumulative_shortfall"], harvest_shift, total_projection_target, new_harvest_target, harvest_proportion])
 
 
-def allocate_reduced_harvest(inadequate_dist_groups, adequate_dist_groups):
+def allocate_reduced_harvest(inadequate_dist_groups, adequate_dist_groups, disturbance_group_spugroup_map):
     adequate_dist_group_sum = sum([g["end_surplus"] for g in adequate_dist_groups])
-    
-    for d_i in inadequate_dist_groups:
-        for d_a in adequate_dist_groups:
-            weight = d_a["end_surplus"] / adequate_dist_group_sum
-            shift = d_i["harvest_shift"] * weight
-            d_a["incoming_harvest_shifts"].append(shift)
 
-def compute_new_harvest_proportions(adequate_dist_groups):
-    for d_a in adequate_dist_groups:
-        new_target = d_a["total_projection_target"] + sum(d_a["incoming_harvest_shifts"])
-        new_proportion = new_target / d_a["total_projection_target"]
-        d_a["harvest_proportion"] = new_proportion
+    logging.info("allocating reduced harvest among groups that have surplus")
+    summary_file_path = os.path.abspath("harvest_reallocation_summary.csv")
+    logging.info("harvest reallocation summary file {}".format(summary_file_path))
+    with open(summary_file_path, 'wb') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["dest_project", "dest_spugroup", "end_surplus", "final_surplus_weight", "src_project", "src_spugroup", "harvest_C_shift" ])
+        for d_i in inadequate_dist_groups:
+            for d_a in adequate_dist_groups:
+                weight = d_a["end_surplus"] / adequate_dist_group_sum
+                shift = d_i["harvest_shift"] * weight
+                d_a["incoming_harvest_shifts"].append(shift)
+
+                dest_project = d_a["disturbance_group"][0]
+                dest_spugroup = disturbance_group_spugroup_map[dest_project][str(d_a["disturbance_group"][1])]
+                end_surplus  = d_a["end_surplus"]
+                final_surplus_weight = weight
+                src_project = d_i["disturbance_group"][0]
+                src_spugroup = disturbance_group_spugroup_map[src_project][str(d_i["disturbance_group"][1])]
+                harvest_C_shift = shift
+                writer.writerow([
+                    dest_project,
+                    dest_spugroup,
+                    end_surplus,
+                    final_surplus_weight,
+                    src_project,
+                    src_spugroup,
+                    harvest_C_shift
+                    ])
+
+def compute_new_harvest_proportions(adequate_dist_groups, disturbance_group_spugroup_map):
+    logging.info("computing new harvest proportions for adequate groups")
+    summary_file_path = os.path.abspath("new_harvest_proportions_summary.csv")
+    logging.info("adequate groups new harvest proportions summary file {}".format(summary_file_path))
+    with open(summary_file_path, 'wb') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["project", "spugroup", "total_projection_target", "total_incoming_harvest_shifts", "new_target", "new_proportion" ])
+
+        for d_a in adequate_dist_groups:
+            new_target = d_a["total_projection_target"] + sum(d_a["incoming_harvest_shifts"])
+            new_proportion = new_target / d_a["total_projection_target"]
+            d_a["harvest_proportion"] = new_proportion
+
+            project = d_a["disturbance_group"][0]
+            spugroup = disturbance_group_spugroup_map[project][str(d_a["disturbance_group"][1])]
+            total_projection_target = d_a["total_projection_target"]
+            total_incoming_harvest_shifts = sum(d_a["incoming_harvest_shifts"])
+
+            writer.writerow([project, spugroup, total_projection_target, total_incoming_harvest_shifts, new_target, new_proportion])
+
+
 
 def write_results(adequate_dist_groups, inadequate_dist_groups, output_file_path, disturbance_group_spugroup_map):
     with open(output_file_path, 'wb') as csvfile:
@@ -207,10 +247,10 @@ def run_harvest_reallocator(config_path, do_mining=True):
     reduce_harvest_targets(inadequate_dist_groups, error_margin, first_projection_year, grouped_data, disturbance_group_spugroup_map)
 
     #6. allocate the amount reduced first weighted by the remaining biomass, then distributed across projection years to the adequate groups
-    allocate_reduced_harvest(inadequate_dist_groups, adequate_dist_groups)
+    allocate_reduced_harvest(inadequate_dist_groups, adequate_dist_groups, disturbance_group_spugroup_map)
     
     #7. compute the new harvest proportions for the adequate groups
-    compute_new_harvest_proportions(adequate_dist_groups)
+    compute_new_harvest_proportions(adequate_dist_groups, disturbance_group_spugroup_map)
 
     #8 write out the results
     write_results(adequate_dist_groups, inadequate_dist_groups, output_file_path, disturbance_group_spugroup_map)
