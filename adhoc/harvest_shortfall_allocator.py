@@ -75,7 +75,11 @@ def compute_cumulative_shortfalls(inadequate_dist_groups, grouped_data):
         timesteps = sorted([x for x in grouped_data[dist_group].keys() if x >= d["shortfall_year"]])
         cumulative_shorfall = 0
         for t in timesteps:
-            cumulative_shorfall += float(grouped_data[dist_group][t]["Target Biomass C"])
+            target = float(grouped_data[dist_group][t]["Target Biomass C"])
+            surplus = float(grouped_data[dist_group][t]["Surplus Biomass C"])
+            bioCProp = float(grouped_data[dist_group][t]["Biomass C Prop'n"])
+            if surplus < 1e-10 or bioCProp > 1.0: #filter out years that have surplus
+                cumulative_shorfall += target
         logging.info("project {0} disturbance group {1} cumulative shortfall: {2}"
                      .format(dist_group[0],dist_group[1],cumulative_shorfall))
         d["cumulative_shortfall"] = cumulative_shorfall
