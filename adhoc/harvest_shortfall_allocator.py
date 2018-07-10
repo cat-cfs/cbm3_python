@@ -1,8 +1,9 @@
 import csv, os, sys, json, argparse, datetime, logging
+sys.path.append('../')
 from analyse_report_fil import *
 from util import loghelper
 
-sys.path.append('../')
+
 
 def load_json(path):
     with open(path, 'r') as f:
