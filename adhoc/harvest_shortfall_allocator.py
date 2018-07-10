@@ -76,9 +76,9 @@ def compute_cumulative_shortfalls(inadequate_dist_groups, grouped_data):
         cumulative_shorfall = 0
         for t in timesteps:
             target = float(grouped_data[dist_group][t]["Target Biomass C"])
-            surplus = float(grouped_data[dist_group][t]["Surplus Biomass C"])
-            bioCProp = float(grouped_data[dist_group][t]["Biomass C Prop'n"])
-            if surplus < 1e-10 or bioCProp > 1.0: #filter out years that have surplus
+            surplus = grouped_data[dist_group][t]["Surplus Biomass C"]
+            bioCProp = grouped_data[dist_group][t]["Biomass C Prop'n"]
+            if float(surplus) < 1e-10 or float(bioCProp) > 1.0: #filter out years that have surplus
                 cumulative_shorfall += target
         logging.info("project {0} disturbance group {1} cumulative shortfall: {2}"
                      .format(dist_group[0],dist_group[1],cumulative_shorfall))
@@ -99,18 +99,31 @@ def identify_adequate_groups(first_projection_year, grouped_data, inadequate_dis
                      .format(k[0],k[1],d_g["end_surplus"]))
     return adequate_dist_groups
 
-def reduce_harvest_targets(inadequate_dist_groups, error_margin, first_projection_year, grouped_data):
-    for d in inadequate_dist_groups:
-        dist_group = d["disturbance_group"]
-        harvest_shift = d["cumulative_shortfall"] * (1.0 + error_margin/100.0)
+def reduce_harvest_targets(inadequate_dist_groups, error_margin, first_projection_year, grouped_data, disturbance_group_spugroup_map):
+
+    summary_file_path = "harvest_reduction_summary.csv"
+    with open(summary_file_path, 'wb') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["project", "spugroup", "cumulative_shortfall", "harvest_shift", "total_projection_target", "new_projection_target", "proportion"])
+        for d in inadequate_dist_groups:
+        
+            dist_group = d["disturbance_group"]
+            spu_group =  disturbance_group_spugroup_map[dist_group[0]][str(dist_group[1])]
+            logging.info("Computing reduced harvest. Project: {}, Spugroup {}".format(
+                dist_group[0],spu_group))
+
+            harvest_shift = d["cumulative_shortfall"] * (1.0 + error_margin/100.0)
     
-        projection_years = [year for year in sorted(grouped_data[dist_group].keys()) if year >= first_projection_year]
-        total_projection_target = sum([float(grouped_data[dist_group][year]["Target Biomass C"]) for year in projection_years])
-        #new harvest target is the sum of the projection target for all years less the reduction
-        new_harvest_target = total_projection_target - harvest_shift
-        harvest_proportion = new_harvest_target/total_projection_target
-        d["harvest_shift"] = harvest_shift
-        d["harvest_proportion"] = harvest_proportion
+            projection_years = [year for year in sorted(grouped_data[dist_group].keys()) if year >= first_projection_year]
+            total_projection_target = sum([float(grouped_data[dist_group][year]["Target Biomass C"]) for year in projection_years])
+            #new harvest target is the sum of the projection target for all years less the reduction
+            new_harvest_target = total_projection_target - harvest_shift
+            harvest_proportion = new_harvest_target/total_projection_target
+
+            d["harvest_shift"] = harvest_shift
+            d["harvest_proportion"] = harvest_proportion
+            writer.writerow([dist_group[0],spu_group, d["cumulative_shortfall"], harvest_shift, total_projection_target, new_harvest_target, harvest_proportion])
+
 
 def allocate_reduced_harvest(inadequate_dist_groups, adequate_dist_groups):
     adequate_dist_group_sum = sum([g["end_surplus"] for g in adequate_dist_groups])
@@ -191,7 +204,7 @@ def run_harvest_reallocator(config_path, do_mining=True):
     adequate_dist_groups = identify_adequate_groups(first_projection_year, grouped_data, inadequate_dist_group_keys)
 
     #5. reduce the inadequate group's harvest target by the cumulative shortfall + error margin (distributed evenly across projection years)
-    reduce_harvest_targets(inadequate_dist_groups, error_margin, first_projection_year, grouped_data)
+    reduce_harvest_targets(inadequate_dist_groups, error_margin, first_projection_year, grouped_data, disturbance_group_spugroup_map)
 
     #6. allocate the amount reduced first weighted by the remaining biomass, then distributed across projection years to the adequate groups
     allocate_reduced_harvest(inadequate_dist_groups, adequate_dist_groups)
@@ -201,6 +214,8 @@ def run_harvest_reallocator(config_path, do_mining=True):
 
     #8 write out the results
     write_results(adequate_dist_groups, inadequate_dist_groups, output_file_path, disturbance_group_spugroup_map)
+
+    
 
 def main():
     try:
