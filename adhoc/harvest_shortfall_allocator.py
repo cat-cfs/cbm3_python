@@ -118,6 +118,10 @@ def reduce_harvest_targets(inadequate_dist_groups, error_margin, first_projectio
     
             projection_years = [year for year in sorted(grouped_data[dist_group].keys()) if year >= first_projection_year]
             total_projection_target = sum([float(grouped_data[dist_group][year]["Target Biomass C"]) for year in projection_years])
+            
+            #cap the harvest target shift at total projection target
+            harvest_shift = total_projection_target if harvest_shift > total_projection_target else harvest_shift
+            
             #new harvest target is the sum of the projection target for all years less the reduction
             new_harvest_target = total_projection_target - harvest_shift
             harvest_proportion = new_harvest_target/total_projection_target
