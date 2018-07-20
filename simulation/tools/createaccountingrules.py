@@ -181,7 +181,7 @@ class CreateAccountingRules(object):
 
         self.projectAccessDb.ExecuteMany(
             "INSERT INTO tblAccountingRuleTrackingType (name) VALUES (?)",
-            [["ignore"], ["replace"], ["inherit"]])
+            [["ignore"], ["replace"], ["inherit"], ["passive"]])
 
         with open(self.dist_classes_path, "rb") as dist_class_file:
             reader = csv.DictReader(dist_class_file)
