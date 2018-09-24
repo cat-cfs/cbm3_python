@@ -2,7 +2,7 @@ import pyodbc
 import logging
 import os
 
-from accessdb import AccessDB
+from cbm3data.accessdb import AccessDB
 
 # Scott - Nov 2013
 # wrapper for ms access archive index database

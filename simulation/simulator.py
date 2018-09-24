@@ -42,7 +42,7 @@ class Simulator(object):
         #ignore Access database files
         ignorelist = []
         for item in name:
-            if (item.lower().find('.mdb') <> -1): 
+            if (item.lower().find('.mdb') != -1): 
                ignorelist.append(item)
         return ignorelist
 
@@ -61,7 +61,7 @@ class Simulator(object):
             for f in files:
                 os.remove(os.path.join(root, f))
             for d in dirs:
-                if os.path.join(root, d) <> top:
+                if os.path.join(root, d) != top:
                     shutil.rmtree(os.path.join(root, d),ignore_errors=1)
                     #ignore_errors is TRUE. This is dangerous, but otherwise the script fails when it gets to CBMRun
 
