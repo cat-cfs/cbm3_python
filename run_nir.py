@@ -1,1 +1,3 @@
+from simulation import NIRSimulator
+
 

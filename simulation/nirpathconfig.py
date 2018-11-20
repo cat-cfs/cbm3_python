@@ -1,4 +1,4 @@
-import csv
+import csv, os, logging
 from util import loghelper
 
 class NIRPathConfig(object):
@@ -10,7 +10,7 @@ class NIRPathConfig(object):
         '''
         helper method to create a csv file containing validated baseline NIR project paths, and rrdb paths
         '''
-        with open(output_csv_file_path, 'w') as csvfile:
+        with open(output_path, 'wb') as csvfile:
             fieldNames = ["project_prefix", "project_path", "results_path"]
             writer = csv.DictWriter(csvfile, fieldnames= fieldNames)
             writer.writeheader()
@@ -38,9 +38,7 @@ class NIRPathConfig(object):
 
     def get_base_run_results_path(self, base_project_dir, project_prefix, results_dir):
         logging.info("looking for {0} run results database".format(project_prefix))
-        if project_prefix == "UF" or project_prefix == "AF":
-            #special case: uf and af have nonstandard queries and 2 copies of RRDB
-            return self.GetAccessDBPathFromDir(
+        return self.GetAccessDBPathFromDir(
                         os.path.join(base_project_dir,
                         project_prefix, results_dir), newest = True)
 
