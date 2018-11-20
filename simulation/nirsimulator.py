@@ -11,20 +11,15 @@ from nir_sql.afforestation_fixes import *
 from nir_sql.unmanaged_forest_fixes import *
 class NIRSimulator(object):
 
-    def __init__(self, config):
+    def __init__(self, config, base_projects):
         self.config = config
+        self.base_projects = { x["project_prefix"] : x for x in base_projects }
 
     def get_base_project_path(self, project_prefix):
-        
-        return self.GetAccessDBPathFromDir(
-            os.path.join(self.config["base_project_dir"], project_prefix))
+        return self.base_projects[project_prefix]["project_path"]
 
-    def get_base_run_results_path(self, project_prefix, results_dir="RESULTS"):
-        if project_prefix == "UF" or project_prefix == "AF":
-            #special case: uf and af have nonstandard queries and 2 copies of RRDB
-            return self.GetAccessDBPathFromDir(
-                        os.path.join(self.config["base_project_dir"],
-                        project_prefix, results_dir), newest = True)
+    def get_base_run_results_path(self, project_prefix):
+        return self.base_projects[project_prefix]["results_path"]
 
         return self.GetAccessDBPathFromDir(
             os.path.join(self.config["base_project_dir"], 
@@ -134,21 +129,6 @@ class NIRSimulator(object):
             s.CopyCBMExecutable()
             s.RunCBM()
             s.CopyTempFiles()
-
-    def GetAccessDBPathFromDir(self, dir, newest=False):
-        matches = []
-        for i in os.listdir(dir):
-            if i.lower().endswith(".mdb"):
-                matches.append(os.path.join(dir, i))
-        if len(matches) == 1:
-            return matches[0]
-        elif len(matches) > 1 and newest:
-            return sorted(matches, key= lambda x: os.path.getmtime(x), reverse=True)[0]
-        elif len(matches) > 1 and not newest:
-            raise AssertionError("found more than one access database.  Directory='{0}'".format(dir))
-        else:
-            raise AssertionError("expected a dir containing at least one access database, found {0}.  Directory='{1}'"
-                                 .format(matchCount, dir))
 
     def copy_aidb_local(self):
         logging.info("copying archive index - source: '{0}', dest: '{1}'"

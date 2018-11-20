@@ -27,7 +27,13 @@
     <Compile Include="adhoc\run_NIR_with_pre_dist_age.py" />
     <Compile Include="adhoc\update_oilsands_dms.py" />
     <Compile Include="adhoc\update_SBW.py" />
+    <Compile Include="create_nir_path_config.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="simulate.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="simulation\nirpathconfig.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="simulation\nir_sql\hwpinput.py">
