@@ -11,7 +11,7 @@ def main():
         parser = argparse.ArgumentParser(description="generate a csv file "
             "containing validated NIR project paths, and corresponding run "
             "results database paths")
-        parser.add_argument("--output_path", help="path to a an output csv file created by this script")
+        parser.add_argument("--output_path", help="path to an output csv file created by this script")
         parser.add_argument("--base_project_dir", help="directory containing projects and results for the specified project_prefixes")
         parser.add_argument("--project_prefixes", help="comma delimited string of project prefixes (ex. 'BCP,AB,NB'")
         parser.add_argument("--results_dir", nargs="?",
