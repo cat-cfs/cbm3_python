@@ -1,4 +1,4 @@
-import os, shutil, logging
+import os, shutil, logging, stat
 from cbm3data.accessdb import AccessDB
 from cbm3data.aidb import AIDB
 from cbm3data.access_templates import *
@@ -46,7 +46,7 @@ class NIRSimulator(object):
 
         self.copy_aidb_local()
         local_results_paths = []
-        for p in c["project_prefixes"]:
+        for p in self.config["project_prefixes"]:
             if not prefix_filter is None:
                 if not p in prefix_filter:
                     continue
@@ -137,6 +137,7 @@ class NIRSimulator(object):
 
         shutil.copy(self.config["base_aidb_path"],
                     self.config["local_aidb_path"])
+        os.chmod(self.config["local_aidb_path"], stat.S_IWRITE)
 
     def copy_project_local(self, project_prefix):
         base_project_path = self.get_base_project_path(project_prefix) 
@@ -148,6 +149,7 @@ class NIRSimulator(object):
         if not os.path.exists(os.path.dirname(local_project_path)):
             os.makedirs(os.path.dirname(local_project_path))
         shutil.copy(base_project_path, local_project_path)
+        os.chmod(local_project_path, stat.S_IWRITE)
         return local_project_path
 
     def load_project_results(self, project_prefix):
@@ -166,6 +168,7 @@ class NIRSimulator(object):
             run_uf_results_fixes(local_results_path)
         if project_prefix == "AF":
             run_af_results_fixes(local_results_path)
+        return output
 
     def do_rollup(self, rrdbs):
         local_rollup_path = self.get_local_rollup_db_path()
