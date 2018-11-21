@@ -5,7 +5,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ed5dc488-c8d0-4ab7-82f5-35a905e71134}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>run_nir.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -27,9 +28,6 @@
     <Compile Include="adhoc\update_oilsands_dms.py" />
     <Compile Include="adhoc\update_SBW.py" />
     <Compile Include="create_nir_path_config.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="run_nir.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="simulate.py">

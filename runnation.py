@@ -1,6 +1,7 @@
 import os, sys, shutil, argparse, json, logging, datetime
 from cbm3data.accessdb import AccessDB
 from simulation.nirsimulator import NIRSimulator
+from simulation.nirpathconfig import NIRPathConfig
 from simulation.nir_sql import nir_project_queries
 from simulation.nir_sql import hwpinput
 from simulation.tools.avgdisturbanceextender import AvgDisturbanceExtender
@@ -67,10 +68,17 @@ def preprocess(config, project_prefix, project_path):
 
 def main():
     try:
-        parser = argparse.ArgumentParser(description="RunNation v2 script: processes and runs a batch of NIR simulations")
+        parser = argparse.ArgumentParser(description="RunNation v2 script: "
+                                         "processes and runs a batch of NIR "
+                                         "simulations")
         parser.add_argument("--configuration", help="run nation configuration file")
+        parser.add_argument("--nir_base_path_config", help="path to a csv file "
+                            "containing the baseline project, and run results "
+                            "database paths by project prefix")
         parser.add_argument("--local_working_dir", help="local working directory")
-        parser.add_argument("--prefix_filter", help="optional comma delimited prefixes, if included only the specified projects will be included")
+        parser.add_argument("--prefix_filter", help="optional comma delimited "
+                            "prefixes, if included only the specified projects "
+                            "will be included")
         parser.add_argument("--copy_local", action="store_true", dest="copy_local", help="if present, copy the projects and archive index to the local working dir")
         parser.add_argument("--preprocess", action="store_true", dest="preprocess", help="if present, run the pre-processing steps on the local copies of project databases")
         parser.add_argument("--simulate", action="store_true", dest="simulate", help="if present, run the simulations for each of the local copies of project databases")
@@ -86,6 +94,7 @@ def main():
 
         config_path = os.path.abspath(args.configuration)
         config = load_json(args.configuration)
+        base_path_config_file = os.path.abspath(args.nir_base_path_config)
         working_dir = os.path.abspath(args.local_working_dir)
         if not os.path.exists(working_dir):
             os.makedirs(working_dir)
@@ -107,7 +116,9 @@ def main():
              if x in args.prefix_filter.split(",")]
 
         config["local_working_dir"] = working_dir
-        ns = NIRSimulator(config)
+
+        base_path_config = NIRPathConfig()
+        ns = NIRSimulator(config, base_path_config.load(base_path_config_file))
 
         if args.copy_local:
             logging.info("copying databases to working dir")
