@@ -60,8 +60,10 @@ def preprocess(config, project_prefix, project_path):
             logging.info("disturbance generator finished")
         else: logging.info("disturbance generator skipped")
 
-        sql_run_length = nir_project_queries.sql_set_run_project_run_length(config["numTimeSteps"])
-        nir_project_db.ExecuteQuery(query=sql_run_length[0], params=sql_run_length[1])
+        sql_run_length = nir_project_queries.sql_set_run_project_run_length(
+            config["numTimeSteps"])
+        nir_project_db.ExecuteQuery(query=sql_run_length[0],
+                                   params=sql_run_length[1])
         nir_project_queries.run_simulation_id_cleanup(nir_project_db)
         nir_project_queries.update_random_seed(nir_project_db)
 
@@ -79,14 +81,30 @@ def main():
         parser.add_argument("--prefix_filter", help="optional comma delimited "
                             "prefixes, if included only the specified projects "
                             "will be included")
-        parser.add_argument("--copy_local", action="store_true", dest="copy_local", help="if present, copy the projects and archive index to the local working dir")
-        parser.add_argument("--preprocess", action="store_true", dest="preprocess", help="if present, run the pre-processing steps on the local copies of project databases")
-        parser.add_argument("--simulate", action="store_true", dest="simulate", help="if present, run the simulations for each of the local copies of project databases")
-        parser.add_argument("--rollup", action="store_true", dest="rollup", help="if present, run the simulation rollup")
-        parser.add_argument("--hwp_input", action="store_true", dest="hwp_input", help="if specified hwp input is generated")
-        parser.add_argument("--qaqc", action="store_true", dest="qaqc", help="if specified project level qaqc spreadsheets are generated")
-        parser.add_argument("--copy_to_final_results_dir", action="store_true", dest="copy_to_final_results_dir", help="if present results are copied to the final results dir (which is specified in config)."
-                           "If unspecified no copy will occur")
+        parser.add_argument("--copy_local", action="store_true",
+                           dest="copy_local", help="if present, copy the "
+                           "projects and archive index to the local working "
+                           "dir")
+        parser.add_argument("--preprocess", action="store_true",
+                           dest="preprocess", help="if present, run the "
+                           "pre-processing steps on the local copies of "
+                           "project databases")
+        parser.add_argument("--simulate", action="store_true", dest="simulate",
+                           help="if present, run the simulations for each of "
+                           "the local copies of project databases")
+        parser.add_argument("--rollup", action="store_true", dest="rollup",
+                           help="if present, run the simulation rollup")
+        parser.add_argument("--hwp_input", action="store_true",
+                           dest="hwp_input", help="if specified hwp input is "
+                           "generated")
+        parser.add_argument("--qaqc", action="store_true", dest="qaqc",
+                           help="if specified project level qaqc spreadsheets "
+                           "are generated")
+        parser.add_argument("--copy_to_final_results_dir", action="store_true",
+                           dest="copy_to_final_results_dir", help="if present "
+                           "results are copied to the final results dir (which "
+                           "is specified in config). If unspecified no copy "
+                           "will occur")
 
         args = parser.parse_args()
 
@@ -108,7 +126,8 @@ def main():
             for x in args.prefix_filter.split(","):
                 if not x in config["project_prefixes"]:
                     raise AssertionError(
-                        "specified prefix filter item {} does not exist in configuration project_prefixes".format(x))
+                        "specified prefix filter item {} does not exist in "
+                        "configuration project_prefixes".format(x))
         
         project_prefixes = config["project_prefixes"] \
             if not args.prefix_filter else \
