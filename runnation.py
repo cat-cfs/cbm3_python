@@ -158,6 +158,7 @@ def main():
 
         if args.qaqc:
             logging.info("generating qaqc spreadsheets")
+
             for p in project_prefixes:
                 local_dir = ns.get_local_project_dir(p)
                 label = "{0}_{1}".format(p, config["Name"])
@@ -165,7 +166,7 @@ def main():
                     executable_path = config["QaqcExecutablePath"],
                     query_template_path = config["QaqcQueryTemplatePath"],
                     excel_template_path = config["QaqcExcelTemplatePath"],
-                    excel_output_path = os.path.join(local_dir, "{}_qaqc.xlsx".format(p)),
+                    excel_output_path = os.path.join(local_dir, "{}_qaqc.xlsx".format(label)),
                     work_sheet_tasks = qaqc.get_nir_worksheet_tasks(
                         RRDB_A_Label = "base_run",
                         RRDB_A_Path = ns.get_base_run_results_path(p),
