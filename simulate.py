@@ -1,3 +1,6 @@
+# Copyright (C) Her Majesty the Queen in Right of Canada,
+#  as represented by the Minister of Natural Resources Canada
+
 import os, shutil, argparse, datetime, logging
 from simulation.simulator import Simulator
 from cbm3data.aidb import AIDB

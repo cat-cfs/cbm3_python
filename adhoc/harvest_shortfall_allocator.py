@@ -1,3 +1,6 @@
+# Copyright (C) Her Majesty the Queen in Right of Canada,
+#  as represented by the Minister of Natural Resources Canada
+
 import csv, os, sys, json, argparse, datetime, logging
 sys.path.append('../')
 from analyse_report_fil import *

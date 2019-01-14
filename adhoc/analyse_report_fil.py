@@ -1,3 +1,7 @@
+# Copyright (C) Her Majesty the Queen in Right of Canada,
+#  as represented by the Minister of Natural Resources Canada
+
+
 #This script's purpose is to mine the CBM-CFS3 report.fil for it's "Disturbance Reconciliation" output
 #It creates a delimited text file (default delimiter is comma)
 import re #regular expressions

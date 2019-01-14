@@ -1,3 +1,5 @@
+# Copyright (C) Her Majesty the Queen in Right of Canada,
+#  as represented by the Minister of Natural Resources Canada
 
 def sql_delete_disturbance_events(default_dist_type_ids):
     """
