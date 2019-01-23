@@ -31,14 +31,11 @@ def main():
 
         aidb_path = os.path.join(toolbox_installation_dir, "admin", "dbs", "ArchiveIndex_Beta_Install.mdb")
         cbm_exe_path = os.path.join(toolbox_installation_dir, "admin", "executables")
-        working_aidb_path = os.path.join(toolbox_installation_dir, "admin", "dbs", "ArchiveIndex_Beta_Install_working.mdb")
-        shutil.copyfile(aidb_path, working_aidb_path)
-
         project_path = os.path.abspath(args.projectdb)
 
-        with AIDB(working_aidb_path, False) as aidb, \
+        with AIDB(aidb_path, False) as aidb, \
              AccessDB(project_path, False) as proj:
-            aidb.DeleteProjectsFromAIDB()
+
             simId = aidb.AddProjectToAIDB(proj)
             cbm_wd = os.path.join(toolbox_installation_dir, "temp")
             s = Simulator(cbm_exe_path,
