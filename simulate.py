@@ -37,25 +37,28 @@ def main():
              AccessDB(project_path, False) as proj:
 
             simId = aidb.AddProjectToAIDB(proj)
-            cbm_wd = os.path.join(toolbox_installation_dir, "temp")
-            s = Simulator(cbm_exe_path,
-                            simId,
-                            os.path.dirname(project_path),
-                            cbm_wd,
-                            toolbox_installation_dir)
+            try:
+                cbm_wd = os.path.join(toolbox_installation_dir, "temp")
+                s = Simulator(cbm_exe_path,
+                                simId,
+                                os.path.dirname(project_path),
+                                cbm_wd,
+                                toolbox_installation_dir)
 
-            s.CleanupRunDirectory()
-            s.CreateMakelistFiles()
-            s.copyMakelist()
-            s.runMakelist()
-            s.loadMakelistSVLS()
-            s.DumpMakelistSVLs()
-            s.copyMakelistOutput()
-            s.CreateCBMFiles()
-            s.CopyCBMExecutable()
-            s.RunCBM()
-            s.CopyTempFiles()
-            s.LoadCBMResults()
+                s.CleanupRunDirectory()
+                s.CreateMakelistFiles()
+                s.copyMakelist()
+                s.runMakelist()
+                s.loadMakelistSVLS()
+                s.DumpMakelistSVLs()
+                s.copyMakelistOutput()
+                s.CreateCBMFiles()
+                s.CopyCBMExecutable()
+                s.RunCBM()
+                s.CopyTempFiles()
+                s.LoadCBMResults()
+            finally:
+                aidb.DeleteProjectsFromAIDB(simId) #cleanup
             results_path = s.getResultsPath()
             logging.info("simulation finish, results path: {0}"
                          .format(results_path))
