@@ -4,16 +4,19 @@
 import sys
 sys.path.append('../')
 
-#2018 this script updates the Operational scale archive index databases (in En,Es,Fr,Ru) 
+#This script updates the Operational scale archive index databases (in En,Es,Fr,Ru) 
 #with the NIR Firewood collection and Spruce Budworm (QC) matrices and disturbance types
-#and also drops the old SBW matrices, dist types, and association
+#and also drops the old SBW matrices, dist types, and association.
+#For the spruce budworm matrices, it also adds the grwoth multipliers associated with each disturbacne type.
+
+
 import shutil, os, logging
 from cbm3data.accessdb import AccessDB
 from cbm3data.compact_and_repair import *
 from util import loghelper
 from util import excelhelper
 
-local_wd = r"M:\CBM Tools and Development\CBM3\2018\AIDB_SBW_Update"
+local_wd = r"M:\CBM Tools and Development\CBM3\2019\AIDB_Insect_Update"
 
 loghelper.start_logging(os.path.join(local_wd,"update_sbw.log"))
 
@@ -24,7 +27,7 @@ distTypeTranslations = {int(x["DistID"]): x for x in distTypeTranslations}
 distDescTranslations = {int(x["DistID"]): x for x in distDescTranslations}
 
 #1 copy the current op scale archive index databases
-new_sbw_aidb = os.path.join(local_wd, "ArchiveIndex_NIR2018_NDExclusion_newrules_newexes.mdb")
+new_sbw_aidb = os.path.join(local_wd, "ArchiveIndex_NIR2020_QCSBWCorrections.mdb")
 
 original_aidbs = [
     { "Language": "English", "Path": r"M:\CBM Tools and Development\Builds\OpScaleArchiveIndex\20170824\ArchiveIndex_Beta_Install.mdb" },
@@ -74,28 +77,32 @@ for p in local_aidbs:
         a.ExecuteQuery("delete from tblDMValuesLookup where DMID in({0})".format(",".join([str(x) for x in sbw_dm_ids])))
 
 # 3 load the source data
-with AccessDB(new_sbw_aidb) as source_aidb:
+with AccessDB(new_sbw_aidb) as sbw_source_aidb:
 
-    new_dist_ids = [str(x) for x in list(range(236,240))]
+    new_dist_ids = [str(x) for x in list(range(236,267))]
     source_tblDisturbanceTypeDefault = list(
-        source_aidb.Query("SELECT * FROM tblDisturbanceTypeDefault WHERE DistTypeID in({})".format(",".join(new_dist_ids))))
+        sbw_source_aidb.Query("SELECT * FROM tblDisturbanceTypeDefault WHERE DistTypeID in({})".format(",".join(new_dist_ids))))
 
-    source_tblDM = list(source_aidb.Query("""SELECT tblDM.DMID, tblDM.Name, tblDM.Description, tblDM.DMStructureID
+    source_tblDM = list(sbw_source_aidb.Query("""SELECT tblDM.DMID, tblDM.Name, tblDM.Description, tblDM.DMStructureID
                     FROM tblDM INNER JOIN tblDMAssociationDefault ON tblDM.DMID = tblDMAssociationDefault.DMID
                     WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID in({})
                     GROUP BY tblDM.DMID, tblDM.Name, tblDM.Description, tblDM.DMStructureID;
                     """.format(",".join(new_dist_ids))))
 
-    source_tblDMValuesLookup = list(source_aidb.Query("""SELECT tblDMValuesLookup.DMID, tblDMValuesLookup.DMRow, tblDMValuesLookup.DMColumn, tblDMValuesLookup.Proportion
+    source_tblDMValuesLookup = list(sbw_source_aidb.Query("""SELECT tblDMValuesLookup.DMID, tblDMValuesLookup.DMRow, tblDMValuesLookup.DMColumn, tblDMValuesLookup.Proportion
                     FROM tblDMAssociationDefault INNER JOIN tblDMValuesLookup ON tblDMAssociationDefault.DMID = tblDMValuesLookup.DMID
                     WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID in ({})
                     GROUP BY tblDMValuesLookup.DMID, tblDMValuesLookup.DMRow, tblDMValuesLookup.DMColumn, tblDMValuesLookup.Proportion;
                     """.format(",".join(new_dist_ids))))
 
-    source_tblDMAssociationDefault = list(source_aidb.Query(""" SELECT tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DefaultEcoBoundaryID, tblDMAssociationDefault.AnnualOrder, tblDMAssociationDefault.DMID, tblDMAssociationDefault.Name, tblDMAssociationDefault.Description
+    source_tblDMAssociationDefault = list(sbw_source_aidb.Query(""" SELECT tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DefaultEcoBoundaryID, tblDMAssociationDefault.AnnualOrder, tblDMAssociationDefault.DMID, tblDMAssociationDefault.Name, tblDMAssociationDefault.Description
                     FROM tblDMAssociationDefault WHERE tblDMAssociationDefault.DefaultDisturbanceTypeID In({})
                     ORDER BY tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DMID, tblDMAssociationDefault.DefaultEcoBoundaryID"""
                     .format(",".join(new_dist_ids))))
+
+    source_tblGrowthMultiplierDefault = list(sbw_source_aidb.Query("""SELECT tblGrowthMultiplierDefault.DefaultEcoBoundaryID, tblGrowthMultiplierDefault.DefaultDisturbanceTypeID, tblGrowthMultiplierDefault.DefaultSpeciesTypeID, tblGrowthMultiplierDefault.AnnualOrder, tblGrowthMultiplierDefault.GrowthMultiplier
+                FROM tblGrowthMultiplierDefault
+                WHERE tblGrowthMultiplierDefault.DefaultDisturbanceTypeID In ({});""".format(",".join(new_dist_ids))))
 
     #pad out the ecoboundaries, allowing users to point at the QC matrices from other regions
     unique_dm_associations = {}
@@ -108,13 +115,13 @@ with AccessDB(new_sbw_aidb) as source_aidb:
             unique_dm_associations[key] = set([(int(row.DefaultEcoBoundaryID))])
             unique_dm_associations_first_row[key] = row
 
-    source_ecoBoundary_set = set(int(x[0]) for x in source_aidb.Query("""SELECT tblEcoBoundaryDefault.EcoBoundaryID FROM tblEcoBoundaryDefault;"""))
+    source_ecoBoundary_set = set(int(x[0]) for x in sbw_source_aidb.Query("""SELECT tblEcoBoundaryDefault.EcoBoundaryID FROM tblEcoBoundaryDefault;"""))
     for k,v in unique_dm_associations.items():
         missing_ecos = source_ecoBoundary_set - v
         for e in missing_ecos:
             original_row = unique_dm_associations_first_row[k]
             #creating a row through pyodbc with a query since we have all the values already and it's not easy to copy one
-            append_row = source_aidb.Query(""" 
+            append_row = sbw_source_aidb.Query(""" 
                 SELECT {DefaultDisturbanceTypeID} as DefaultDisturbanceTypeID,
                 {DefaultEcoBoundaryID} as DefaultEcoBoundaryID,
                 {AnnualOrder} as AnnualOrder, 
@@ -190,7 +197,20 @@ for p in local_aidbs:
                             dmassociationRow.Name,
                             dmassociationRow.Description))
 
+        logging.info("copying growth multipliers to {}".format(p))
+        for growthMultiplierRow in source_tblGrowthMultiplierDefault:
+            a.ExecuteQuery("INSERT INTO tblGrowthMultiplierDefault (DefaultEcoBoundaryID, DefaultDisturbanceTypeID, DefaultSpeciesTypeID, AnnualOrder, GrowthMultiplier) VALUES (?,?,?,?,?)",
+                           (growthMultiplierRow.DefaultEcoBoundaryID,
+                            growthMultiplierRow.DefaultDisturbanceTypeID,
+                            growthMultiplierRow.DefaultSpeciesTypeID,
+                            growthMultiplierRow.AnnualOrder,
+                            growthMultiplierRow.GrowthMultiplier))
 
+        logging.info("fixing spruce budworm dm association")
+        spruceBudwormUpdates = [(87,141),(67,140)]
+        for sbwUpdate in spruceBudwormUpdates:
+            a.ExecuteQuery("UPDATE tblDMAssociationDefault set DMID=? where DefaultDisturbanceTypeID=?",
+                            sbwUpdate)
 
 for p in local_aidbs:
     logging.info("run compact and repair on {}".format(p["Path"]))
