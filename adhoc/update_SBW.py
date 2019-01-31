@@ -26,6 +26,12 @@ distDescTranslations = excelhelper.get_worksheet_as_dict(os.path.join(local_wd, 
 distTypeTranslations = {int(x["DistID"]): x for x in distTypeTranslations}
 distDescTranslations = {int(x["DistID"]): x for x in distDescTranslations}
 
+#load updated disturbance matrix translations
+matrixNameTranslations = excelhelper.get_worksheet_as_dict(os.path.join(local_wd, "NewDMtranslations.xlsx"), 2)
+matrixDescTranslations = excelhelper.get_worksheet_as_dict(os.path.join(local_wd, "NewDMtranslations.xlsx"), 3)
+matrixNameTranslations = {int(x["dmid"]): x for x in matrixNameTranslations}
+matrixDescTranslations = {int(x["dmid"]): x for x in matrixDescTranslations}
+
 #1 copy the current op scale archive index databases
 new_sbw_aidb = os.path.join(local_wd, "ArchiveIndex_NIR2020_QCSBWCorrections.mdb")
 
@@ -206,12 +212,18 @@ for p in local_aidbs:
                             growthMultiplierRow.AnnualOrder,
                             growthMultiplierRow.GrowthMultiplier))
 
-        logging.info("fixing spruce budworm dm association")
-        spruceBudwormUpdates = [(87,141),(67,140)]
+        logging.info("fixing spruce budworm dm associations")
+        
+        spruceBudwormUpdates = [{"dist_type":140,"dmid":87},
+                                {"dist_type":141,"dmid":67},
+                                {"dist_type":142,"dmid":43}]
         for sbwUpdate in spruceBudwormUpdates:
             a.ExecuteQuery("UPDATE tblDMAssociationDefault set DMID=? where DefaultDisturbanceTypeID=?",
-                            sbwUpdate)
-
+                            (sbwUpdate["dmid"], sbwUpdate["dist_type"]))
+            a.ExecuteQuery("UPDATE tblDM SET Name=?, Description = ? WHERE tblDM.DMID=?",
+                           (matrixNameTranslations[sbwUpdate["dmid"]][p["Language"]],
+                            matrixDescTranslations[sbwUpdate["dmid"]][p["Language"]],
+                            sbwUpdate["dmid"]))
 for p in local_aidbs:
     logging.info("run compact and repair on {}".format(p["Path"]))
     compact_and_repair(p["Path"])
