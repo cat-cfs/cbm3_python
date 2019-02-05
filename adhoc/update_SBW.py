@@ -212,7 +212,7 @@ for p in local_aidbs:
                             growthMultiplierRow.AnnualOrder,
                             growthMultiplierRow.GrowthMultiplier))
 
-        logging.info("fixing spruce budworm dm associations")
+        logging.info("fixing spruce budworm dm associations, and related strings")
         
         spruceBudwormUpdates = [{"dist_type":140,"dmid":87},
                                 {"dist_type":141,"dmid":67},
@@ -224,7 +224,7 @@ for p in local_aidbs:
                            (matrixNameTranslations[sbwUpdate["dmid"]][p["Language"]],
                             matrixDescTranslations[sbwUpdate["dmid"]][p["Language"]],
                             sbwUpdate["dmid"]))
-            a.ExecuteQuery("UPDATE tblDisturbanceTypeDefault SET Name=?, Description=? WHERE tblDisturbanceTypeDefault.DistTypeID=?",
+            a.ExecuteQuery("UPDATE tblDisturbanceTypeDefault SET DistTypeName=?, Description=? WHERE tblDisturbanceTypeDefault.DistTypeID=?",
                            (distTypeTranslations[sbwUpdate["dist_type"]][p["Language"]],
                             distDescTranslations[sbwUpdate["dist_type"]][p["Language"]],
                             sbwUpdate["dist_type"]))
