@@ -7,7 +7,7 @@ sys.path.append('../')
 #This script updates the Operational scale archive index databases (in En,Es,Fr,Ru) 
 #with the NIR Firewood collection and Spruce Budworm (QC) matrices and disturbance types
 #and also drops the old SBW matrices, dist types, and association.
-#For the spruce budworm matrices, it also adds the grwoth multipliers associated with each disturbacne type.
+#For the spruce budworm matrices, it also adds the growth multipliers associated with each disturbacne type.
 
 
 import shutil, os, logging
@@ -224,6 +224,11 @@ for p in local_aidbs:
                            (matrixNameTranslations[sbwUpdate["dmid"]][p["Language"]],
                             matrixDescTranslations[sbwUpdate["dmid"]][p["Language"]],
                             sbwUpdate["dmid"]))
+            a.ExecuteQuery("UPDATE tblDisturbanceTypeDefault SET Name=?, Description=? WHERE tblDisturbanceTypeDefault.DistTypeID=?",
+                           (distTypeTranslations[sbwUpdate["dist_type"]][p["Language"]],
+                            distDescTranslations[sbwUpdate["dist_type"]][p["Language"]],
+                            sbwUpdate["dist_type"]))
+
 for p in local_aidbs:
     logging.info("run compact and repair on {}".format(p["Path"]))
     compact_and_repair(p["Path"])
