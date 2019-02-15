@@ -8,14 +8,14 @@ from cbm3data.accessdb import AccessDB
 from cbm3data.projectdb import ProjectDB
 
 from util import loghelper
-def run(aidb_path, project_path, toolbox_installation_dir ):
+def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_dir):
     with AIDB(aidb_path, False) as aidb, \
          AccessDB(project_path, False) as proj:
 
         simId = aidb.AddProjectToAIDB(proj)
         try:
             cbm_wd = os.path.join(toolbox_installation_dir, "temp")
-            s = Simulator(cbm_exe_path,
+            s = Simulator(cbm_exe_dir,
                             simId,
                             os.path.dirname(project_path),
                             cbm_wd,
@@ -60,10 +60,10 @@ def main():
             if not args.toolbox_path else os.path.abspath(args.toolbox_path)
 
         aidb_path = os.path.join(toolbox_installation_dir, "admin", "dbs", "ArchiveIndex_Beta_Install.mdb")
-        cbm_exe_path = os.path.join(toolbox_installation_dir, "admin", "executables")
+        cbm_exe_dir = os.path.join(toolbox_installation_dir, "admin", "executables")
         project_path = os.path.abspath(args.projectdb)
 
-        results_path = runs(aidb_path, cbm_exe_path, project_path)
+        results_path = run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_dir)
         logging.info("simulation finish, results path: {0}"
                         .format(results_path))
 
