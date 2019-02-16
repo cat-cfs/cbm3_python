@@ -54,7 +54,7 @@ class Simulator(object):
         return os.path.join(self.ProjectPath,str(self.simID))
 
 
-    def getResultsPath(self):
+    def get_default_results_path(self):
         return os.path.join(self.getProjectResultsPath(), str(self.simID)+'.mdb')
 
     def CleanupRunDirectory(self):
@@ -164,10 +164,14 @@ class Simulator(object):
         logging.info("Command line: " + cmd)
         subprocess.check_call(cmd)
 
-    def LoadCBMResults(self):
+    def LoadCBMResults(self, output_path=None):
         logging.info("\n\n Loading CBM Results...\n")
-        
-        cmd = '"' + os.path.join(self.CBMPath, r'LoaderCL.exe') + '" ' + str(self.simID) + ' "' + self.getResultsPath() + '"'
+        resultsPath = self.get_default_results_path()
+        if not output_path is None:
+            if not os.path.exists(os.path.dirname(output_path)):
+                os.makedirs(os.path.dirname(output_path))
+            resultsPath = output_path
+        cmd = '"' + os.path.join(self.CBMPath, r'LoaderCL.exe') + '" ' + str(self.simID) + ' "' + resultsPath + '"'
         logging.info("Command line: " + cmd)
         subprocess.check_call(cmd)
 

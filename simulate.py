@@ -8,7 +8,7 @@ from cbm3data.accessdb import AccessDB
 from cbm3data.projectdb import ProjectDB
 
 from util import loghelper
-def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_dir):
+def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_dir, output_path=None):
     with AIDB(aidb_path, False) as aidb, \
          AccessDB(project_path, False) as proj:
 
@@ -32,10 +32,10 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_dir):
             s.CopyCBMExecutable()
             s.RunCBM()
             s.CopyTempFiles()
-            s.LoadCBMResults()
+            s.LoadCBMResults(output_path)
         finally:
             aidb.DeleteProjectsFromAIDB(simId) #cleanup
-        results_path = s.getResultsPath()
+        results_path = s.get_default_results_path() if output_path is None else output_path
         return results_path
 
 def main():
@@ -50,6 +50,7 @@ def main():
             "script. Simulates a CBM-CFS3 project access database by "
             "automating functions in the Operational-Scale CBM-CFS3 toolbox")
         parser.add_argument("--projectdb", help="path to a cbm project database file")
+        parser.add_argument("--outputdb", nargs="?", help="path to the cbm results database file created by running this script")
         parser.add_argument("--toolbox_path", nargs="?",
                             help="the Operational-Scale CBM-CFS3 toolbox "
                             "installation directory. If unspecified a the "
@@ -63,7 +64,9 @@ def main():
         cbm_exe_dir = os.path.join(toolbox_installation_dir, "admin", "executables")
         project_path = os.path.abspath(args.projectdb)
 
-        results_path = run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_dir)
+        results_path = run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_dir,
+                           output_path=None if args.outputdb is None else os.path.abspath(args.outputdb))
+        
         logging.info("simulation finish, results path: {0}"
                         .format(results_path))
 
