@@ -5,14 +5,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ed5dc488-c8d0-4ab7-82f5-35a905e71134}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>simulate.py</StartupFile>
+    <StartupFile>cbm3_python\simulate.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>Global|PythonCore|2.7-32</InterpreterId>
-    <CommandLineArguments>--projectdb "C:\Program Files (x86)\Operational-Scale CBM-CFS3\Tutorials\Tutorial 3\Tutorial3.mdb"</CommandLineArguments>
+    <CommandLineArguments>--projectdb C:\dev\LibCBM\LibCBMPyTest\tests\test1\opscale\cbm_project.mdb</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
@@ -21,88 +21,93 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="adhoc\analyse_report_fil.py" />
-    <Compile Include="adhoc\harvest_shortfall_allocator.py" />
-    <Compile Include="adhoc\run_NIR_with_pre_dist_age.py" />
-    <Compile Include="adhoc\update_oilsands_dms.py" />
-    <Compile Include="adhoc\update_SBW.py" />
-    <Compile Include="create_nir_path_config.py">
+    <Compile Include="cbm3_python\adhoc\analyse_report_fil.py" />
+    <Compile Include="cbm3_python\adhoc\harvest_shortfall_allocator.py" />
+    <Compile Include="cbm3_python\adhoc\run_NIR_with_pre_dist_age.py" />
+    <Compile Include="cbm3_python\adhoc\update_oilsands_dms.py" />
+    <Compile Include="cbm3_python\adhoc\update_SBW.py" />
+    <Compile Include="cbm3_python\adhoc\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="simulate.py">
+    <Compile Include="cbm3_python\batchrunner.py" />
+    <Compile Include="cbm3_python\create_nir_path_config.py" />
+    <Compile Include="cbm3_python\runnation.py" />
+    <Compile Include="cbm3_python\simulate.py" />
+    <Compile Include="cbm3_python\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="simulation\nirpathconfig.py">
+    <Compile Include="cbm3_python\simulation\nirpathconfig.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="simulation\nir_sql\hwpinput.py">
+    <Compile Include="cbm3_python\simulation\nir_sql\hwpinput.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="simulation\nir_sql\afforestation_fixes.py">
+    <Compile Include="cbm3_python\simulation\nir_sql\afforestation_fixes.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="simulation\nir_sql\nir_project_queries.py">
+    <Compile Include="cbm3_python\simulation\nir_sql\nir_project_queries.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="simulation\nir_sql\unmanaged_forest_fixes.py">
+    <Compile Include="cbm3_python\simulation\nir_sql\unmanaged_forest_fixes.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="simulation\nir_sql\__init__.py">
+    <Compile Include="cbm3_python\simulation\nir_sql\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="runnation.py">
+    <Compile Include="cbm3_python\simulation\tools\avgdisturbanceextender.py" />
+    <Compile Include="cbm3_python\simulation\tools\disturbanceeventstransformer.py" />
+    <Compile Include="cbm3_python\simulation\tools\disturbanceextender.py" />
+    <Compile Include="cbm3_python\simulation\tools\disturbanceextension.py" />
+    <Compile Include="cbm3_python\simulation\tools\disturbancegeneratorconfig.py" />
+    <Compile Include="cbm3_python\simulation\tools\qaqc.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="simulation\tools\avgdisturbanceextender.py" />
-    <Compile Include="simulation\tools\disturbanceeventstransformer.py" />
-    <Compile Include="simulation\tools\disturbanceextender.py" />
-    <Compile Include="simulation\tools\disturbanceextension.py" />
-    <Compile Include="simulation\tools\disturbancegeneratorconfig.py" />
-    <Compile Include="simulation\tools\qaqc.py">
+    <Compile Include="cbm3_python\simulation\tools\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="simulation\tools\__init__.py">
+    <Compile Include="cbm3_python\cbm3data\accessdb.py" />
+    <Compile Include="cbm3_python\cbm3data\access_templates\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="cbm3data\accessdb.py" />
-    <Compile Include="cbm3data\access_templates\__init__.py">
+    <Compile Include="cbm3_python\cbm3data\aidb.py" />
+    <Compile Include="cbm3_python\cbm3data\compact_and_repair.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="cbm3data\aidb.py" />
-    <Compile Include="cbm3data\compact_and_repair.py">
+    <Compile Include="cbm3_python\cbm3data\projectdb.py" />
+    <Compile Include="cbm3_python\cbm3data\__init__.py" />
+    <Compile Include="cbm3_python\simulation\tools\createaccountingrules.py" />
+    <Compile Include="cbm3_python\simulation\nirsimulator.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="cbm3data\projectdb.py" />
-    <Compile Include="cbm3data\__init__.py" />
-    <Compile Include="batchrunner.py" />
-    <Compile Include="simulation\tools\createaccountingrules.py" />
-    <Compile Include="simulation\nirsimulator.py">
+    <Compile Include="cbm3_python\cbm3data\resultsloader.py" />
+    <Compile Include="cbm3_python\cbm3data\rollup.py" />
+    <Compile Include="cbm3_python\simulation\simulator.py" />
+    <Compile Include="cbm3_python\simulation\__init__.py" />
+    <Compile Include="cbm3_python\util\excelhelper.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="cbm3data\resultsloader.py" />
-    <Compile Include="cbm3data\rollup.py" />
-    <Compile Include="simulation\simulator.py" />
-    <Compile Include="simulation\__init__.py" />
-    <Compile Include="util\excelhelper.py">
+    <Compile Include="cbm3_python\util\loghelper.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="util\loghelper.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="util\__init__.py" />
+    <Compile Include="cbm3_python\util\__init__.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="adhoc\" />
-    <Folder Include="cbm3data" />
-    <Folder Include="C:\dev\cbm3_python\simulation\" />
+    <Folder Include="cbm3data\" />
     <Folder Include="cbm3data\access_templates\" />
+    <Folder Include="cbm3_python\adhoc\" />
+    <Folder Include="cbm3_python\cbm3data\" />
+    <Folder Include="C:\dev\cbm3_python\simulation\" />
+    <Folder Include="cbm3_python\cbm3data\access_templates\" />
     <Folder Include="C:\dev\cbm3_python\adhoc\" />
-    <Folder Include="simulation\" />
+    <Folder Include="cbm3_python\" />
+    <Folder Include="cbm3_python\simulation\" />
     <Folder Include="C:\dev\cbm3_python\simulation\tools\" />
-    <Folder Include="simulation\nir_sql\" />
-    <Folder Include="simulation\tools\" />
-    <Folder Include="util\" />
+    <Folder Include="cbm3_python\simulation\nir_sql\" />
+    <Folder Include="cbm3_python\simulation\tools\" />
+    <Folder Include="cbm3_python\util\" />
     <Folder Include="C:\dev\cbm3_python\cbm3data\access_templates\" />
+    <Folder Include="simulation\" />
+    <Folder Include="simulation\tools\" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|2.7-32" />
