@@ -5,7 +5,10 @@ import pyodbc
 import logging
 import os
 from pyodbc import ProgrammingError
-from collections.abc import Iterable
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
 import math
 # Scott - Nov 2013
 # wrapper for ms access object allowing queries
