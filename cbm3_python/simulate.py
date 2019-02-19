@@ -7,7 +7,8 @@ from cbm3_python.cbm3data.aidb import AIDB
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.cbm3data.projectdb import ProjectDB
 from cbm3_python.util import loghelper
-def run(aidb_path, project_path, toolbox_installation_dir,cbm_exe_path ):
+def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
+       results_database_path=None, tempfiles_output_dir=None):
     with AIDB(aidb_path, False) as aidb, \
          AccessDB(project_path, False) as proj:
 
@@ -30,11 +31,11 @@ def run(aidb_path, project_path, toolbox_installation_dir,cbm_exe_path ):
             s.CreateCBMFiles()
             s.CopyCBMExecutable()
             s.RunCBM()
-            s.CopyTempFiles()
-            s.LoadCBMResults()
+            s.CopyTempFiles(output_dir=tempfiles_output_dir)
+            s.LoadCBMResults(output_path = results_database_path)
         finally:
             aidb.DeleteProjectsFromAIDB(simId) #cleanup
-        results_path = s.getResultsPath()
+        results_path = s.getDefaultResultsPath()
         return results_path
 
 def main():
@@ -53,16 +54,26 @@ def main():
                             help="the Operational-Scale CBM-CFS3 toolbox "
                             "installation directory. If unspecified a the "
                             "typical default value is used.")
+        parser.add_argument("--tempfiles_output_dir", nargs="?",
+                    help="optional directory where CBM tempfiles will be copied "
+                    "after simulation.  If unspecified a default directory is used.")
+        parser.add_argument("--results_db_path", nargs="?",
+                    help="optional file path into which CBM results will be loaded."
+                    "if unspecified a default value is used.")
         args = parser.parse_args()
 
         toolbox_installation_dir = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3" \
             if not args.toolbox_path else os.path.abspath(args.toolbox_path)
+        results_db_path = None if not args.results_db_path else os.path.abspath(args.results_db_path)
+        tempfiles_output_dir = None if not args.tempfiles_output_dir else os.path.abspath(args.tempfiles_output_dir)
 
         aidb_path = os.path.join(toolbox_installation_dir, "admin", "dbs", "ArchiveIndex_Beta_Install.mdb")
         cbm_exe_path = os.path.join(toolbox_installation_dir, "admin", "executables")
         project_path = os.path.abspath(args.projectdb)
-
-        results_path = run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path)
+        
+        results_path = run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
+                           results_database_path=results_db_path,
+                           tempfiles_output_dir=tempfiles_output_dir)
         logging.info("simulation finish, results path: {0}"
                         .format(results_path))
 
