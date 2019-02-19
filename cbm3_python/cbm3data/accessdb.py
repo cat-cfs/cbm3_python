@@ -5,7 +5,7 @@ import pyodbc
 import logging
 import os
 from pyodbc import ProgrammingError
-
+from collections.abc import Iterable
 # Scott - Nov 2013
 # wrapper for ms access object allowing queries
 # and some other basic operations
@@ -30,12 +30,23 @@ class AccessDB(object):
     def getConnectionString(self, path):
         return "Driver={Microsoft Access Driver (*.mdb, *.accdb)};User Id='admin';Dbq=" + path    
 
-        
+    def _floatifyIntParams(self, params):
+        #workaround for access/pyodbc bug
+        #see https://stackoverflow.com/questions/20240130/optional-feature-not-implemented-106-sqlbindparameter-error-with-pyodbc
+        if not isinstance(params, Iterable):
+            if type(params) is int:
+                return float(params)
+            else:
+                return params
+        params = [float(x) if type(x) is int else x for x in params] if params else None
+        return params
+
     def ExecuteQuery(self, query, params=None):
         if self.log_enabled:
             logging.info("{0}\n{1}".format(self.path, query))
         cursor = self.connection.cursor()
         try:
+            params = self._floatifyIntParams(params)
             cursor.execute(query, params) if params else cursor.execute(query)
         except ProgrammingError as e:
             logging.info("{0}".format(query))
@@ -45,6 +56,7 @@ class AccessDB(object):
     def ExecuteMany(self, query, params):
         cursor = self.connection.cursor()
         try:
+            params = self._floatifyIntParams(params)
             cursor.executemany(query, params)
         except ProgrammingError as e:
             logging.info("{}".format(query))
@@ -68,6 +80,7 @@ class AccessDB(object):
         if self.log_enabled:
             logging.info("{0}\n{1}".format(self.path, query))
         cursor = self.connection.cursor()
+        params = self._floatifyIntParams(params)
         cursor.execute(query, params) if params else cursor.execute(query)
         return cursor
 
