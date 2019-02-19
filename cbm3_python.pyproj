@@ -92,22 +92,14 @@
     <Compile Include="cbm3_python\util\__init__.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="cbm3data\" />
-    <Folder Include="cbm3data\access_templates\" />
     <Folder Include="cbm3_python\adhoc\" />
     <Folder Include="cbm3_python\cbm3data\" />
-    <Folder Include="C:\dev\cbm3_python\simulation\" />
     <Folder Include="cbm3_python\cbm3data\access_templates\" />
-    <Folder Include="C:\dev\cbm3_python\adhoc\" />
     <Folder Include="cbm3_python\" />
     <Folder Include="cbm3_python\simulation\" />
-    <Folder Include="C:\dev\cbm3_python\simulation\tools\" />
     <Folder Include="cbm3_python\simulation\nir_sql\" />
     <Folder Include="cbm3_python\simulation\tools\" />
     <Folder Include="cbm3_python\util\" />
-    <Folder Include="C:\dev\cbm3_python\cbm3data\access_templates\" />
-    <Folder Include="simulation\" />
-    <Folder Include="simulation\tools\" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|2.7-32" />
