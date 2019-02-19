@@ -37,7 +37,7 @@ class AccessDB(object):
         see https://stackoverflow.com/questions/20240130/optional-feature-not-implemented-106-sqlbindparameter-error-with-pyodbc
         """
         def safeConvert(value):
-            if value is int:
+            if type(value) is int:
                 float_value = float(value)
                 if value != int(float_value): #check the exactness of the conversion, since not all integers can be exactly represented as floats
                     raise ValueError("Cannot exactly represent integer: {} as floating point value"
