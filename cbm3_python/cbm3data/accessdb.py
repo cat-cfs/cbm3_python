@@ -6,6 +6,7 @@ import logging
 import os
 from pyodbc import ProgrammingError
 from collections.abc import Iterable
+import math
 # Scott - Nov 2013
 # wrapper for ms access object allowing queries
 # and some other basic operations
@@ -31,14 +32,23 @@ class AccessDB(object):
         return "Driver={Microsoft Access Driver (*.mdb, *.accdb)};User Id='admin';Dbq=" + path    
 
     def _floatifyIntParams(self, params):
-        #workaround for access/pyodbc bug
-        #see https://stackoverflow.com/questions/20240130/optional-feature-not-implemented-106-sqlbindparameter-error-with-pyodbc
-        if not isinstance(params, Iterable):
-            if type(params) is int:
-                return float(params)
+        """
+        workaround for access/pyodbc bug. Converts integer sql parameters to float 
+        see https://stackoverflow.com/questions/20240130/optional-feature-not-implemented-106-sqlbindparameter-error-with-pyodbc
+        """
+        def safeConvert(value):
+            if value is int:
+                float_value = float(value)
+                if value != int(float_value): #check the exactness of the conversion, since not all integers can be exactly represented as floats
+                    raise ValueError("Cannot exactly represent integer: {} as floating point value"
+                                     .format(value))
+                return float_value
             else:
-                return params
-        params = [float(x) if type(x) is int else x for x in params] if params else None
+               return value
+
+        if not isinstance(params, Iterable):
+            return safeConvert(params)
+        params = [safeConvert(x) for x in params]
         return params
 
     def ExecuteQuery(self, query, params=None):
