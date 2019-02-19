@@ -50,12 +50,12 @@ class Simulator(object):
         return ignorelist
 
 
-    def getProjectResultsPath(self):
+    def getDefaultProjectResultsPath(self):
         return os.path.join(self.ProjectPath,str(self.simID))
 
 
-    def getResultsPath(self):
-        return os.path.join(self.getProjectResultsPath(), str(self.simID)+'.mdb')
+    def getDefaultResultsPath(self):
+        return os.path.join(self.getDefaultProjectResultsPath(), str(self.simID)+'.mdb')
 
     def CleanupRunDirectory(self):
         logging.info("\n\n Clean up previous runs in " + self.CBMTemp + " \n")
@@ -85,10 +85,12 @@ class Simulator(object):
     def runMakelist(self):
         logging.info("\n\n Running make list...\n")
         makelist_path = os.path.join(self.CBMTemp, r'Makelist\Makelist.exe')
+        cwd = os.getcwd()
         os.chdir(os.path.dirname(makelist_path))  # makelist is expecting the current directory to be its location
         cmd = '"'  + makelist_path + '" '
         logging.info("Command line: " + cmd)
         subprocess.check_call(cmd)
+        os.chdir(cwd) #change back to the original working dir
 
     def loadMakelistSVLS(self):
         logging.info("\n\n Loading Makelist SVLs...\n")
@@ -140,7 +142,7 @@ class Simulator(object):
                         for outline in outlines:
                             fOutput.write(outline + linebreak)
                         fOutput.write(linebreak) #extra line break
-                        
+
 
     def CreateCBMFiles(self):
         logging.info("\n\n Creating CBM files...\n")
@@ -159,25 +161,34 @@ class Simulator(object):
     def RunCBM(self):
         logging.info("\n\n Running CBM...\n")
         cbm_path = os.path.join(self.CBMTemp, r'CBMRun\CBM.exe')
+        cwd = os.getcwd()
         os.chdir(os.path.dirname(cbm_path)) # CBM is expecting the current directory to be its location
         cmd = '"' + cbm_path + '" '
         logging.info("Command line: " + cmd)
         subprocess.check_call(cmd)
+        os.chdir(cwd) #change back to the original working dir
 
-    def LoadCBMResults(self):
+    def LoadCBMResults(self, output_path=None):
         logging.info("\n\n Loading CBM Results...\n")
-        
-        cmd = '"' + os.path.join(self.CBMPath, r'LoaderCL.exe') + '" ' + str(self.simID) + ' "' + self.getResultsPath() + '"'
+        results_path = self.getDefaultResultsPath() \
+            if output_path is None else os.path.abspath(output_path)
+
+        cmd = '"' + os.path.join(self.CBMPath, r'LoaderCL.exe') + '" ' + str(self.simID) + ' "' + results_path + '"'
         logging.info("Command line: " + cmd)
         subprocess.check_call(cmd)
 
-    def CopyTempFiles(self):
+    def CopyTempFiles(self, output_dir=None):
         logging.info("\n\n Copying Tempfiles to Project Directory...\n")
-        tempfilepath = os.path.join(self.getProjectResultsPath(),"Tempfiles")
-        if os.path.exists(tempfilepath):
-            shutil.rmtree(tempfilepath)
-         
-        shutil.copytree(self.CBMTemp, os.path.join(self.ProjectPath,str(self.simID),"Tempfiles"), ignore=self._ignorethese)
+        tempfilepath = ""
+        if output_dir is None:
+            tempfilepath = os.path.join(self.getDefaultProjectResultsPath(),"Tempfiles")
+            if os.path.exists(tempfilepath):
+                shutil.rmtree(tempfilepath)
+        else:
+            tempfilepath = os.path.abspath(output_dir)
+
+
+        shutil.copytree(self.CBMTemp, tempfilepath, ignore=self._ignorethese)
 
     def DumpMakelistSVLs(self):
         logging.info("\n\n dumping makelist svls...\n")
@@ -190,14 +201,12 @@ class Simulator(object):
         self.CleanupRunDirectory()                    
 
         logging.info("Processing " + str(self.ProjectPath) + "...")
-        #cwd = os.getcwd()
-        #os.chdir(self.CBMPath)
 
         self.CreateMakelistFiles()
 
         self.copyMakelist()
-        
-        self.runMakelist()           
+
+        self.runMakelist()
 
         self.loadMakelistSVLS()
 
