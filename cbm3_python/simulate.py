@@ -27,7 +27,6 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
             s.runMakelist()
             s.loadMakelistSVLS()
             s.DumpMakelistSVLs()
-            s.copyMakelistOutput()
             s.CreateCBMFiles()
             s.CopyCBMExecutable()
             s.RunCBM()
