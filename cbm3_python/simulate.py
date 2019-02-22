@@ -34,7 +34,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
             s.LoadCBMResults(output_path = results_database_path)
         finally:
             aidb.DeleteProjectsFromAIDB(simId) #cleanup
-        results_path = s.getDefaultResultsPath()
+        results_path = s.getDefaultResultsPath() if results_database_path is None else results_database_path
         return results_path
 
 def main():
