@@ -85,7 +85,7 @@ for p in local_aidbs:
 # 3 load the source data
 with AccessDB(new_sbw_aidb) as sbw_source_aidb:
 
-    new_dist_ids = [str(x) for x in list(range(236,267))]
+    new_dist_ids = [str(x) for x in list(range(236,240))] #includes firewood matrices only
     source_tblDisturbanceTypeDefault = list(
         sbw_source_aidb.Query("SELECT * FROM tblDisturbanceTypeDefault WHERE DistTypeID in({})".format(",".join(new_dist_ids))))
 
