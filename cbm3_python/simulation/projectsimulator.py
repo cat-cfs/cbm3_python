@@ -1,6 +1,8 @@
+import os
 from cbm3_python.cbm3data.aidb import AIDB
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.cbm3data.projectdb import ProjectDB
+from cbm3_python.simulation.simulator import Simulator
 
 def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
        results_database_path=None, tempfiles_output_dir=None):

@@ -2,7 +2,7 @@
 #  as represented by the Minister of Natural Resources Canada
 
 import os, shutil, argparse, datetime, logging
-import cbm3_python.simulation.projectsimulator
+import cbm3_python.simulation.projectsimulator as projectsimulator
 
 from cbm3_python.util import loghelper
 
