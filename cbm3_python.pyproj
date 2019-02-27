@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ed5dc488-c8d0-4ab7-82f5-35a905e71134}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>cbm3_python\simulate.py</StartupFile>
+    <StartupFile>simulate.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -21,6 +21,7 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="batchrunner.py" />
     <Compile Include="cbm3_python\adhoc\analyse_report_fil.py" />
     <Compile Include="cbm3_python\adhoc\harvest_shortfall_allocator.py" />
     <Compile Include="cbm3_python\adhoc\run_NIR_with_pre_dist_age.py" />
@@ -29,10 +30,6 @@
     <Compile Include="cbm3_python\adhoc\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="cbm3_python\batchrunner.py" />
-    <Compile Include="cbm3_python\create_nir_path_config.py" />
-    <Compile Include="cbm3_python\runnation.py" />
-    <Compile Include="cbm3_python\simulate.py" />
     <Compile Include="cbm3_python\__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -90,6 +87,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="cbm3_python\util\__init__.py" />
+    <Compile Include="create_nir_path_config.py" />
+    <Compile Include="runnation.py" />
+    <Compile Include="simulate.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cbm3_python\adhoc\" />
