@@ -13,7 +13,7 @@ class NIRPathConfig(object):
         '''
         helper method to create a csv file containing validated baseline NIR project paths, and rrdb paths
         '''
-        with open(output_path, 'wb') as csvfile:
+        with open(output_path, 'w') as csvfile:
             fieldNames = ["project_prefix", "project_path", "results_path"]
             writer = csv.DictWriter(csvfile, fieldnames= fieldNames)
             writer.writeheader()

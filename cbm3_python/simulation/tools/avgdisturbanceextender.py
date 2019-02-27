@@ -2,7 +2,7 @@
 #  as represented by the Minister of Natural Resources Canada
 
 import logging
-from disturbanceeventstransformer import DisturbanceEventsTransformer
+from cbm3_python.simulation.tools.disturbanceeventstransformer import DisturbanceEventsTransformer
 
 class AvgDisturbanceExtender(object):
     '''

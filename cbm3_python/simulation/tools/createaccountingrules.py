@@ -67,7 +67,6 @@ class CreateAccountingRules(object):
         table_defs.reverse()
         for table, _ in table_defs:
             if self.projectAccessDb.tableExists(table):
-                print "Dropping {}".format(table)
                 self.projectAccessDb.ExecuteQuery("DROP TABLE {}".format(table))
 
         table_defs.reverse()
