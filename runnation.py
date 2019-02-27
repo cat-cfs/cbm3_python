@@ -134,7 +134,7 @@ def main():
         
         project_prefixes = config["project_prefixes"] \
             if not args.prefix_filter else \
-            [x for x in config["project_prefixes"] 
+            [x for x in config["project_prefixes"]
              if x in args.prefix_filter.split(",")]
 
         config["local_working_dir"] = working_dir

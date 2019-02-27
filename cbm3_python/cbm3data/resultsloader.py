@@ -34,7 +34,7 @@ class ResultsLoader(object):
             self.copyAidbTables(aidb, outputDBPath)
             self.copyProjectTables(projectDB, outputDBPath)
             self.cset_dict = {}
-            x = self.BuildCsetLookup(projectDB)
+            self.BuildCsetLookup(projectDB)
 
         with AccessDB(outputDBPath,False) as load_db:
             logging.info("creating indexes")
@@ -103,8 +103,7 @@ class ResultsLoader(object):
             if cset_id > self.maxCsetId:
                 self.maxCsetId = cset_id
             self.cset_dict[cset_string] = cset_id
-        return x
-    
+
     def getClassifierSetID(self, classifierValueIds):
         # accept a list of integers representing a 
         # set of classifier value ids 
