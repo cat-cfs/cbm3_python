@@ -185,7 +185,7 @@ class CreateAccountingRules(object):
             "INSERT INTO tblAccountingRuleTrackingType (name) VALUES (?)",
             [["ignore"], ["replace"], ["inherit"], ["passive"]])
 
-        with open(self.dist_classes_path, "rb") as dist_class_file:
+        with open(self.dist_classes_path) as dist_class_file:
             reader = csv.DictReader(dist_class_file)
             
             uniqueDisturbanceClasses = set([row["Category"] for row in reader])
@@ -193,7 +193,7 @@ class CreateAccountingRules(object):
             "INSERT INTO tbldisturbanceclass (name) VALUES (?)",
             [[dc] for dc in uniqueDisturbanceClasses])
             
-        with open(self.dist_classes_path, "rb") as dist_class_file:
+        with open(self.dist_classes_path) as dist_class_file:
             reader = csv.DictReader(dist_class_file)
             
             self.projectAccessDb.ExecuteMany(
@@ -205,7 +205,7 @@ class CreateAccountingRules(object):
                 """,
                 [[row["DefaultDistTypeID"], row["Category"]] for row in reader])
                 
-        with open(self.dist_rules_path, "rb") as csvfile:
+        with open(self.dist_rules_path) as csvfile:
             add_rule_sql = \
                 """
                 INSERT INTO tblaccountingrule (accountingrulesetid, accountingruletypeid, rule_value)
