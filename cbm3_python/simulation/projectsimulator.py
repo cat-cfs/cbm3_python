@@ -47,7 +47,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                 s.CopyCBMExecutable()
                 s.RunCBM()
             else:
-                s.CopyToWorkingDir(local_project_path)
+                s.CopyToWorkingDir(project_path)
                 s.CreateCBMFiles()
                 s.CopyCBMExecutable()
                 s.DumpMakelistSVLs()
