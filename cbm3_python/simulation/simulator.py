@@ -86,11 +86,13 @@ class Simulator(object):
         logging.info("\n\n Running make list...\n")
         makelist_path = os.path.join(self.CBMTemp, r'Makelist\Makelist.exe')
         cwd = os.getcwd()
-        os.chdir(os.path.dirname(makelist_path))  # makelist is expecting the current directory to be its location
-        cmd = '"'  + makelist_path + '" '
-        logging.info("Command line: " + cmd)
-        subprocess.check_call(cmd)
-        os.chdir(cwd) #change back to the original working dir
+        try:
+            os.chdir(os.path.dirname(makelist_path))  # makelist is expecting the current directory to be its location
+            cmd = '"'  + makelist_path + '" '
+            logging.info("Command line: " + cmd)
+            subprocess.check_call(cmd)
+        finally:
+            os.chdir(cwd) #change back to the original working dir
 
     def loadMakelistSVLS(self):
         logging.info("\n\n Loading Makelist SVLs...\n")
@@ -162,11 +164,13 @@ class Simulator(object):
         logging.info("\n\n Running CBM...\n")
         cbm_path = os.path.join(self.CBMTemp, r'CBMRun\CBM.exe')
         cwd = os.getcwd()
-        os.chdir(os.path.dirname(cbm_path)) # CBM is expecting the current directory to be its location
-        cmd = '"' + cbm_path + '" '
-        logging.info("Command line: " + cmd)
-        subprocess.check_call(cmd)
-        os.chdir(cwd) #change back to the original working dir
+        try:
+            os.chdir(os.path.dirname(cbm_path)) # CBM is expecting the current directory to be its location
+            cmd = '"' + cbm_path + '" '
+            logging.info("Command line: " + cmd)
+            subprocess.check_call(cmd)
+        finally:
+            os.chdir(cwd) #change back to the original working dir
 
     def LoadCBMResults(self, output_path=None):
         logging.info("\n\n Loading CBM Results...\n")
