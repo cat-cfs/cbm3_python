@@ -93,7 +93,7 @@ def run_af_results_fixes(af_rrdb_path):
             logging.info(sql_group["table"])
             max_id = rrdb.GetMaxID(sql_group["table"], sql_group["id_col"])
             maxBatchDeleteSize = 50000
-            iterations = max_id / maxBatchDeleteSize
+            iterations = int(max_id / maxBatchDeleteSize)
             remainder = max_id % maxBatchDeleteSize
             ranges = [{
                 "min": x*maxBatchDeleteSize,
