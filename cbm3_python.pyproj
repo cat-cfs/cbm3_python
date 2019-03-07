@@ -30,6 +30,9 @@
     <Compile Include="cbm3_python\adhoc\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="cbm3_python\cbm3data\results_helper.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="cbm3_python\simulation\projectsimulator.py">
       <SubType>Code</SubType>
     </Compile>
