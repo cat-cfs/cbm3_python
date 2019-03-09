@@ -1,6 +1,7 @@
 import pandas as pd
+from collections import OrderedDict
 from cbm3_python.cbm3data.accessdb import AccessDB
-
+import operator
 
 def get_classifier_values(results_path):
     '''
@@ -18,18 +19,20 @@ def get_classifier_values(results_path):
     ) INNER JOIN tblUserDefdSubclasses ON (
         tblUserDefdClassSetValues.UserDefdSubclassID = tblUserDefdSubclasses.UserDefdSubclassID
     ) AND (
-        tblUserDefdClassSetValues.UserDefdClassID = tblUserDefdSubclasses.UserDefdClassID);
+        tblUserDefdClassSetValues.UserDefdClassID = tblUserDefdSubclasses.UserDefdClassID)
+    ORDER BY  tblUserDefdClassSetValues.UserDefdClassSetID, tblUserDefdClasses.UserDefdClassID
     """
-    result = {}
+    columns = OrderedDict([("UserDefdClassSetID",[])])
     with AccessDB(results_path) as rrdb:
         for row in rrdb.Query(sql):
-            classifier_set_id = row["UserDefdClassSetID"]
-            if classifier_set_id in result:
-                result[classifier_set_id].append({
-                    row["ClassDesc"]:
-                    row["UserDefdSubClassName"]})
-    return result
-
+            if len(columns["UserDefdClassSetID"]) == 0 or \
+                columns["UserDefdClassSetID"][-1] != row.UserDefdClassSetID:
+                columns["UserDefdClassSetID"].append(row.UserDefdClassSetID)
+            if row.ClassDesc in columns:
+                columns[row.ClassDesc].append(row.UserDefdSubClassName)
+            else:
+                columns[row.ClassDesc] = [row.UserDefdSubClassName]
+    return pd.DataFrame(columns)
 
 def pool_indicator_column_meta():
     return [
@@ -69,6 +72,32 @@ def pool_indicator_column_meta():
         {"index": 33, "column_name": "HW_Coarse", "name": "Hardwood Coarse Roots", "tags": ["Total Ecosystem", "Total Biomass", "Hardwood", "BelowGroundBiomass"]},
         {"index": 34, "column_name": "HW_Fine", "name": "Hardwood Find Roots", "tags": ["Total Ecosystem", "Total Biomass", "Hardwood", "BelowGroundBiomass"]}
         ]
+
+def get_column_names(column_meta, tag = None):
+    if tag is None:
+        return [x["column_name"] for x in column_meta]
+    else:
+        return [x["column_name"] for x in column_meta if "tags" in x and tag in x["tags"]]
+
+operator_lookup = {
+    "<":  operator.lt(a, b),
+    "<=": operator.le(a, b),
+    "==": operator.eq(a, b),
+    "!=": operator.ne(a, b),
+    ">=": operator.ge(a, b),
+    ">": operator.gt(a, b)
+    }
+
+def create_filter(column, func, value):
+    return lambda df : df.loc[operator_lookup[func](df[column], value)]
+
+def query_indicators(data_cols, indicators_data, classifiers, groupby, filters):
+    #merge classifiers with indicators data
+    df = pd.merge(indicators_data, classifiers, left_on ="UserDefdClassSetID", right_on="UserDefdClassSetID")
+    for f in filters:
+        df = f(df)
+    
+    return df[[groupy]+data_cols].groupby([groupby]).sum()
 
 def as_data_frame(query, results_db_path):
     with AccessDB(results_db_path) as results_db:
