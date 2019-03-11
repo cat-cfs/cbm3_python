@@ -30,7 +30,10 @@
     <Compile Include="cbm3_python\adhoc\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="cbm3_python\cbm3data\results_helper.py">
+    <Compile Include="cbm3_python\cbm3data\cbm3_results.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="cbm3_python\cbm3data\results_queries\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="cbm3_python\simulation\projectsimulator.py">
@@ -102,6 +105,7 @@
     <Folder Include="cbm3_python\cbm3data\" />
     <Folder Include="cbm3_python\cbm3data\access_templates\" />
     <Folder Include="cbm3_python\" />
+    <Folder Include="cbm3_python\cbm3data\results_queries\" />
     <Folder Include="cbm3_python\simulation\" />
     <Folder Include="cbm3_python\simulation\nir_sql\" />
     <Folder Include="cbm3_python\simulation\tools\" />
