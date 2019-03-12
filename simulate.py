@@ -29,6 +29,9 @@ def main():
         parser.add_argument("--results_db_path", nargs="?",
                     help="optional file path into which CBM results will be loaded."
                     "if unspecified a default value is used.")
+        parser.add_argument("--afforestation_only", nargs="?",
+                    help="if the specified projectdb contains only initially "
+                    "non-forested stands, set this option to true")
         args = parser.parse_args()
 
         toolbox_installation_dir = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3" \
@@ -39,10 +42,12 @@ def main():
         aidb_path = os.path.join(toolbox_installation_dir, "admin", "dbs", "ArchiveIndex_Beta_Install.mdb")
         cbm_exe_path = os.path.join(toolbox_installation_dir, "admin", "executables")
         project_path = os.path.abspath(args.projectdb)
-        
-        results_path = projectsimulator.run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
+        afforestation_only = True if args.afforestation_only else False
+        results_path = projectsimulator.run(
+            aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                            results_database_path=results_db_path,
-                           tempfiles_output_dir=tempfiles_output_dir)
+                           tempfiles_output_dir=tempfiles_output_dir,
+                           afforestation_only=afforestation_only)
         logging.info("simulation finish, results path: {0}"
                         .format(results_path))
 
