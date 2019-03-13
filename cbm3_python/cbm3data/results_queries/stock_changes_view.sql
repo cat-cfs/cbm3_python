@@ -1,5 +1,5 @@
 select
-tfi.TimeStep,
+tfi.TimeStep,{0}
 sum(tfi.GrossGrowth_AG+tfi.GrossGrowth_BG-
     (tfi.BioCO2Emission+tfi.BioCH4Emission+tfi.BioCOEmission+
      tfi.DOMCO2Emission+tfi.DOMCH4Emssion+tfi.DOMCOEmission+
@@ -12,10 +12,10 @@ sum(tfi.GrossGrowth_AG+tfi.GrossGrowth_BG-
 sum(tfi.GrossGrowth_AG+tfi.GrossGrowth_BG-
     (tfi.DOMCO2Emission+tfi.DOMCH4Emssion+tfi.DOMCOEmission+
      tfi.DOMProduction + tfi.BiomassToSoil)) as [Delta Total DOM],
-sum(iif(tfi.DistTypeID=0, tfi.GrossGrowth_AG+tfi.GrossGrowth_BG,0)) 
+sum(iif(tfi.DistTypeID=0, tfi.GrossGrowth_AG+tfi.GrossGrowth_BG,0))
     as [Net Primary Productivity (NPP)],
-sum(iif(tfi.DistTypeID=0, tfi.GrossGrowth_AG+tfi.GrossGrowth_BG - 
-    (tfi.DOMCO2Emission+tfi.DOMCH4Emssion+tfi.DOMCOEmission),0)) 
+sum(iif(tfi.DistTypeID=0, tfi.GrossGrowth_AG+tfi.GrossGrowth_BG -
+    (tfi.DOMCO2Emission+tfi.DOMCH4Emssion+tfi.DOMCOEmission),0))
     as [Net Ecosystem Productivity (NEP)],
 sum(iif(tfi.DistTypeID=0,tfi.DeltaBiomass_AG+tfi.DeltaBiomass_BG,0))
     as [Net Growth],
@@ -67,11 +67,11 @@ sum(tfi.OthLitterInput) as [Other To DOM],
 sum(tfi.CoarseLitterInput) as [Coarse Root To DOM],
 sum(tfi.FineLitterInput) as [Fine Root To DOM],
 sum(tfi.BioCO2Emission+tfi.BioCH4Emission+tfi.BioCOEmission
-    +tfi.DOMCO2Emission+tfi.DOMCH4Emssion+tfi.DOMCOEmission) 
+    +tfi.DOMCO2Emission+tfi.DOMCH4Emssion+tfi.DOMCOEmission)
     as [Total Emissions],
-sum(tfi.BioCO2Emission+tfi.BioCH4Emission+tfi.BioCOEmission) 
+sum(tfi.BioCO2Emission+tfi.BioCH4Emission+tfi.BioCOEmission)
     as [Total Biomass Emissions],
-sum(tfi.DOMCO2Emission+tfi.DOMCH4Emssion+tfi.DOMCOEmission) 
+sum(tfi.DOMCO2Emission+tfi.DOMCH4Emssion+tfi.DOMCOEmission)
     as [Total DOM Emissions],
 sum(tfi.BioCO2Emission+tfi.DOMCO2Emission) as [Total CO2 Emissions],
 sum(tfi.BioCOEmission+tfi.DOMCOEmission) as [Total CO Emissions],
@@ -94,5 +94,5 @@ sum(tfi.GrossGrowth_AG+tfi.GrossGrowth_BG-
      +tfi.DOMCOEmission+tfi.SoftProduction+tfi.HardProduction
      +tfi.DOMProduction)) as [Net Biome Productivity (NBP)]
 from tblFluxIndicators tfi
-group by tfi.TimeStep
-order by tfi.TimeStep
+group by tfi.TimeStep{1}
+order by tfi.TimeStep{1}
