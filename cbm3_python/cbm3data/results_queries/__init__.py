@@ -10,27 +10,28 @@ def get_classifiers_view():
     with open(get_local_path("classifiers_view.sql")) as f:
         return f.read()
 
-def build_groupings(table_name,
+def build_grouping(table_name,
     disturbance_type_grouping=False,
     spatial_unit_grouping=False,
     classifier_set_grouping=False,
     land_class_grouping=False):
-
+    grouping = []
     if disturbance_type_grouping:
-        groupings.append("{table_name}.DistTypeID"
+        grouping.append("{table_name}.DistTypeID"
                          .format(table_name=table_name))
     if spatial_unit_grouping:
-        groupings.append("{table_name}.SPUID"
+        grouping.append("{table_name}.SPUID"
                          .format(table_name=table_name))
     if classifier_set_grouping:
-        groupings.append("{table_name}.UserDefdClassSetID"
+        grouping.append("{table_name}.UserDefdClassSetID"
                          .format(table_name=table_name))
     if land_class_grouping:
-        groupings.append(",".join(
+        grouping.append(",".join(
             ["{table_name}_{col_name}".format(
                 table_name=table_name,
                 col_name=x)
             for x in ["LandClassID","kf2","kf3","kf4","kf5","kf6"]]))
+    return grouping
 
 def get_formatted_query(path, table_name,
                         disturbance_type_grouping=False,
@@ -41,13 +42,13 @@ def get_formatted_query(path, table_name,
     with open(path) as f:
         sql = f.read()
 
-    groupings = build_groupings(
+    grouping = build_grouping(
         table_name, disturbance_type_grouping, spatial_unit_grouping,
         classifier_set_grouping, land_class_grouping)
 
-    if len(groupings) > 0:
-        sql = sql.format(",".join(groupings) + ",",
-                   "," + ",".join(groupings))
+    if len(grouping) > 0:
+        sql = sql.format(",".join(grouping) + ",",
+                   "," + ",".join(grouping))
     else:
         sql = sql.format("","")
     return sql
