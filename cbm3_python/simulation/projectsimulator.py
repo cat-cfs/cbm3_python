@@ -64,7 +64,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
             if not afforestation_only:
                 s.copyMakelist()
                 s.runMakelist()
-                s.loadMakelistSVLS()
+            s.loadMakelistSVLS()
             s.DumpMakelistSVLs()
             s.CreateCBMFiles()
             s.CopyCBMExecutable()
