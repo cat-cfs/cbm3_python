@@ -121,3 +121,29 @@ class AccessDB(object):
 
     def dirname(self):
         return os.path.dirname(self.path)
+
+    def get_batched_query_ranges(self, table_name, id_colname,
+                                     max_batch_size):
+        """
+        workaround for "File sharing lock count exceeded.../ MaxLocksPerFile"
+        issues that can occur in access database queries that affect a large 
+        number of rows in a single table. This can happen, for example, when 
+        deleting all rows, or updating all rows in a table.
+        @param table_name the name of the table the query is affecting
+        @param id_colname the name of an unique-constrained integer column 
+               in the specified table which is used to limit the number of 
+               rows affected
+        @param max_batch_size the maximum number of rows to affect per batch
+        @returns list of tuples representing (min,max) bounds to apply to query
+                 batches
+        """
+        max_id = self.GetMaxID(table_name, id_colname)
+        n_batches = int(max_id/max_batch_size)
+        remainder = max_id % max_batch_size
+        ranges = [(x*max_batch_size,
+                   x*max_batch_size+max_batch_size)
+                  for x in range(n_batches)]
+        if remainder > 0:
+            ranges.append((n_batches * max_batch_size,
+                           n_batches * max_batch_size + remainder))
+        return ranges
