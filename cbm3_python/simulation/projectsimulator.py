@@ -4,6 +4,27 @@ from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.cbm3data.projectdb import ProjectDB
 from cbm3_python.simulation.simulator import Simulator
 
+def clear_old_results(project_db):
+    """
+    Removes the data from project db tables tblSVLAttributes, 
+    tblSVLBySpeciesType.
+    This is the equivalent of pushing the "reset" button in the
+    simulation scheduler gui in the toolbox.  Each time CBM runs
+    via the GUI, it loads both makelist and afforestation results
+    into these tables, so for a re-run it's necessary to clear
+    them out first.  The batching is here as a workaround to prevent 
+    msaccess/pyodbc error that can occur with large bulk updates/deletes.
+    """
+
+    ranges = project_db.get_batched_query_ranges(
+        table_name="tblSVLAttributes",
+        id_colname="SVOID",
+        max_batch_size=50000)
+    if len(ranges)>0:
+        project_db.ExecuteMany(
+            "delete from tblSVLAttributes where tblSVLAttributes.SVOID BETWEEN ? and ?",
+            ranges)
+
 def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
        results_database_path=None, tempfiles_output_dir=None,
        afforestation_only=False):
@@ -26,6 +47,9 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
     with AIDB(aidb_path, False) as aidb, \
          AccessDB(project_path, False) as proj:
 
+
+        clear_old_results(proj)
+
         simId = aidb.AddProjectToAIDB(proj)
         try:
             cbm_wd = os.path.join(toolbox_installation_dir, "temp")
@@ -36,25 +60,16 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                             toolbox_installation_dir)
 
             s.CleanupRunDirectory()
-            
+            s.CreateMakelistFiles()
             if not afforestation_only:
-                s.CreateMakelistFiles()
                 s.copyMakelist()
                 s.runMakelist()
                 s.loadMakelistSVLS()
-                s.DumpMakelistSVLs()
-                s.CreateCBMFiles()
-                s.CopyCBMExecutable()
-                s.RunCBM()
-            else:
-                s.CreateMakelistFiles()
-                s.loadMakelistSVLS()
-                s.DumpMakelistSVLs()
-                s.CreateCBMFiles()
-                s.CopyCBMExecutable()
-                s.DumpMakelistSVLs()
-                s.RunCBM()
-                s.CopyTempFiles()
+            s.DumpMakelistSVLs()
+            s.CreateCBMFiles()
+            s.CopyCBMExecutable()
+            s.RunCBM()
+            
             if tempfiles_output_dir:
                 s.CopyTempFiles(output_dir=tempfiles_output_dir)
             s.LoadCBMResults(output_path = results_database_path)
