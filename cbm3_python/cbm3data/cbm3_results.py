@@ -89,8 +89,8 @@ def load_disturbance_indicators(results_db_path,
         classifier_set_grouping=False,
         land_class_grouping=False):
     sql = results_queries.get_disturbance_indicators_view_sql(
-        spatial_unit_grouping, classifier_set_grouping,
-        land_class_grouping)
+        disturbance_type_grouping, spatial_unit_grouping,
+        classifier_set_grouping, land_class_grouping)
     if classifier_set_grouping:
         df  = as_data_frame(sql, results_db_path)
         return join_classifiers(df, get_classifier_values(results_db_path))

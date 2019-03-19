@@ -84,5 +84,5 @@ def get_disturbance_indicators_view_sql(disturbance_type_grouping=False,
                                         land_class_grouping=False):
     return get_formatted_query(
         get_local_path("disturbance_indicators_view.sql"), "tdi",
-        False, spatial_unit_grouping, classifier_set_grouping,
-        land_class_grouping)
+        disturbance_type_grouping, spatial_unit_grouping,
+        classifier_set_grouping, land_class_grouping)
