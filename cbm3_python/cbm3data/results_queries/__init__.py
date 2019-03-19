@@ -27,7 +27,7 @@ def build_grouping(table_name,
                          .format(table_name=table_name))
     if land_class_grouping:
         grouping.append(",".join(
-            ["{table_name}_{col_name}".format(
+            ["{table_name}.{col_name}".format(
                 table_name=table_name,
                 col_name=x)
             for x in ["LandClassID","kf2","kf3","kf4","kf5","kf6"]]))
