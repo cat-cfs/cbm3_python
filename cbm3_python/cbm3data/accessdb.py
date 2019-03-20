@@ -69,7 +69,9 @@ class AccessDB(object):
     def ExecuteMany(self, query, params):
         cursor = self.connection.cursor()
         try:
-            params = self._floatifyIntParams(params)
+            if not isinstance(params, Iterable):
+                params = self._floatifyIntParams(params)
+            params = [self._floatifyIntParams(p) for p in params]
             cursor.executemany(query, params)
         except ProgrammingError as e:
             logging.info("{}".format(query))
