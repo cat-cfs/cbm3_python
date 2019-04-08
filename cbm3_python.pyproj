@@ -37,6 +37,7 @@
     <Compile Include="cbm3_python\cbm3data\results_queries\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="cbm3_python\cbm3data\sit_helper.py" />
     <Compile Include="cbm3_python\simulation\batchrunner.py">
       <SubType>Code</SubType>
     </Compile>
