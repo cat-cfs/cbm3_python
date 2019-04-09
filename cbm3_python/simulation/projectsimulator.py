@@ -62,7 +62,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
     with AIDB(aidb_path, False) as aidb, \
          AccessDB(project_path, False) as proj:
 
-        if not use_exisiting_makelist_output:
+        if not use_existing_makelist_output:
             clear_old_results(proj)
 
         if use_existing_makelist_output and not skip_makelist:
