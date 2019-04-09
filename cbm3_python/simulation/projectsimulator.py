@@ -20,10 +20,10 @@ def clear_old_results(project_db):
         table_name="tblSVLAttributes",
         id_colname="SVOID",
         max_batch_size=50000)
-    if len(ranges)>0:
-        project_db.ExecuteMany(
+    for range in ranges:
+        project_db.ExecuteQuery(
             "delete from tblSVLAttributes where tblSVLAttributes.SVOID BETWEEN ? and ?",
-            ranges)
+            range)
 
 def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
        results_database_path=None, tempfiles_output_dir=None,
