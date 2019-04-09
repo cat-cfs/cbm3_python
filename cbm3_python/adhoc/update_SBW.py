@@ -4,7 +4,7 @@
 import sys
 sys.path.append('../')
 
-#This script updates the Operational scale archive index databases (in En,Es,Fr,Ru) 
+#This script updates the Operational scale archive index databases (in En,Es,Fr,Ru)
 #with the NIR Firewood collection and Spruce Budworm (QC) matrices and disturbance types
 #and also drops the old SBW matrices, dist types, and association.
 #For the spruce budworm matrices, it also adds the growth multipliers associated with each disturbacne type.
@@ -56,7 +56,7 @@ for p in local_aidbs:
     logging.info("removing old SBW from {0}".format(p))
     with AccessDB(p["Path"]) as a:
 
-        # 2a get the set of default disturbance types ids, and the set of DMIDs that are associated with, and only with SBW (so that we dont remove 
+        # 2a get the set of default disturbance types ids, and the set of DMIDs that are associated with, and only with SBW (so that we dont remove
         res = a.Query("SELECT tblDMAssociationDefault.DefaultDisturbanceTypeID, tblDMAssociationDefault.DMID, tblDMAssociationDefault.Name FROM tblDMAssociationDefault")
         sbw_dist_ids = set()
         sbw_dm_ids = set()
@@ -127,10 +127,10 @@ with AccessDB(new_sbw_aidb) as sbw_source_aidb:
         for e in missing_ecos:
             original_row = unique_dm_associations_first_row[k]
             #creating a row through pyodbc with a query since we have all the values already and it's not easy to copy one
-            append_row = sbw_source_aidb.Query(""" 
+            append_row = sbw_source_aidb.Query("""
                 SELECT {DefaultDisturbanceTypeID} as DefaultDisturbanceTypeID,
                 {DefaultEcoBoundaryID} as DefaultEcoBoundaryID,
-                {AnnualOrder} as AnnualOrder, 
+                {AnnualOrder} as AnnualOrder,
                 {DMID} as DMID,
                 '{Name}' as Name,
                 '{Description}' as Description
@@ -156,7 +156,7 @@ for p in local_aidbs:
         logging.info("copying disturbance types to {}".format(p))
         for dist_type_row in source_tblDisturbanceTypeDefault:
             logging.info(dist_type_row.DistTypeName)
-            a.ExecuteQuery("INSERT INTO tblDisturbanceTypeDefault (DistTypeID, DistTypeName, OnOffSwitch, Description, IsStandReplacing, IsMultiYear, MultiYearCount) VALUES (?,?,?,?,?,?,?)", 
+            a.ExecuteQuery("INSERT INTO tblDisturbanceTypeDefault (DistTypeID, DistTypeName, OnOffSwitch, Description, IsStandReplacing, IsMultiYear, MultiYearCount) VALUES (?,?,?,?,?,?,?)",
                           (dist_type_row.DistTypeID,
                           distTypeTranslations[dist_type_row.DistTypeID][p["Language"]],
                           dist_type_row.OnOffSwitch,
@@ -213,7 +213,7 @@ for p in local_aidbs:
                             growthMultiplierRow.GrowthMultiplier))
 
         logging.info("fixing spruce budworm dm associations, and related strings")
-        
+
         spruceBudwormUpdates = [{"dist_type":140,"dmid":87},
                                 {"dist_type":141,"dmid":67},
                                 {"dist_type":142,"dmid":43}]

@@ -11,11 +11,11 @@ def filterRow(row, column):
     #check if the row is a harvest default disturbance type
     if row[column['Default Disturbance Type']] in [ '4', '185', '195', '196' ] :
         return True
-        
+
 def analyse_report_fil(inputFile, outputFile, delimiter=','):
     fileContents = inputFile.read() #read entire file into memory... it's the only way to use regex this way apparently
     # match on the blocks of disturbance reconciliation... please see http://docs.python.org/library/re.html
-    matches = re.findall('Disturbance Reconciliation.+?Records Changed:[ \t0-9]+', fileContents, re.DOTALL) 
+    matches = re.findall('Disturbance Reconciliation.+?Records Changed:[ \t0-9]+', fileContents, re.DOTALL)
     # the 'Disturbance Reconciliation' part matches the first bit of text in each block
     # '.+?' matches any character in a non greedy fashion
     # 'Records Changed:[ \t0-9]+' matches the end of each block
@@ -57,4 +57,3 @@ if __name__ == "__main__":
     with open(sys.argv[1], 'r') as inputFile:
         with open(sys.argv[2], 'w') as outputFile:
             analyse_report_fil(inputFile, outputFile)
-    

@@ -9,8 +9,8 @@ from math import floor
 
 # a class to load cbm text file output that is too big for ms access mdb files
 class ResultsLoader(object):
-    
-    
+
+
     def floored_percentage(self, val, digits):
         val *= 10 ** (digits + 2)
         return '{1:.{0}f}%'.format(digits, floor(val) / 10 ** digits)
@@ -57,7 +57,7 @@ class ResultsLoader(object):
         db.ExecuteQuery("CREATE INDEX fluxind_TimeStep_index ON tblFluxIndicators (TimeStep)")
         db.ExecuteQuery("CREATE INDEX fluxind_UserDefdClassSetID_index ON tblFluxIndicators (UserDefdClassSetID)")
         db.ExecuteQuery("CREATE INDEX fluxind_landclass_index ON tblFluxIndicators (LandClassID)")
-        
+
 
         db.ExecuteQuery("CREATE INDEX distind_spuid_index ON tblDistIndicators (SPUID)")
         db.ExecuteQuery("CREATE INDEX distind_kf3_index ON tblDistIndicators (kf3)")
@@ -65,7 +65,7 @@ class ResultsLoader(object):
         db.ExecuteQuery("CREATE INDEX distind_TimeStep_index ON tblDistIndicators (TimeStep)")
         db.ExecuteQuery("CREATE INDEX distind_UserDefdClassSetID_index ON tblDistIndicators (UserDefdClassSetID)")
         db.ExecuteQuery("CREATE INDEX distind_landclass_index ON tblDistIndicators (LandClassID)")
-        
+
         db.ExecuteQuery("CREATE UNIQUE INDEX distTypeID_index ON tblDisturbanceType (DistTypeID)")
         db.ExecuteQuery("CREATE UNIQUE INDEX spuid_index ON tblSPU (SPUID)")
 
@@ -83,15 +83,15 @@ class ResultsLoader(object):
         aidb.ExecuteQuery("SELECT * INTO tblAdminBoundaryDefault IN '{0}' FROM tblAdminBoundaryDefault".format(rrdb_path))
         aidb.ExecuteQuery("SELECT * INTO tblEcoBoundaryDefault IN '{0}' FROM tblEcoBoundaryDefault".format(rrdb_path))
         aidb.ExecuteQuery("SELECT * INTO tblDisturbanceTypeDefault IN '{0}' FROM tblDisturbanceTypeDefault".format(rrdb_path))
-    
+
     def BuildCsetLookup(self, projectDB):
         self.maxCsetId = 0
         csetQuery = """TRANSFORM First([qryClassifierSetValueNames].[ClassifierValueID]) AS FirstOfID
         SELECT [qryClassifierSetValueNames].[ClassifierSetID] AS ClassifierSetIDCroseTab
-        FROM         
+        FROM
             (SELECT tblClassifierSetValues.ClassifierSetID, tblClassifierSetValues.ClassifierID, tblClassifierValues.Name, tblClassifierSetValues.ClassifierValueID
             FROM tblClassifierSetValues INNER JOIN tblClassifierValues ON tblClassifierSetValues.[ClassifierID] = tblClassifierValues.[ClassifierID]
-            WHERE (((tblClassifierSetValues.ClassifierValueID)=[tblClassifierValues].[ClassifierValueID]))) as qryClassifierSetValueNames        
+            WHERE (((tblClassifierSetValues.ClassifierValueID)=[tblClassifierValues].[ClassifierValueID]))) as qryClassifierSetValueNames
         GROUP BY [qryClassifierSetValueNames].[ClassifierSetID]
         PIVOT [qryClassifierSetValueNames].[ClassifierID];"""
         result = projectDB.Query(csetQuery)
@@ -105,8 +105,8 @@ class ResultsLoader(object):
             self.cset_dict[cset_string] = cset_id
 
     def getClassifierSetID(self, classifierValueIds):
-        # accept a list of integers representing a 
-        # set of classifier value ids 
+        # accept a list of integers representing a
+        # set of classifier value ids
         # and return the matching classifier set id
         key = ",".join([str(x) for x in classifierValueIds])
         if key in self.cset_dict:
@@ -118,7 +118,7 @@ class ResultsLoader(object):
 
     def mysplit(self, s, delim=None): # thanks to: http://stackoverflow.com/questions/2197451/why-are-empty-strings-returned-in-split-results
         return [x for x in s.split(delim) if x]
-    
+
     def tokenize(self, infilePath, delim=None):
         f_input = open(infilePath)
         for line in f_input:
@@ -132,7 +132,7 @@ class ResultsLoader(object):
 
     def getFluxIndPath(self, cbmOutputDirectory):
         return os.path.join(cbmOutputDirectory, "fluxind.out")
-       
+
     def getPoolIndPath(self, cbmOutputDirectory):
         return os.path.join(cbmOutputDirectory, "poolind.out")
 
@@ -155,7 +155,7 @@ INSERT INTO tblAgeIndicators
 )
 """
         fileLen = self.file_len(ageIndPath);
-        
+
         recordNum = 0
         for line in self.tokenize(ageIndPath):
             self.printProgress(fileLen, ageIndPath, recordNum)
@@ -163,12 +163,12 @@ INSERT INTO tblAgeIndicators
             cset = [int(line[x]) for x in range(4,14) if int(line[x]) > 0]
             cset_id = self.getClassifierSetID(cset)
 
-            qryFormatted = qry.format(AgeIndID = recordNum, 
+            qryFormatted = qry.format(AgeIndID = recordNum,
                                       TimeStep = int(line[1]),
                                       SPUID = int(line[2]),
-                                      AgeClassID = int(line[3]), 
+                                      AgeClassID = int(line[3]),
                                       UserDefdClassSetID = int(cset_id),
-                                      LandClassID = int(line[14]), 
+                                      LandClassID = int(line[14]),
                                       kf2 = int(line[15]),
                                       kf3 = int(line[16]),
                                       kf4 = int(line[17]),
@@ -188,14 +188,14 @@ INSERT INTO tblAgeIndicators
         qry = """
 INSERT INTO tblDistIndicators
 (
- DistIndID, SPUID, DistTypeID, TimeStep, UserDefdClassSetID, 
- LandClassID, kf2, kf3, kf4, kf5, kf6, DistArea, DistProduct        
+ DistIndID, SPUID, DistTypeID, TimeStep, UserDefdClassSetID,
+ LandClassID, kf2, kf3, kf4, kf5, kf6, DistArea, DistProduct
 ) VALUES (
- {DistIndID}, {SPUID}, {DistTypeID}, {TimeStep}, {UserDefdClassSetID}, 
+ {DistIndID}, {SPUID}, {DistTypeID}, {TimeStep}, {UserDefdClassSetID},
  {LandClassID}, {kf2}, {kf3}, {kf4}, {kf5}, {kf6}, {DistArea}, {DistProduct}
 )"""
         fileLen = self.file_len(distIndPath);
-        
+
         recordNum = 0
         for line in self.tokenize(distIndPath):
             self.printProgress(fileLen, distIndPath, recordNum)
@@ -205,7 +205,7 @@ INSERT INTO tblDistIndicators
             cset_id = self.getClassifierSetID(cset)
 
             qryFormatted = qry.format(DistIndID=recordNum,
-                                      SPUID = int(line[3]), DistTypeID = int(line[2]), 
+                                      SPUID = int(line[3]), DistTypeID = int(line[2]),
                                       TimeStep = int(line[1]), UserDefdClassSetID = int(cset_id),
                                       LandClassID = int(line[14]), kf2= int(line[15]), kf3=int(line[16]),
                                       kf4=int(line[17]), kf5=int(line[18]), kf6=int(line[19]),
@@ -216,7 +216,7 @@ INSERT INTO tblDistIndicators
     def printProgress(self, fileLen, fluxIndPath, recordNum):
         if ((recordNum-1) % int(fileLen/10)) == 0 or recordNum == fileLen:
             logging.info("load file {0}: {1}/{2} ({3})".format(
-                fluxIndPath, recordNum, fileLen, 
+                fluxIndPath, recordNum, fileLen,
                 self.floored_percentage(float(recordNum)/fileLen, 2)))
 
     def loadFluxInd(self, projectSimulationDirectory, accessDB):
@@ -226,18 +226,18 @@ INSERT INTO tblDistIndicators
         qry = """
 INSERT INTO tblFluxIndicators
 (
-    FluxIndicatorID, TimeStep, 
+    FluxIndicatorID, TimeStep,
     DistTypeID, SPUID,
-    UserDefdClassSetID, 
-    CO2Production, CH4Production, COProduction, 
-    BioCO2Emission, BioCH4Emission, BioCOEmission, 
-    DOMCO2Emission, DOMCH4Emssion, DOMCOEmission, 
-    SoftProduction, HardProduction, DOMProduction, 
-    DeltaBiomass_AG, DeltaBiomass_BG, DeltaDOM, 
+    UserDefdClassSetID,
+    CO2Production, CH4Production, COProduction,
+    BioCO2Emission, BioCH4Emission, BioCOEmission,
+    DOMCO2Emission, DOMCH4Emssion, DOMCOEmission,
+    SoftProduction, HardProduction, DOMProduction,
+    DeltaBiomass_AG, DeltaBiomass_BG, DeltaDOM,
     BiomassToSoil, MerchLitterInput, FolLitterInput, OthLitterInput, SubMerchLitterInput, CoarseLitterInput, FineLitterInput,
-    VFastAGToAir, VFastBGToAir, FastAGToAir, FastBGToAir, MediumToAir, SlowAGToAir, SlowBGToAir, 
-    SWStemSnagToAir, SWBranchSnagToAir, HWStemSnagToAir, HWBranchSnagToAir, 
-    BlackCarbonToAir, PeatToAir, 
+    VFastAGToAir, VFastBGToAir, FastAGToAir, FastBGToAir, MediumToAir, SlowAGToAir, SlowBGToAir,
+    SWStemSnagToAir, SWBranchSnagToAir, HWStemSnagToAir, HWBranchSnagToAir,
+    BlackCarbonToAir, PeatToAir,
     LandClassID, kf2, kf3, kf4, kf5, kf6,
     MerchToAir, FolToAir, OthToAir, SubMerchToAir, CoarseToAir, FineToAir,
     GrossGrowth_AG, GrossGrowth_BG
@@ -246,22 +246,22 @@ VALUES
 (
     {FluxIndicatorID}, {TimeStep},
     {DistTypeID}, {SPUID},
-    {UserDefdClassSetID}, 
+    {UserDefdClassSetID},
     {CO2Production}, {CH4Production}, {COProduction},
     {BioCO2Emission}, {BioCH4Emission}, {BioCOEmission},
-    {DOMCO2Emission}, {DOMCH4Emssion}, {DOMCOEmission}, 
-    {SoftProduction}, {HardProduction}, {DOMProduction}, 
-    {DeltaBiomass_AG}, {DeltaBiomass_BG}, {DeltaDOM}, 
-    {BiomassToSoil}, {MerchLitterInput}, {FolLitterInput}, {OthLitterInput}, {SubMerchLitterInput}, {CoarseLitterInput}, {FineLitterInput}, 
-    {VFastAGToAir}, {VFastBGToAir}, {FastAGToAir}, {FastBGToAir}, {MediumToAir}, {SlowAGToAir}, {SlowBGToAir}, 
-    {SWStemSnagToAir}, {SWBranchSnagToAir}, {HWStemSnagToAir}, {HWBranchSnagToAir}, 
+    {DOMCO2Emission}, {DOMCH4Emssion}, {DOMCOEmission},
+    {SoftProduction}, {HardProduction}, {DOMProduction},
+    {DeltaBiomass_AG}, {DeltaBiomass_BG}, {DeltaDOM},
+    {BiomassToSoil}, {MerchLitterInput}, {FolLitterInput}, {OthLitterInput}, {SubMerchLitterInput}, {CoarseLitterInput}, {FineLitterInput},
+    {VFastAGToAir}, {VFastBGToAir}, {FastAGToAir}, {FastBGToAir}, {MediumToAir}, {SlowAGToAir}, {SlowBGToAir},
+    {SWStemSnagToAir}, {SWBranchSnagToAir}, {HWStemSnagToAir}, {HWBranchSnagToAir},
     {BlackCarbonToAir}, {PeatToAir},
-    {LandClassID}, {kf2}, {kf3}, {kf4}, {kf5}, {kf6}, 
-    {MerchToAir}, {FolToAir}, {OthToAir}, {SubMerchToAir}, {CoarseToAir}, {FineToAir}, 
+    {LandClassID}, {kf2}, {kf3}, {kf4}, {kf5}, {kf6},
+    {MerchToAir}, {FolToAir}, {OthToAir}, {SubMerchToAir}, {CoarseToAir}, {FineToAir},
     {GrossGrowth_AG}, {GrossGrowth_BG}
 )"""
         fileLen = self.file_len(fluxIndPath);
-        
+
         recordNum = 0
         for line in self.tokenize(fluxIndPath):
             self.printProgress(fileLen, fluxIndPath, recordNum)
@@ -272,24 +272,24 @@ VALUES
 
             distTypeId = int(line[2])
             qryFormatted = qry.format(
-                FluxIndicatorID = recordNum, TimeStep = int(line[1]), 
+                FluxIndicatorID = recordNum, TimeStep = int(line[1]),
                 DistTypeID = distTypeId, SPUID = int(line[3]),
-                UserDefdClassSetID = int(cset_id), 
-                CO2Production = float(line[20]), CH4Production = float(line[21]), COProduction = float(line[22]), 
-                BioCO2Emission = float(line[23]), BioCH4Emission = float(line[24]), BioCOEmission = float(line[25]), 
-                DOMCO2Emission = float(line[26]), DOMCH4Emssion = float(line[27]), DOMCOEmission = float(line[28]), 
-                SoftProduction = float(line[29]), HardProduction = float(line[30]), DOMProduction = float(line[31]), 
-                DeltaBiomass_AG = float(line[32]), DeltaBiomass_BG = float(line[33]), DeltaDOM = float(line[34]), 
+                UserDefdClassSetID = int(cset_id),
+                CO2Production = float(line[20]), CH4Production = float(line[21]), COProduction = float(line[22]),
+                BioCO2Emission = float(line[23]), BioCH4Emission = float(line[24]), BioCOEmission = float(line[25]),
+                DOMCO2Emission = float(line[26]), DOMCH4Emssion = float(line[27]), DOMCOEmission = float(line[28]),
+                SoftProduction = float(line[29]), HardProduction = float(line[30]), DOMProduction = float(line[31]),
+                DeltaBiomass_AG = float(line[32]), DeltaBiomass_BG = float(line[33]), DeltaDOM = float(line[34]),
                 BiomassToSoil = float(line[35]), MerchLitterInput = float(line[36]), FolLitterInput = float(line[37]), OthLitterInput = float(line[38]),
                 SubMerchLitterInput = float(line[39]), CoarseLitterInput = float(line[40]), FineLitterInput = float(line[41]),
                 VFastAGToAir = float(line[42]), VFastBGToAir = float(line[43]), FastAGToAir = float(line[44]), FastBGToAir = float(line[45]),
-                MediumToAir = float(line[46]), SlowAGToAir = float(line[47]), SlowBGToAir = float(line[48]), 
-                SWStemSnagToAir = float(line[49]), SWBranchSnagToAir = float(line[50]), HWStemSnagToAir = float(line[51]), HWBranchSnagToAir = float(line[52]), 
-                BlackCarbonToAir = float(line[53]), PeatToAir = float(line[54]), 
+                MediumToAir = float(line[46]), SlowAGToAir = float(line[47]), SlowBGToAir = float(line[48]),
+                SWStemSnagToAir = float(line[49]), SWBranchSnagToAir = float(line[50]), HWStemSnagToAir = float(line[51]), HWBranchSnagToAir = float(line[52]),
+                BlackCarbonToAir = float(line[53]), PeatToAir = float(line[54]),
                 LandClassID = float(line[14]), kf2 = float(line[15]), kf3 = float(line[16]), kf4 = float(line[17]), kf5 = float(line[18]), kf6 = float(line[19]),
                 MerchToAir = float(line[55]), FolToAir = float(line[56]), OthToAir = float(line[57]), SubMerchToAir = float(line[58]), CoarseToAir = float(line[59]), FineToAir = float(line[60]),
-                GrossGrowth_AG = float(line[32]) + float(line[36]) + float(line[37]) + float(line[38]) + float(line[39]) if distTypeId == 0 else 0, 
-                GrossGrowth_BG = float(line[33]) + float(line[40]) + float(line[41]) if distTypeId == 0 else 0) 
+                GrossGrowth_AG = float(line[32]) + float(line[36]) + float(line[37]) + float(line[38]) + float(line[39]) if distTypeId == 0 else 0,
+                GrossGrowth_BG = float(line[33]) + float(line[40]) + float(line[41]) if distTypeId == 0 else 0)
 
             accessDB.ExecuteQuery(qryFormatted)
 
@@ -303,7 +303,7 @@ INSERT INTO tblPoolIndicators
 (
     PoolIndID,
     TimeStep, SPUID, UserDefdClassSetID,
-    VFastAG, VFastBG, FastAG, FastBG, Medium, SlowAG, SlowBG, 
+    VFastAG, VFastBG, FastAG, FastBG, Medium, SlowAG, SlowBG,
     SWStemSnag, SWBranchSnag, HWStemSnag, HWBranchSnag,
     BlackCarbon, Peat,
     LandClassID, kf2, kf3, kf4, kf5, kf6,
@@ -312,13 +312,13 @@ INSERT INTO tblPoolIndicators
 )
 VALUES
 (
-    {PoolIndID}, 
-    {TimeStep}, {SPUID}, {UserDefdClassSetID}, 
-    {VFastAG}, {VFastBG}, {FastAG}, {FastBG}, {Medium}, {SlowAG}, {SlowBG}, 
-    {SWStemSnag}, {SWBranchSnag}, {HWStemSnag}, {HWBranchSnag}, 
-    {BlackCarbon}, {Peat}, 
-    {LandClassID}, {kf2}, {kf3}, {kf4}, {kf5}, {kf6}, 
-    {SW_Merch}, {SW_Foliage}, {SW_Other}, {SW_subMerch}, {SW_Coarse}, {SW_Fine}, 
+    {PoolIndID},
+    {TimeStep}, {SPUID}, {UserDefdClassSetID},
+    {VFastAG}, {VFastBG}, {FastAG}, {FastBG}, {Medium}, {SlowAG}, {SlowBG},
+    {SWStemSnag}, {SWBranchSnag}, {HWStemSnag}, {HWBranchSnag},
+    {BlackCarbon}, {Peat},
+    {LandClassID}, {kf2}, {kf3}, {kf4}, {kf5}, {kf6},
+    {SW_Merch}, {SW_Foliage}, {SW_Other}, {SW_subMerch}, {SW_Coarse}, {SW_Fine},
     {HW_Merch}, {HW_Foliage}, {HW_Other}, {HW_subMerch}, {HW_Coarse}, {HW_Fine}
 )"""
 
@@ -331,13 +331,13 @@ VALUES
 
             cset = [int(line[x]) for x in range(3,13) if int(line[x]) > 0]
             cset_id = self.getClassifierSetID(cset)
-            
-            
+
+
             qryFormatted = qry.format(PoolIndID=recordNum,
-                      TimeStep = int(line[1]), 
-                      SPUID = int(line[2]), 
+                      TimeStep = int(line[1]),
+                      SPUID = int(line[2]),
                       UserDefdClassSetID = int(cset_id),
-                      VFastAG = float(line[31]), VFastBG = float(line[32]), FastAG = float(line[33]), FastBG = float(line[34]), Medium = float(line[35]), SlowAG = float(line[36]), SlowBG = float(line[37]), 
+                      VFastAG = float(line[31]), VFastBG = float(line[32]), FastAG = float(line[33]), FastBG = float(line[34]), Medium = float(line[35]), SlowAG = float(line[36]), SlowBG = float(line[37]),
                       SWStemSnag = float(line[38]), SWBranchSnag = float(line[39]), HWStemSnag =float(line[40]), HWBranchSnag = float(line[41]),
                       BlackCarbon = float(line[42]), Peat = float(line[43]),
                       LandClassID = float(line[13]), kf2 = float(line[14]), kf3 = float(line[15]), kf4 = float(line[16]), kf5 = float(line[17]), kf6 = float(line[18]),
@@ -371,7 +371,7 @@ VALUES
 
             cset = [int(line[x]) for x in range(3,13) if int(line[x]) > 0]
             cset_id = self.getClassifierSetID(cset)
-            
+
             qryFormatted = qry.format(
                 PreDistAgeID=recordNum,
                 SPUID=int(line[0]),

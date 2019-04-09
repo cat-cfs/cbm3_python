@@ -131,7 +131,7 @@ def main():
                     raise AssertionError(
                         "specified prefix filter item {} does not exist in "
                         "configuration project_prefixes".format(x))
-        
+
         project_prefixes = config["project_prefixes"] \
             if not args.prefix_filter else \
             [x for x in config["project_prefixes"]
@@ -201,7 +201,7 @@ def main():
             logging.info("generating qaqc spreadsheets finished")
 
         if args.copy_to_final_results_dir:
-            
+
             final_results_dir = os.path.abspath(config["final_results_dir"])
             if not os.path.exists(final_results_dir):
                 os.makedirs(final_results_dir)

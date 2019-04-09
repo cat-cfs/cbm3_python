@@ -32,11 +32,11 @@ class AccessDB(object):
             self.connection.close()
 
     def getConnectionString(self, path):
-        return "Driver={Microsoft Access Driver (*.mdb, *.accdb)};User Id='admin';Dbq=" + path    
+        return "Driver={Microsoft Access Driver (*.mdb, *.accdb)};User Id='admin';Dbq=" + path
 
     def _floatifyIntParams(self, params):
         """
-        workaround for access/pyodbc bug. Converts integer sql parameters to float 
+        workaround for access/pyodbc bug. Converts integer sql parameters to float
         see https://stackoverflow.com/questions/20240130/optional-feature-not-implemented-106-sqlbindparameter-error-with-pyodbc
         """
         def safeConvert(value):
@@ -106,7 +106,7 @@ class AccessDB(object):
         """
         result = self.Query("SELECT Max({0}.{1}) AS MaxID FROM {0};"
                             .format(table, IDcolumn)).fetchone()
-        
+
         if result is None or result[0] is None: #garbage
             return 0
         return result.MaxID
@@ -128,12 +128,12 @@ class AccessDB(object):
                                      max_batch_size):
         """
         workaround for "File sharing lock count exceeded.../ MaxLocksPerFile"
-        issues that can occur in access database queries that affect a large 
-        number of rows in a single table. This can happen, for example, when 
+        issues that can occur in access database queries that affect a large
+        number of rows in a single table. This can happen, for example, when
         deleting all rows, or updating all rows in a table.
         @param table_name the name of the table the query is affecting
-        @param id_colname the name of an unique-constrained integer column 
-               in the specified table which is used to limit the number of 
+        @param id_colname the name of an unique-constrained integer column
+               in the specified table which is used to limit the number of
                rows affected
         @param max_batch_size the maximum number of rows to affect per batch
         @returns list of tuples representing (min,max) bounds to apply to query

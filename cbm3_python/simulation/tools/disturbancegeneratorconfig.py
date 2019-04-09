@@ -18,14 +18,14 @@ class DisturbanceGeneratorConfig(object):
         self.projectTag = projectTag
         self.projectDBPath = projectDBPath
 
-        
+
     def Run(self):
         cmd ='{0} "{1}" "{2}"'.format(self.exePath,
                     self.BuildXMLConfig(),
                     self.defaultsPath)
         logging.info("running command '{0}'".format(cmd))
         subprocess.check_call(cmd)
-        
+
 
     def BuildXMLConfig(self):
         path = os.path.join( os.path.dirname(self.projectDBPath), "DistGen_config.xml")
@@ -60,7 +60,7 @@ class DisturbanceGeneratorConfig(object):
                 ('<DisturbanceDB DisturbanceClass="{0}">{1}</DisturbanceDB>'.format(
                         item["DisturbanceClass"],
                         item["DisturbanceDBPath"]) for item in config))
-            
+
         text = \
 """<?xml version="1.0"?>
 <DGConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">

@@ -11,7 +11,7 @@ def load_standard_import_tool_plugin():
     Download the 1.2.1 release of StandardImportToolPlugin from Github and unzip it locally.
     '''
     StandardImportToolPluginDir = os.path.join(".","StandardImportToolPlugin")
-    #extra subdir in the archive    
+    #extra subdir in the archive
     StandardImportToolPluginExe = os.path.join(StandardImportToolPluginDir,"Release", "StandardImportToolPlugin.exe")
     if not os.path.exists(StandardImportToolPluginExe):
         resp = urlopen('https://github.com/cat-cfs/StandardImportToolPlugin/releases/download/1.2.2/Release.zip')
@@ -145,7 +145,7 @@ class SITConfig(object):
         transition_rules_path, yield_path):
         if "import_config" in self.config or "data" in self.config:
             raise ValueError("only one call of function of text_file_paths, database_path, data_config may be used")
-        
+
         self.config["import_config"] = {
             "ageclass_path": ageclass_path,
             "classifiers_path": classifiers_path,
@@ -159,7 +159,7 @@ class SITConfig(object):
     def database_path(self, db_path, age_class_table_name, classifiers_table_name,
         disturbance_events_table_name, disturbance_types_table_name,
         inventory_table_name, transition_rules_table_name, yield_table_name):
-        
+
         if "import_config" in self.config or "data" in self.config:
             raise ValueError("only one call of function of text_file_paths, database_path, data_config may be used")
 
@@ -175,7 +175,7 @@ class SITConfig(object):
         }
 
     def data_config(self, age_class_size, num_age_classes, classifiers):
-    
+
         if "import_config" in self.config or "data" in self.config:
             raise ValueError("only one call of function of text_file_paths, database_path, data_config may be used")
 

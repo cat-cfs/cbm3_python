@@ -31,7 +31,7 @@ def qaqc_comparison_plot_wide_data(data1, data2, legend_labels, plot_title, xlab
 
     The pair of tables must have equivalent columns and rows
 
-    Creates 2 plots 
+    Creates 2 plots
     1: the value of each y column with x as the x axis
 
     2: the relative difference of the corresponding y columns for each table
@@ -39,13 +39,13 @@ def qaqc_comparison_plot_wide_data(data1, data2, legend_labels, plot_title, xlab
 
     if data1.shape != data2.shape:
         raise AssertionError("data1 and data2 must have equivalent shape")
-    n_y = data1.shape[1] - 1 
+    n_y = data1.shape[1] - 1
     rel_dif = np.abs((data1 - data2) / (data1 + data2)/2)
     rel_dif[:,0] = data1[:,0]
     f, arr = plt.subplots(2, 1)
     f.set_figwidth(11)
     f.set_figheight(7)
-    
+
     arr[0].set_title(plot_title)
     arr[1].set_title("{} relative differences".format(plot_title))
     arr[0].set_ylabel(ylabel)
@@ -59,11 +59,11 @@ def qaqc_comparison_plot_wide_data(data1, data2, legend_labels, plot_title, xlab
         arr[0].plot(data2[:,0], data2[:,col_idx], linestyle=':')
         arr[1].plot(rel_dif[:,0], rel_dif[:,col_idx])
 
-    arr[0].legend(legend_labels, loc="upper left") 
+    arr[0].legend(legend_labels, loc="upper left")
     plt.tight_layout()
     plt.savefig(out_img_path)
     plt.close("all")
-#   
+#
 
 #def qaqc_comparison_plot_long_data(data1, data2):
 #    if data1.shape != data2.shape:
@@ -72,7 +72,7 @@ def qaqc_comparison_plot_wide_data(data1, data2, legend_labels, plot_title, xlab
 def compare_forest_areas(base_rrdb_path, local_rrdb_path, project_prefix, outputdir):
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
-    # compares disturbance areas between the new pre-dist 
+    # compares disturbance areas between the new pre-dist
     # age indicator and base dist indicators to check for bugs
 
     sql = """
@@ -101,7 +101,7 @@ def compare_forest_areas(base_rrdb_path, local_rrdb_path, project_prefix, output
     arr[1].set_ylabel("Area Relative Differences [ha]")
     arr[1].plot(rel_dif[:,0], rel_dif[:,1])
 
-    arr[0].legend(["local_run", "base_run"], loc="upper left") 
+    arr[0].legend(["local_run", "base_run"], loc="upper left")
     plt.tight_layout()
     plt.savefig(os.path.join(outputdir, "forest_area_comparison_{}.png".format(project_prefix)))
     plt.close("all")
@@ -109,7 +109,7 @@ def compare_forest_areas(base_rrdb_path, local_rrdb_path, project_prefix, output
 def compare_disturbance_areas(base_rrdb_path, local_rrdb_path, project_prefix, outputdir):
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
-    # compares disturbance areas between the new pre-dist 
+    # compares disturbance areas between the new pre-dist
     # age indicator and base dist indicators to check for bugs
 
     local_sql = """
@@ -118,7 +118,7 @@ def compare_disturbance_areas(base_rrdb_path, local_rrdb_path, project_prefix, o
 
     base_sql = """
         SELECT tblDistIndicators.TimeStep, Sum(tblDistIndicators.DistArea) AS SumOfDistArea
-        FROM tblDistIndicators 
+        FROM tblDistIndicators
         WHERE tblDistIndicators.DistTypeID <> 0
         GROUP BY tblDistIndicators.TimeStep
         ORDER BY tblDistIndicators.TimeStep;"""
@@ -139,7 +139,7 @@ def compare_disturbance_areas(base_rrdb_path, local_rrdb_path, project_prefix, o
     arr[1].set_ylabel("Area Relative Differences [ha]")
     arr[1].plot(rel_dif[:,0], rel_dif[:,1])
 
-    arr[0].legend(["pre_dist_age_indicator", "dist_indicators"], loc="upper left") 
+    arr[0].legend(["pre_dist_age_indicator", "dist_indicators"], loc="upper left")
     plt.tight_layout()
     plt.savefig(os.path.join(outputdir, "disturbances_comparison_{}.png".format(project_prefix)))
     plt.close("all")
@@ -171,14 +171,14 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
         writer.writeheader()
         writer.writerow({
             "weighted_mean_age": national_stats.mean,
-            "n_events": national_stats.data.size, 
+            "n_events": national_stats.data.size,
             "max_age": national_stats.data.max(),
             "min_age": national_stats.data.min(),
             "weighted_std_dev": national_stats.std,
              "weighted_variance": national_stats.var})
 
     sql_admin = "SELECT tblAdminBoundaryDefault.AdminBoundaryID, tblAdminBoundaryDefault.AdminBoundaryName FROM tblAdminBoundaryDefault;"
-    sql_eco = "SELECT tblEcoboundaryDefault.EcoBoundaryID, tblEcoboundaryDefault.EcoBoundaryName FROM tblEcoboundaryDefault;" 
+    sql_eco = "SELECT tblEcoboundaryDefault.EcoBoundaryID, tblEcoboundaryDefault.EcoBoundaryName FROM tblEcoboundaryDefault;"
     sql_spu = """
         SELECT tblSPUDefault.SPUID, tblAdminBoundaryDefault.AdminBoundaryName, tblEcoboundaryDefault.EcoBoundaryName
         FROM (tblSPUDefault INNER JOIN tblAdminBoundaryDefault ON tblSPUDefault.AdminBoundaryID = tblAdminBoundaryDefault.AdminBoundaryID) INNER JOIN tblEcoboundaryDefault ON tblSPUDefault.EcoBoundaryID = tblEcoboundaryDefault.EcoBoundaryID
@@ -206,7 +206,7 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
             writer.writerow({
                 "admin_boundary": admin.AdminBoundaryName,
                 "weighted_mean_age": national_admin_stats.mean,
-                "n_events": national_admin_stats.data.size, 
+                "n_events": national_admin_stats.data.size,
                 "max_age": national_admin_stats.data.max(),
                 "min_age": national_admin_stats.data.min(),
                 "weighted_std_dev": national_admin_stats.std,
@@ -229,7 +229,7 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
             writer.writerow({
                 "eco_boundary": eco.EcoBoundaryName,
                 "weighted_mean_age": national_eco_stats.mean,
-                "n_events": national_eco_stats.data.size, 
+                "n_events": national_eco_stats.data.size,
                 "max_age": national_eco_stats.data.max(),
                 "min_age": national_eco_stats.data.min(),
                 "weighted_std_dev": national_eco_stats.std,
@@ -254,7 +254,7 @@ def plot_national_level_pre_dist_age(rollup_path, outputdir):
                 "admin_boundary": spu.AdminBoundaryName,
                 "eco_boundary": spu.EcoBoundaryName,
                 "weighted_mean_age": national_spu_stats.mean,
-                "n_events": national_spu_stats.data.size, 
+                "n_events": national_spu_stats.data.size,
                 "max_age": national_spu_stats.data.max(),
                 "min_age": national_spu_stats.data.min(),
                 "weighted_std_dev": national_spu_stats.std,
@@ -285,7 +285,7 @@ def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, dist_rules,
         by_spu_stats_row = DescrStatsW(data=rows[:,2],weights=rows[:,3])
         by_spu_stats[i,:]=np.array(
             [
-                u, 
+                u,
                 dist_rules[u],
                 by_spu_stats_row.mean,
                 by_spu_stats_row.data.size,
@@ -336,12 +336,12 @@ def plot_project_level_pre_dist_age(local_rrdb_path, project_prefix, dist_rules,
         plt.plot(rows[:,1], rows[:,3], color=colors[i], marker=markers[i], markerfacecolor='None', linestyle = 'None')
         legend.append("re-entry rule SPU {}".format(int(u)))
         legend.append("area weighted mean age at fire SPU {}".format(int(u)))
-    
+
 
     plt.title("NIR Project '{}' pre dist area weighted mean age by year for multiple default SPUs".format(project_prefix))
     plt.ylabel("Area weighted mean age [years]")
     plt.xlabel("Year")
-    plt.legend(legend, loc="upper left") 
+    plt.legend(legend, loc="upper left")
     plt.tight_layout()
     plt.savefig(os.path.join(outputdir, "pre_dist_age_by_year_{}.png".format(project_prefix)))
     plt.close("all")
@@ -403,7 +403,7 @@ for p in config["project_prefixes"]:
             config["local_working_dir"],
             "validation",
             "forest_areas"))
-    
+
     compare_disturbance_areas(
         base_rrdb_path = base_rrdb_path,
         local_rrdb_path = local_rrdb_path,
@@ -412,7 +412,7 @@ for p in config["project_prefixes"]:
             config["local_working_dir"],
             "validation",
             "disturbance_areas"))
-    
+
     plot_project_level_pre_dist_age(
         local_rrdb_path=local_rrdb_path,
         project_prefix=p,

@@ -4,55 +4,60 @@
 # ---------------------------------------------------------------------------
 #
 #  Author: MH
-#  
+#
 #  Created on: April 24, 2013
-#  
+#
 #  Purpose: Replicate all the steps of the VisualBuildScript for a complete CBM run
 #           (Why? Because I can't get visual build pro to run on the new HP workstation)
-#            
-#  Usage: 
-#         
-#  
-#  Comments: 
-#           
-#  
-#  Updated: History of changes made to the original script
-#  
-#    Who When     What                                   Why
-#    --- ----     ----                                   ----                                  
-#   Scott Morken, 20131120, Added simulator class, To test some NIR toolbox builds in light of the KF6 extended disturbance accounting issue
 #
-#           
-#  
+#  Usage:
+#
+#
+#  Comments:
+#
+#
+#  Updated: History of changes made to the original script
+#
+#    Who When     What                                   Why
+#    --- ----     ----                                   ----
+#   Scott Morken, 2013-11-20, Added simulator class, To test some NIR toolbox builds in light of the KF6 extended disturbance accounting issue
+#   Lucas Sinclair, 2019-04-09, Added ability to save stdout, To stop flooding the terminal in which we run our simulations.
+#
+#
 # ---------------------------------------------------------------------------
 # Import system modules
-import logging, os, shutil, subprocess, glob, sys, re
+import logging, os, shutil, subprocess, glob, re
 
 
 class Simulator(object):
-    def __init__(self, executablePath, simID, projectPath, CBMRunDir, toolboxPath):
-
-        # Define relevant paths
+    def __init__(self, executablePath, simID, projectPath, CBMRunDir, toolboxPath, stdout_path=None):
+        """Defines relevant paths."""
         self.simID = simID
         self.ProjectPath = projectPath
-        self.ExecutablePath = executablePath 
+        self.ExecutablePath = executablePath
         self.CBMTemp = CBMRunDir
         self.CBMPath = toolboxPath
+        self.stdout_path = stdout_path
 
+    def call_subprocess_cmd(self, cmd):
+        """Call the defined command *cmd* and optionally record the stdout."""
+        if self.stdout_path is None:
+            subprocess.check_call(cmd)
+        else:
+            with open(self.stdout_path, "a") as handle:
+                subprocess.check_call(cmd, stdout=handle, stderr=handle)
 
     def _ignorethese(self, path, name):
-        #use this with the copytree command to control what does and does not get copied
+        """Use this with the copytree command to control what does and does not get copied."""
         #ignore Access database files
         ignorelist = []
         for item in name:
-            if (item.lower().find('.mdb') != -1): 
+            if (item.lower().find('.mdb') != -1):
                ignorelist.append(item)
         return ignorelist
 
-
     def getDefaultProjectResultsPath(self):
         return os.path.join(self.ProjectPath,str(self.simID))
-
 
     def getDefaultResultsPath(self):
         return os.path.join(self.getDefaultProjectResultsPath(), str(self.simID)+'.mdb')
@@ -75,12 +80,11 @@ class Simulator(object):
         logging.info("\n\n Creating make list files...\n")
         cmd = '"' + os.path.join(self.CBMPath, r'createMakelistFiles.exe') + '" ' + str(self.simID)
         logging.info("Command line: " + cmd)
-        subprocess.check_call(cmd)
-
+        self.call_subprocess_cmd(cmd)
 
     def copyMakelist(self):
         logging.info("\n\n Copying makelist.exe to Temp dir...\n")
-        shutil.copy2(os.path.join(self.ExecutablePath,r'Makelist.exe'), os.path.join(self.CBMTemp, 'Makelist'))
+        shutil.copy2(os.path.join(self.ExecutablePath, r'Makelist.exe'), os.path.join(self.CBMTemp, 'Makelist'))
 
     def runMakelist(self):
         logging.info("\n\n Running make list...\n")
@@ -90,15 +94,15 @@ class Simulator(object):
             os.chdir(os.path.dirname(makelist_path))  # makelist is expecting the current directory to be its location
             cmd = '"'  + makelist_path + '" '
             logging.info("Command line: " + cmd)
-            subprocess.check_call(cmd)
+            self.call_subprocess_cmd(cmd)
         finally:
-            os.chdir(cwd) #change back to the original working dir
+            os.chdir(cwd) # change back to the original working dir
 
     def loadMakelistSVLS(self):
         logging.info("\n\n Loading Makelist SVLs...\n")
         cmd = '"' + os.path.join(self.CBMPath, r'MakelistSVLLoader.exe') + '" ' + str(self.simID)
         logging.info("Command line: " + cmd)
-        subprocess.check_call(cmd)
+        self.call_subprocess_cmd(cmd)
 
     def copyMakelistOutput(self):
         logging.info("\n\n Copying makelist outputs...\n")
@@ -131,7 +135,6 @@ class Simulator(object):
                     fOutput.write("0 0" + linebreak)
                     for srcline in fInput:
                         tokens = split(srcline)
-                        
                         line1 = " ".join(tokens[0:5] + ['0'])
                         softwood = " ".join(tokens[5:18])
                         hardwood = " ".join(tokens[18:31])
@@ -143,14 +146,13 @@ class Simulator(object):
 
                         for outline in outlines:
                             fOutput.write(outline + linebreak)
-                        fOutput.write(linebreak) #extra line break
-
+                        fOutput.write(linebreak) # extra line break
 
     def CreateCBMFiles(self):
         logging.info("\n\n Creating CBM files...\n")
         cmd = '"' + os.path.join(self.CBMPath, r'createCBMFiles.exe') + '" ' + str(self.simID)
         logging.info("Command line: " + cmd)
-        subprocess.check_call(cmd)
+        self.call_subprocess_cmd(cmd)
         inf = open(os.path.join(self.CBMTemp, r'CBMRun\input\indicate.inf'),'w')
         inf.write('0\n')
         inf.flush()
@@ -168,9 +170,9 @@ class Simulator(object):
             os.chdir(os.path.dirname(cbm_path)) # CBM is expecting the current directory to be its location
             cmd = '"' + cbm_path + '" '
             logging.info("Command line: " + cmd)
-            subprocess.check_call(cmd)
+            self.call_subprocess_cmd(cmd)
         finally:
-            os.chdir(cwd) #change back to the original working dir
+            os.chdir(cwd) # change back to the original working dir
 
     def LoadCBMResults(self, output_path=None):
         logging.info("\n\n Loading CBM Results...\n")
@@ -179,30 +181,27 @@ class Simulator(object):
 
         cmd = '"' + os.path.join(self.CBMPath, r'LoaderCL.exe') + '" ' + str(self.simID) + ' "' + results_path + '"'
         logging.info("Command line: " + cmd)
-        subprocess.check_call(cmd)
+        self.call_subprocess_cmd(cmd)
 
     def CopyTempFiles(self, output_dir=None):
         logging.info("\n\n Copying Tempfiles to Project Directory...\n")
-        tempfilepath = ""
         if output_dir is None:
             tempfilepath = os.path.join(self.getDefaultProjectResultsPath(),"Tempfiles")
             if os.path.exists(tempfilepath):
                 shutil.rmtree(tempfilepath)
         else:
             tempfilepath = os.path.abspath(output_dir)
-
-
         shutil.copytree(self.CBMTemp, tempfilepath, ignore=self._ignorethese)
 
     def DumpMakelistSVLs(self):
         logging.info("\n\n dumping makelist svls...\n")
         cmd = '"' + os.path.join(self.CBMPath, r'DumpMakelistSVL.exe') + '" "' + str(self.simID) + ' "'
         logging.info("Command line: " + cmd)
-        subprocess.check_call(cmd)
+        self.call_subprocess_cmd(cmd)
 
-    def simulate(self, doLoad=True):  
-    
-        self.CleanupRunDirectory()                    
+    def simulate(self, doLoad=True):
+
+        self.CleanupRunDirectory()
 
         logging.info("Processing " + str(self.ProjectPath) + "...")
 
@@ -219,7 +218,7 @@ class Simulator(object):
         self.CreateCBMFiles()
 
         self.CopyCBMExecutable()
-                         
+
         self.RunCBM()
 
         if doLoad:

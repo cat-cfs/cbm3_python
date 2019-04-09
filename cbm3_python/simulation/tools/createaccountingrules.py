@@ -63,7 +63,7 @@ class CreateAccountingRules(object):
                 """
             )
         ]
-        
+
         table_defs.reverse()
         for table, _ in table_defs:
             if self.projectAccessDb.tableExists(table):
@@ -72,7 +72,7 @@ class CreateAccountingRules(object):
         table_defs.reverse()
         for table, ddl in table_defs:
             self.projectAccessDb.ExecuteQuery(ddl.format(table))
-        
+
     def get_makelist_value(self, spu):
         return self.projectAccessDb.Query(
             """
@@ -102,17 +102,17 @@ class CreateAccountingRules(object):
                 ON c.spuid = a.spuid
             """,
             [spu]).fetchone().val
-    
+
     def get_or_add_rule_type(self, rule_type):
         rule_query = "SELECT accountingruletypeid FROM tblaccountingruletype WHERE name LIKE ?"
         existing = self.projectAccessDb.Query(rule_query, [rule_type]).fetchone()
         if existing:
             return existing.accountingruletypeid
-    
+
         self.projectAccessDb.ExecuteQuery("INSERT INTO tblaccountingruletype (name) VALUES (?)", [rule_type])
         result = self.projectAccessDb.Query(rule_query, [rule_type])
         return result.fetchone().accountingruletypeid
-    
+
     def get_or_add_rule_sets(self, category, rule_tracking_type, ru=None, spu=None):
         get_rule_sets_query = \
             """
@@ -148,7 +148,7 @@ class CreateAccountingRules(object):
             WHERE dc.name LIKE ?
                 AND tt.name LIKE ?
             """
-    
+
         get_query_params = [category]
         add_query_params = [category, rule_tracking_type]
         if ru is not None:
@@ -156,21 +156,21 @@ class CreateAccountingRules(object):
             add_rule_sets_query = " ".join([add_rule_sets_query, "AND spu.defaultspuid = ?"])
             get_query_params.append(ru)
             add_query_params.append(ru)
-    
+
         if spu is not None:
             get_rule_sets_query = " ".join([get_rule_sets_query, "AND rs.spuid = ?"])
             add_rule_sets_query = " ".join([add_rule_sets_query, "AND spu.spuid = ?"])
             get_query_params.append(spu)
             add_query_params.append(spu)
-    
+
         existing = self.projectAccessDb.Query(get_rule_sets_query, get_query_params).fetchall()
         if existing:
             return existing
-        
+
         self.projectAccessDb.ExecuteQuery(add_rule_sets_query, add_query_params)
         result = self.projectAccessDb.Query(get_rule_sets_query, get_query_params)
         return result.fetchall()
-    
+
     def create_accounting_rules(self):
         self.createAccountingRulesTables()
         logging.info("  Creating kf5 accounting rules")
@@ -187,15 +187,15 @@ class CreateAccountingRules(object):
 
         with open(self.dist_classes_path) as dist_class_file:
             reader = csv.DictReader(dist_class_file)
-            
+
             uniqueDisturbanceClasses = set([row["Category"] for row in reader])
             self.projectAccessDb.ExecuteMany(
             "INSERT INTO tbldisturbanceclass (name) VALUES (?)",
             [[dc] for dc in uniqueDisturbanceClasses])
-            
+
         with open(self.dist_classes_path) as dist_class_file:
             reader = csv.DictReader(dist_class_file)
-            
+
             self.projectAccessDb.ExecuteMany(
                 """
                 INSERT INTO tbldisturbancetypeclassification (defaultdisttypeid, disturbance_class_id)
@@ -204,21 +204,21 @@ class CreateAccountingRules(object):
                 WHERE name LIKE ?
                 """,
                 [[row["DefaultDistTypeID"], row["Category"]] for row in reader])
-                
+
         with open(self.dist_rules_path) as csvfile:
             add_rule_sql = \
                 """
                 INSERT INTO tblaccountingrule (accountingrulesetid, accountingruletypeid, rule_value)
                 VALUES (?, ?, ?)
                 """
-        
+
             reader = csv.DictReader(csvfile)
             for row in reader:
                 dist_class         = row["disturbance_class"]
                 rule_tracking_type = row["rule_tracking_type"]
                 rule_type          = row.get("rule_type")
                 rule_value         = row.get("rule_value")
-                
+
                 ru = row.get("defaultSPUID")
                 spu = row.get("SPUID")
                 if spu:
@@ -227,11 +227,11 @@ class CreateAccountingRules(object):
                     rule_sets = self.get_or_add_rule_sets(dist_class, rule_tracking_type, ru=ru)
                 else:
                     rule_sets = self.get_or_add_rule_sets(dist_class, rule_tracking_type)
-                
+
                 if not rule_type:
                     # Rule set with no rules (i.e. to set rule_tracking_type only)
                     continue
-                    
+
                 rule_type_id = self.get_or_add_rule_type(rule_type)
                 for rule_set in rule_sets:
                     value = self.get_makelist_value(rule_set.spuid) if rule_value == "makelist" else rule_value

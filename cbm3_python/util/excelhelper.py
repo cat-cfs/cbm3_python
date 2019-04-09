@@ -9,7 +9,7 @@ def load_dict_from_worksheet(sheet):
 
     dict_list = []
     for row_index in xrange(1, sheet.nrows):
-        d = {keys[col_index]: sheet.cell(row_index, col_index).value 
+        d = {keys[col_index]: sheet.cell(row_index, col_index).value
              for col_index in xrange(sheet.ncols)}
         dict_list.append(d)
     return dict_list

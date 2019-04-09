@@ -18,8 +18,8 @@ class AIDB(AccessDB):
                                  "VALUES(?, ?, ?, ?, 1)",
                                  (inputDBID, name, "", dir))
 
-    
-    def InsertRowTo_tblStandInitialization(self, name, desc, author, inputDBID, 
+
+    def InsertRowTo_tblStandInitialization(self, name, desc, author, inputDBID,
                                            standInitializationID, inputStandInitializationID):
         return self.ExecuteQuery(
                """
@@ -100,12 +100,12 @@ class AIDB(AccessDB):
 
         ProjectToAIDBStandInitIDs = {}
         for standInitRow in project.Query("SELECT * FROM tblStandInitialization").fetchall():
-            self.InsertRowTo_tblStandInitialization( 
-                standInitRow.Name, standInitRow.Description, " ", 
+            self.InsertRowTo_tblStandInitialization(
+                standInitRow.Name, standInitRow.Description, " ",
                 nextInputDBID, nextStandInitializationID, standInitRow.StandInitID)
             ProjectToAIDBStandInitIDs[standInitRow.StandInitID] = nextStandInitializationID
             nextStandInitializationID += 1
-            
+
 
         RunIDToCBMRunIDLookup = {}
         for runRow in project.Query("SELECT * FROM tblRunTable").fetchall():
@@ -114,7 +114,7 @@ class AIDB(AccessDB):
             nextCBMRunID += 1
 
         for simRow in project.Query("SELECT * FROM tblSimulation").fetchall():
-            self.InsertRowTo_tblSimulation(simRow.Name, simRow.Description, " ", nextInputDBID, nextSimulationID, 
+            self.InsertRowTo_tblSimulation(simRow.Name, simRow.Description, " ", nextInputDBID, nextSimulationID,
                                            ProjectToAIDBStandInitIDs[simRow.StandInitID], RunIDToCBMRunIDLookup[simRow.RunID],
                                            simRow.SimulationID)
             nextSimulationID += 1
@@ -125,7 +125,7 @@ class AIDB(AccessDB):
     def DeleteProjectsFromAIDB(self, simulation_id = None):
         '''
         remove a project associated with the given simulation id from the AIDB
-        if no simulation id is given then the aidb will be cleared of all projects  
+        if no simulation id is given then the aidb will be cleared of all projects
         '''
         if simulation_id is None:
             self.ExecuteQuery("DELETE FROM tblInputDB")
@@ -147,18 +147,18 @@ class AIDB(AccessDB):
             filterString = "WHERE tblSimulation.SimulationID = {0};".format(int(simulation_id))
         keys = self.Query(
         """
-        SELECT 
-        tblSimulation.SimulationID, 
-        tblInputDB.InputDBID, 
-        tblCBMRun.CBMRunID, 
+        SELECT
+        tblSimulation.SimulationID,
+        tblInputDB.InputDBID,
+        tblCBMRun.CBMRunID,
         tblStandInitialization.StandInitializationID
-        FROM tblStandInitialization 
-        INNER JOIN 
+        FROM tblStandInitialization
+        INNER JOIN
         (
-            tblCBMRun INNER JOIN 
-            ( 
+            tblCBMRun INNER JOIN
+            (
                 tblInputDB INNER JOIN tblSimulation ON tblInputDB.InputDBID = tblSimulation.InputDBID
-            ) 
+            )
             ON tblCBMRun.CBMRunID = tblSimulation.CBMRunID
         )
         ON tblStandInitialization.StandInitializationID = tblSimulation.StandInitializationID

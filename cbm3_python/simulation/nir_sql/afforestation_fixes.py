@@ -81,10 +81,10 @@ def run_af_results_fixes(af_rrdb_path):
                 "UPDATE tblPoolIndicators SET kf4 = 0 WHERE kf4 < 1990 and PoolIndID Between ? And ?;",
             ]
         }
-        
+
         #"""UPDATE tblNIRSpecialOutput
         #   SET LandClass_From=1 where LandClass_From=23;""",
-        #"""UPDATE tblNIRSpecialOutput 
+        #"""UPDATE tblNIRSpecialOutput
         #   SET TimeStep = TimeStep-20, CalendarYear = CalendarYear-20;"""
     ]
     logging.info("running afforestation results fixes on {}".format(af_rrdb_path))

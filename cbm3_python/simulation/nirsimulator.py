@@ -25,7 +25,7 @@ class NIRSimulator(object):
         return self.base_projects[project_prefix]["results_path"]
 
         return self.GetAccessDBPathFromDir(
-            os.path.join(self.config["base_project_dir"], 
+            os.path.join(self.config["base_project_dir"],
                          project_prefix, results_dir))
 
     def get_local_project_dir(self, project_prefix):
@@ -68,7 +68,7 @@ class NIRSimulator(object):
 
             prepare_afforestation_db(self.get_local_project_path(project_prefix),
                                      self.config["af_start_year"], self.config["af_end_year"])
-            self.run_af_simulation( 
+            self.run_af_simulation(
                 local_project_path = self.get_local_project_path(project_prefix),
                 local_aidb_path=self.config["local_aidb_path"],
                 cbm_exe_path= self.config["cbm_exe_path"])
@@ -96,7 +96,7 @@ class NIRSimulator(object):
             s.CleanupRunDirectory()
             s.CopyToWorkingDir(local_project_path)
             s.CreateCBMFiles()
-            
+
             s.CopyCBMExecutable()
             s.DumpMakelistSVLs()
             s.RunCBM()
@@ -143,7 +143,7 @@ class NIRSimulator(object):
         os.chmod(self.config["local_aidb_path"], stat.S_IWRITE)
 
     def copy_project_local(self, project_prefix):
-        base_project_path = self.get_base_project_path(project_prefix) 
+        base_project_path = self.get_base_project_path(project_prefix)
         local_project_path = self.get_local_project_path(project_prefix)
         if os.path.exists(local_project_path):
             os.unlink(local_project_path)

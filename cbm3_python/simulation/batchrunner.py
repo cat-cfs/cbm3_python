@@ -19,21 +19,21 @@ def externalExeWorker(executablePath):
 def loaderWorker(params):
     loader = ResultsLoader()
     loader.loadResults(
-        params["templateDBPath"], 
-        params["outputDBPath"], 
-        params["aidbPath"], 
-        params["projectDBPath"], 
+        params["templateDBPath"],
+        params["outputDBPath"],
+        params["aidbPath"],
+        params["projectDBPath"],
         params["projectSimulationDirectory"])
 
 class BatchRunner(object):
-    def __init__(self, projectPath, toolboxPath, batchRunDir, 
-                 aidbPath, cbmDir, outputDir, numProcesses, 
-                 scenarioMin, scenarioMax, dist_classes_path, 
+    def __init__(self, projectPath, toolboxPath, batchRunDir,
+                 aidbPath, cbmDir, outputDir, numProcesses,
+                 scenarioMin, scenarioMax, dist_classes_path,
                  dist_rules_path):
 
-        self.__validateArgs(projectPath, toolboxPath, batchRunDir, 
-                 aidbPath, cbmDir, outputDir, numProcesses, 
-                 scenarioMin, scenarioMax, dist_classes_path, 
+        self.__validateArgs(projectPath, toolboxPath, batchRunDir,
+                 aidbPath, cbmDir, outputDir, numProcesses,
+                 scenarioMin, scenarioMax, dist_classes_path,
                  dist_rules_path)
         self.toolboxPath = toolboxPath
         self.batchRunDir = batchRunDir
@@ -58,25 +58,25 @@ class BatchRunner(object):
             if not os.path.exists(batchRunDir):
                 os.makedirs(batchRunDir)
 
-    def __validateArgs(self, projectPath, toolboxPath, batchRunDir, 
-                 aidbPath, cbmDir, outputDir, numProcesses, 
-                 scenarioMin, scenarioMax, dist_classes_path, 
+    def __validateArgs(self, projectPath, toolboxPath, batchRunDir,
+                 aidbPath, cbmDir, outputDir, numProcesses,
+                 scenarioMin, scenarioMax, dist_classes_path,
                  dist_rules_path):
         errors = []
-        if not os.path.exists(projectPath): 
+        if not os.path.exists(projectPath):
             errors.append("projectPath not found '{0}'".format(projectPath))
-        elif not os.path.isfile(projectPath): 
+        elif not os.path.isfile(projectPath):
                 errors.append("projectPath is not a file '{0}'".format(projectPath))
 
         if not os.path.exists(toolboxPath):
             errors.append("toolboxPath not found '{0}'".format(toolboxPath))
 
-        if not os.path.exists(aidbPath): 
+        if not os.path.exists(aidbPath):
             errors.append("aidbPath not found '{0}'".format(aidbPath))
-        elif not os.path.isfile(aidbPath): 
+        elif not os.path.isfile(aidbPath):
                 errors.append("aidbPath is not a file '{0}'".format(aidbPath))
 
-        if not os.path.exists(cbmDir): 
+        if not os.path.exists(cbmDir):
             errors.append("cbmDir not found '{0}'".format(cbmDir))
 
         if not isinstance(scenarioMin, ( int, long )) or not isinstance(scenarioMax, ( int, long )):
@@ -92,7 +92,7 @@ class BatchRunner(object):
 
         for error in errors:
             logging.error(error)
-        
+
         if len(errors) > 0:
             raise ValueError("validation errors: {0}".format(errors))
 
@@ -120,15 +120,15 @@ class BatchRunner(object):
 
     def GetWorkingPath(self, simulationId):
         return os.path.join(self.batchRunDir, str(simulationId))
-        
+
     def SerialCreateMakelistFiles(self, simulationIds):
         logging.info("Creating Makelist Files")
         for simulationId in simulationIds:
             sim = Simulator(
-                executablePath = self.cbmDir, 
-                simID = simulationId, 
-                projectPath = self.projectPath, 
-                CBMRunDir = self.defaultWorkingDirectory, 
+                executablePath = self.cbmDir,
+                simID = simulationId,
+                projectPath = self.projectPath,
+                CBMRunDir = self.defaultWorkingDirectory,
                 toolboxPath = self.toolboxPath)
             sim.CleanupRunDirectory()
             sim.CreateMakelistFiles()
@@ -147,7 +147,7 @@ class BatchRunner(object):
         makelistWorkingPaths = []
         for simulationId in simulationIds:
             makelistWorkingPath = os.path.join(
-                self.GetWorkingPath(simulationId), 
+                self.GetWorkingPath(simulationId),
                 "Makelist", "Makelist.exe")
             makelistWorkingPaths.append(makelistWorkingPath)
             shutil.copy(os.path.join(self.cbmDir, "Makelist.exe"),
@@ -158,7 +158,7 @@ class BatchRunner(object):
         finally:
             p.close()
             p.join()
-    
+
     def CopyResultsDBToProjectDir(self, simulationIds):
         logging.info("copying results database to project dir")
         for simulationId in simulationIds:
@@ -203,7 +203,7 @@ class BatchRunner(object):
                     max = min + maxBatchDeleteSize
                     proj.ExecuteQuery("DELETE FROM tblSVLAttributes WHERE tblSVLAttributes.SVOID Between {min} And {max};"
                                       .format(min=min, max=max))
-    
+
                 if remainder > 0:
                     min = iterations * maxBatchDeleteSize
                     max = iterations * maxBatchDeleteSize + remainder
@@ -219,15 +219,15 @@ class BatchRunner(object):
             workingPath = self.GetWorkingPath(simulationId)
             logging.info(workingPath)
             sim = Simulator(
-                executablePath = self.cbmDir, 
-                simID = simulationId, 
-                projectPath = self.projectPath, 
-                CBMRunDir = self.defaultWorkingDirectory, 
+                executablePath = self.cbmDir,
+                simID = simulationId,
+                projectPath = self.projectPath,
+                CBMRunDir = self.defaultWorkingDirectory,
                 toolboxPath = self.toolboxPath)
             sim.CleanupRunDirectory()
             #copy project to temp dir, and copy makelist batch run dir to temp dir
             shutil.copy(self.projectPath, self.defaultWorkingDirectory)
-            shutil.copytree(os.path.join(self.GetWorkingPath(simulationId), "Makelist"), 
+            shutil.copytree(os.path.join(self.GetWorkingPath(simulationId), "Makelist"),
                             os.path.join( self.defaultWorkingDirectory, "Makelist"))
             sim.loadMakelistSVLS()
             temp_proj_path = os.path.join(self.defaultWorkingDirectory, os.path.basename(self.projectPath))
@@ -265,7 +265,7 @@ class BatchRunner(object):
         logging.info("Loading results in parallel")
         parameters = []
         for simulationId in simulationIds:
-            parameters.append( 
+            parameters.append(
             {
                 "templateDBPath": self.rrdbTemplate,
                 "outputDBPath": os.path.join(self.GetWorkingPath(simulationId), "{0}.accdb".format(str(simulationId))),
@@ -275,7 +275,7 @@ class BatchRunner(object):
             })
         try:
             p = multiprocessing.Pool(self.numProcesses)
-            p.map(loaderWorker, parameters) 
+            p.map(loaderWorker, parameters)
         finally:
             p.close()
             p.join()
@@ -286,7 +286,7 @@ class BatchRunner(object):
         for simulationId in simulationIds:
             finalResultsDir = os.path.join(self.outputDir, self.GetProjectName())
             if not os.path.exists(finalResultsDir):
-                os.makedirs(finalResultsDir) 
+                os.makedirs(finalResultsDir)
             finalResultsPath = os.path.join(finalResultsDir, "{0}.accdb".format(simulationId))
             cbmOutputPath = os.path.join(self.GetWorkingPath(simulationId), "{0}.accdb".format(simulationId))
             shutil.copy(cbmOutputPath, finalResultsPath)

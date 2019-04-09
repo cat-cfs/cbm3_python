@@ -16,8 +16,8 @@ class DisturbanceExtender(object):
     template rows and ensures that the timestepstart and timestepfinish fields
     are correct and that disturbanceeventid is unique.
     '''
-    
-    def Run(self, project, extensions):        
+
+    def Run(self, project, extensions):
         for event in extensions:
             if not self.__checkForEvent(event, project):
                 logging.info(
@@ -26,12 +26,12 @@ class DisturbanceExtender(object):
                     but no occurrences found in that year.
                     """.format(event.getTitle(), event.getFromYear()))
                 continue
-                    
-            logging.info("Extending {0} from {1} to {2}".format( 
+
+            logging.info("Extending {0} from {1} to {2}".format(
                 event.getTitle(),
                 event.getFromYear(),
                 event.getToYear()))
-                
+
             maxEventId = project.GetMaxID("tbldisturbanceevents", "disturbanceeventid")
 
             extraTimesteps = event.getToYear() - event.getFromYear()
@@ -43,11 +43,11 @@ class DisturbanceExtender(object):
                 timestepStart = event.getFromYear() - 1989
                 sql = \
                     """
-                    SELECT tblDisturbanceEvents.* 
+                    SELECT tblDisturbanceEvents.*
                     INTO disturbance_event_additions
                     FROM (
                         tblDisturbanceType
-                        INNER JOIN tblDisturbanceGroupScenario 
+                        INNER JOIN tblDisturbanceGroupScenario
                             ON tblDisturbanceType.DistTypeID = tblDisturbanceGroupScenario.DistTypeID
                     ) INNER JOIN tblDisturbanceEvents
                         ON tblDisturbanceGroupScenario.DisturbanceGroupScenarioID
@@ -55,10 +55,10 @@ class DisturbanceExtender(object):
                     IN '{0}'
                     WHERE tblDisturbanceType.DefaultDistTypeID IN ({1})
                         AND tblDisturbanceEvents.TimeStepStart = {2}
-                    """.format(project.path, 
+                    """.format(project.path,
                                 ",".join([str(a) for a in event.getDefaultDistTypeIDs()]),
                                 timestepStart)
-                    
+
                 project.ExecuteQuery(sql)
 
                 project.ExecuteQuery(
@@ -86,7 +86,7 @@ class DisturbanceExtender(object):
                     """.format(timestep)
 
                 project.ExecuteQuery(updateTimestepSql)
-                    
+
                 updateDistTypeSql = \
                     """
                     UPDATE disturbance_event_additions events
@@ -96,31 +96,31 @@ class DisturbanceExtender(object):
                     """.format(maxEventId)
 
                 project.ExecuteQuery(updateDistTypeSql)
-                    
+
                 appendSql = \
                     """
                     INSERT INTO tblDisturbanceEvents IN '{0}'
                     SELECT * FROM disturbance_event_additions
                     """.format(project.path)
-    
+
                 countNewRows = project.Query(
                     """
                     SELECT Count(DisturbanceEventID) AS newEvents
                     FROM disturbance_event_additions;
                     """).fetchone().newEvents
-                    
+
                 project.ExecuteQuery(appendSql)
                 for table in ("disturbance_event_additions", "dist_event_increments"):
                     if project.tableExists(table):
                         project.ExecuteQuery("DROP TABLE {0}".format(table))
                 maxEventId += countNewRows
-    
-    
+
+
     def __checkForEvent(self, event, db):
         '''
         Checks that a disturbance event occurs in the target database for the
         year it should be extended from.
-        
+
         :param event: the event to check for
         :type event: :class:`.DisturbanceExtension`
         :param db: connection to the target database
@@ -131,7 +131,7 @@ class DisturbanceExtender(object):
             SELECT TOP 1 *
             FROM (
                 tblDisturbanceType
-                INNER JOIN tblDisturbanceGroupScenario 
+                INNER JOIN tblDisturbanceGroupScenario
                     ON tblDisturbanceType.DistTypeID = tblDisturbanceGroupScenario.DistTypeID
             ) INNER JOIN tblDisturbanceEvents
                 ON tblDisturbanceGroupScenario.DisturbanceGroupScenarioID
@@ -142,8 +142,8 @@ class DisturbanceExtender(object):
                        event.getFromYear() - 1989)
 
         result = db.Query(sql)
-       
-        if result is not None: 
+
+        if result is not None:
             return result.fetchone() is not None
         else:
-            return False    
+            return False
