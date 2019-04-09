@@ -1,2 +1,7 @@
+# Temporary files #
 *.pyc
 *.suo
+.DS_Store
+
+# IDE files #
+/.idea
