@@ -12,6 +12,61 @@ from cbm3_python.simulation.simulator import Simulator
 from cbm3_python.simulation.tools.createaccountingrules import CreateAccountingRules
 from cbm3_python.simulation.nir_sql.afforestation_fixes import *
 from cbm3_python.simulation.nir_sql.unmanaged_forest_fixes import *
+
+def run_af_simulation(local_project_path, local_aidb_path,
+                        cbm_exe_path,
+                        toolbox_path = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3"):
+    with AIDB(local_aidb_path, False) as aidb, \
+            AccessDB(local_project_path, False) as proj:
+        aidb.DeleteProjectsFromAIDB()
+        simId = aidb.AddProjectToAIDB(proj)
+        cbm_wd = os.path.join(toolbox_path,"temp")
+        s = Simulator(cbm_exe_path,
+                        simId,
+                        os.path.dirname(local_project_path),
+                        cbm_wd,
+                        toolbox_path)
+        s.CleanupRunDirectory()
+        s.CopyToWorkingDir(local_project_path)
+        s.CreateCBMFiles()
+
+        s.CopyCBMExecutable()
+        s.DumpMakelistSVLs()
+        s.RunCBM()
+        s.CopyTempFiles()
+
+def run_cbm_simulation(local_project_path, local_aidb_path,
+                        cbm_exe_path, dist_classes_path, dist_rules_path,
+                        toolbox_path = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3"):
+
+    with AIDB(local_aidb_path, False) as aidb, \
+            AccessDB(local_project_path, False) as proj:
+        aidb.DeleteProjectsFromAIDB()
+        simId = aidb.AddProjectToAIDB(proj)
+        cbm_wd = os.path.join(toolbox_path,"temp")
+        s = Simulator(cbm_exe_path,
+                        simId,
+                        os.path.dirname(local_project_path),
+                        cbm_wd,
+                        toolbox_path)
+
+        s.CleanupRunDirectory()
+        s.CreateMakelistFiles()
+        s.copyMakelist()
+        s.runMakelist()
+        s.loadMakelistSVLS()
+
+        temp_proj_path = os.path.join(cbm_wd, os.path.basename(local_project_path))
+        with AccessDB(temp_proj_path, False) as temp_proj:
+            cr = CreateAccountingRules(temp_proj, dist_classes_path, dist_rules_path)
+            cr.create_accounting_rules()
+
+        s.copyMakelistOutput()
+        s.CreateCBMFiles()
+        s.CopyCBMExecutable()
+        s.RunCBM()
+        s.CopyTempFiles()
+
 class NIRSimulator(object):
 
     def __init__(self, config, base_projects):
@@ -74,64 +129,14 @@ class NIRSimulator(object):
                 cbm_exe_path= self.config["cbm_exe_path"])
             return
 
-        self.run_cbm_simulation(
+        run_cbm_simulation(
             local_project_path = self.get_local_project_path(project_prefix),
             local_aidb_path=self.config["local_aidb_path"],
             cbm_exe_path= self.config["cbm_exe_path"],
             dist_classes_path=self.config["dist_classes_path"],
             dist_rules_path=self.config["dist_rules_path"])
 
-    def run_af_simulation(self,local_project_path, local_aidb_path,
-                           cbm_exe_path):
-        with AIDB(local_aidb_path, False) as aidb, \
-             AccessDB(local_project_path, False) as proj:
-            aidb.DeleteProjectsFromAIDB()
-            simId = aidb.AddProjectToAIDB(proj)
-            cbm_wd = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp"
-            s = Simulator(cbm_exe_path,
-                          simId,
-                          os.path.dirname(local_project_path),
-                          cbm_wd,
-                          r"C:\Program Files (x86)\Operational-Scale CBM-CFS3")
-            s.CleanupRunDirectory()
-            s.CopyToWorkingDir(local_project_path)
-            s.CreateCBMFiles()
 
-            s.CopyCBMExecutable()
-            s.DumpMakelistSVLs()
-            s.RunCBM()
-            s.CopyTempFiles()
-
-    def run_cbm_simulation(self, local_project_path, local_aidb_path,
-                           cbm_exe_path, dist_classes_path, dist_rules_path):
-
-        with AIDB(local_aidb_path, False) as aidb, \
-             AccessDB(local_project_path, False) as proj:
-            aidb.DeleteProjectsFromAIDB()
-            simId = aidb.AddProjectToAIDB(proj)
-            cbm_wd = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp"
-            s = Simulator(cbm_exe_path,
-                          simId,
-                          os.path.dirname(local_project_path),
-                          cbm_wd,
-                          r"C:\Program Files (x86)\Operational-Scale CBM-CFS3")
-
-            s.CleanupRunDirectory()
-            s.CreateMakelistFiles()
-            s.copyMakelist()
-            s.runMakelist()
-            s.loadMakelistSVLS()
-
-            temp_proj_path = os.path.join(cbm_wd, os.path.basename(local_project_path))
-            with AccessDB(temp_proj_path, False) as temp_proj:
-                cr = CreateAccountingRules(temp_proj, dist_classes_path, dist_rules_path)
-                cr.create_accounting_rules()
-
-            s.copyMakelistOutput()
-            s.CreateCBMFiles()
-            s.CopyCBMExecutable()
-            s.RunCBM()
-            s.CopyTempFiles()
 
     def copy_aidb_local(self):
         logging.info("copying archive index - source: '{0}', dest: '{1}'"
