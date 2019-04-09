@@ -8,7 +8,7 @@ class DisturbanceExtension(object):
     2014 Jun 13, modified by Scott for NETNET2014 python scripting
 
     Represents a disturbance event to be extended into the future.
-    
+
     :param title: the name of the disturbance event to extend
     :type title: str
     :param defaultDistTypeIDs: the default disturbance type IDs corresponding to
@@ -20,14 +20,14 @@ class DisturbanceExtension(object):
     :param toYear: the year to extend the disturbance event to (inclusive)
     :type toYear: int
     '''
-    
+
     def __init__(self, title, defaultDistTypeIDs, fromYear, toYear):
         self.__title = title
         self.__defaultDistTypeIDs = defaultDistTypeIDs
         self.__fromYear = fromYear
         self.__toYear = toYear
-    
-    
+
+
     def __str__(self):
         return """
                Disturbance Event: %(title)s
@@ -47,16 +47,16 @@ class DisturbanceExtension(object):
         :rtype: str
         '''
         return self.__title
-    
-    
+
+
     def getDefaultDistTypeIDs(self):
         '''
         :returns: the default disturbance type IDs corresponding to this event
         :rtype: list of int
         '''
         return self.__defaultDistTypeIDs
-    
-    
+
+
     def getFromYear(self):
         '''
         :returns: the last year this event occurs in the project databases,
@@ -64,8 +64,8 @@ class DisturbanceExtension(object):
         :rtype: int
         '''
         return self.__fromYear
-    
-    
+
+
     def getToYear(self):
         '''
         :returns: the year to extend this disturbance event to (inclusive)

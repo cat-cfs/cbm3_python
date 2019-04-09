@@ -41,7 +41,7 @@ def pivot(df, group_col, pivot_col):
     return output
 
 
-def load_pool_indicators(results_db_path, 
+def load_pool_indicators(results_db_path,
         spatial_unit_grouping=False,
         classifier_set_grouping=False,
         land_class_grouping=False):
@@ -54,7 +54,7 @@ def load_pool_indicators(results_db_path,
         return as_data_frame(sql, results_db_path)
 
 
-def load_stock_changes(results_db_path, 
+def load_stock_changes(results_db_path,
         disturbance_type_grouping=False,
         spatial_unit_grouping=False,
         classifier_set_grouping=False,

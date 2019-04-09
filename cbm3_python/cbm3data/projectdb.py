@@ -9,7 +9,7 @@ from cbm3_python.cbm3data.accessdb import AccessDB
 
 class ProjectDB(AccessDB):
     pass
-        
+
 
 
 

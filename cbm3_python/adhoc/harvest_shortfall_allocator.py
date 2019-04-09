@@ -111,20 +111,20 @@ def reduce_harvest_targets(inadequate_dist_groups, error_margin, first_projectio
         writer = csv.writer(csvfile)
         writer.writerow(["project", "spugroup", "cumulative_shortfall", "harvest_shift", "total_projection_target", "new_projection_target", "proportion"])
         for d in inadequate_dist_groups:
-        
+
             dist_group = d["disturbance_group"]
             spu_group =  disturbance_group_spugroup_map[dist_group[0]][str(dist_group[1])]
             logging.info("Computing reduced harvest. Project: {}, Spugroup {}".format(
                 dist_group[0],spu_group))
 
             harvest_shift = d["cumulative_shortfall"] * (1.0 + error_margin/100.0)
-    
+
             projection_years = [year for year in sorted(grouped_data[dist_group].keys()) if year >= first_projection_year]
             total_projection_target = sum([float(grouped_data[dist_group][year]["Target Biomass C"]) for year in projection_years])
-            
+
             #cap the harvest target shift at total projection target
             harvest_shift = total_projection_target if harvest_shift > total_projection_target else harvest_shift
-            
+
             #new harvest target is the sum of the projection target for all years less the reduction
             new_harvest_target = total_projection_target - harvest_shift
             harvest_proportion = new_harvest_target/total_projection_target
@@ -204,7 +204,7 @@ def write_results(adequate_dist_groups, inadequate_dist_groups, output_file_path
             return cbm_spugroup
 
         get_harvest_proportion = lambda x: x["harvest_proportion"]
-    
+
         rows = [
             [
                 get_project_prefix(x),
@@ -256,14 +256,14 @@ def run_harvest_reallocator(config_path, do_mining=True):
 
     #6. allocate the amount reduced first weighted by the remaining biomass, then distributed across projection years to the adequate groups
     allocate_reduced_harvest(inadequate_dist_groups, adequate_dist_groups, disturbance_group_spugroup_map)
-    
+
     #7. compute the new harvest proportions for the adequate groups
     compute_new_harvest_proportions(adequate_dist_groups, disturbance_group_spugroup_map)
 
     #8 write out the results
     write_results(adequate_dist_groups, inadequate_dist_groups, output_file_path, disturbance_group_spugroup_map)
 
-    
+
 
 def main():
     try:
@@ -272,7 +272,7 @@ def main():
         parser.add_argument("--mine_report_fil", action="store_true",
                             dest="mine_report_fil", help="if true mine report.fil files specified in config")
         args = parser.parse_args()
-        
+
         logpath = os.path.join( os.getcwd(), "harvest_shortfall_allocator_{}.log".format(
             datetime.datetime.now().strftime("%Y-%m-%d %H_%M_%S")))
         loghelper.start_logging(logpath, 'w+')

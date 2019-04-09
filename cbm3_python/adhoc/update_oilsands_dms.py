@@ -85,7 +85,7 @@ for p in local_aidbs:
         nextDMID = a.GetMaxID("tblDM", "DMID") + 1
         #disturbance types (tblDisturbanceTypeDefault)
         for r in dms_by_language[language]:
-            a.ExecuteQuery("INSERT INTO tblDisturbanceTypeDefault (DistTypeID, DistTypeName, OnOffSwitch, Description, IsStandReplacing, IsMultiYear, MultiYearCount) VALUES (?,?,?,?,?,?,?)", 
+            a.ExecuteQuery("INSERT INTO tblDisturbanceTypeDefault (DistTypeID, DistTypeName, OnOffSwitch, Description, IsStandReplacing, IsMultiYear, MultiYearCount) VALUES (?,?,?,?,?,?,?)",
                           (nextDistTypeID,
                           r["Name"],
                           True,

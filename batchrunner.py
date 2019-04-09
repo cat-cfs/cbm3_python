@@ -9,7 +9,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Multi-process CBM-CFS3 batch runner." 
+        description="Multi-process CBM-CFS3 batch runner."
                     "Can run projects that contain multiple simulation scenarios partially in parallel. "
                     "Requires installation of the Operational-Scale CBM-CFS3 toolbox."
                     "This script has been used for deployment of the NIR Uncertainty analysis simulations")
@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     parser.add_argument("--aidb", help="the file path to the archive index database to use. If unspecified the default archive index is used", required=False)
     parser.add_argument("--exePath", help="the file path to a folder containing the CBM-CFS3 executables. If unspecified the default executables are used", required=False)
-    
+
     args = vars(parser.parse_args())
     projectPath = args["projectPath"]
     outputPath =  args["outputPath"]

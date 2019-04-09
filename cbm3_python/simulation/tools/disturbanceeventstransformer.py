@@ -2,10 +2,10 @@
 #  as represented by the Minister of Natural Resources Canada
 
 class DisturbanceEventsTransformer(object):
-    
+
     def makeDisturbanceEvents(self, project, sourceTable):
         #self.__createDisturbanceEventsTable(project)
-        
+
         DisturbanceEventID = project.GetMaxID("tblDisturbanceEvents", "DisturbanceEventID") + 1
 
         for row in project.Query("""SELECT * FROM {0}""".format(sourceTable)).fetchall():
@@ -61,7 +61,7 @@ class DisturbanceEventsTransformer(object):
 
             project.ExecuteQuery(sql)
             DisturbanceEventID = DisturbanceEventID + 1
-  
+
     def __createDisturbanceEventsTable(self, project):
         queries = [
             "SELECT * INTO _tblDisturbanceEvents FROM tblDisturbanceEvents",
@@ -120,6 +120,6 @@ class DisturbanceEventsTransformer(object):
             FROM _tblDisturbanceEvents
             """,
             "DROP TABLE _tblDisturbanceEvents"]
-        
+
         for sql in queries:
             project.ExecuteQuery(sql)

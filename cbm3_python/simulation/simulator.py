@@ -4,26 +4,26 @@
 # ---------------------------------------------------------------------------
 #
 #  Author: MH
-#  
+#
 #  Created on: April 24, 2013
-#  
+#
 #  Purpose: Replicate all the steps of the VisualBuildScript for a complete CBM run
 #           (Why? Because I can't get visual build pro to run on the new HP workstation)
-#            
-#  Usage: 
-#         
-#  
-#  Comments: 
-#           
-#  
+#
+#  Usage:
+#
+#
+#  Comments:
+#
+#
 #  Updated: History of changes made to the original script
-#  
+#
 #    Who When     What                                   Why
-#    --- ----     ----                                   ----                                  
+#    --- ----     ----                                   ----
 #   Scott Morken, 20131120, Added simulator class, To test some NIR toolbox builds in light of the KF6 extended disturbance accounting issue
 #
-#           
-#  
+#
+#
 # ---------------------------------------------------------------------------
 # Import system modules
 import logging, os, shutil, subprocess, glob, sys, re
@@ -35,7 +35,7 @@ class Simulator(object):
         # Define relevant paths
         self.simID = simID
         self.ProjectPath = projectPath
-        self.ExecutablePath = executablePath 
+        self.ExecutablePath = executablePath
         self.CBMTemp = CBMRunDir
         self.CBMPath = toolboxPath
 
@@ -45,7 +45,7 @@ class Simulator(object):
         #ignore Access database files
         ignorelist = []
         for item in name:
-            if (item.lower().find('.mdb') != -1): 
+            if (item.lower().find('.mdb') != -1):
                ignorelist.append(item)
         return ignorelist
 
@@ -131,7 +131,7 @@ class Simulator(object):
                     fOutput.write("0 0" + linebreak)
                     for srcline in fInput:
                         tokens = split(srcline)
-                        
+
                         line1 = " ".join(tokens[0:5] + ['0'])
                         softwood = " ".join(tokens[5:18])
                         hardwood = " ".join(tokens[18:31])
@@ -200,9 +200,9 @@ class Simulator(object):
         logging.info("Command line: " + cmd)
         subprocess.check_call(cmd)
 
-    def simulate(self, doLoad=True):  
-    
-        self.CleanupRunDirectory()                    
+    def simulate(self, doLoad=True):
+
+        self.CleanupRunDirectory()
 
         logging.info("Processing " + str(self.ProjectPath) + "...")
 
@@ -219,7 +219,7 @@ class Simulator(object):
         self.CreateCBMFiles()
 
         self.CopyCBMExecutable()
-                         
+
         self.RunCBM()
 
         if doLoad:

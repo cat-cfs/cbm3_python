@@ -45,7 +45,7 @@ def __create_config(query_template_path, excel_template_path, excel_output_path,
         <WorksheetTasks>
         {worksheet_tasks}
         </WorksheetTasks>
-    </QAQCSpreadsheetTask> 
+    </QAQCSpreadsheetTask>
    </QAQCSpreadsheetTasks>
 </QAQCTaskSet>""".format(
     query_template_path=query_template_path,
@@ -136,7 +136,7 @@ def run_qaqc(executable_path, query_template_path, excel_template_path, excel_ou
 
     xmlconfig_path = os.path.join(
         os.path.dirname(excel_output_path),
-        os.path.splitext(os.path.basename(excel_output_path))[0]) + ".xml" 
+        os.path.splitext(os.path.basename(excel_output_path))[0]) + ".xml"
 
     config = __create_config(
             query_template_path,
@@ -147,7 +147,7 @@ def run_qaqc(executable_path, query_template_path, excel_template_path, excel_ou
     with open(xmlconfig_path, 'w') as xmlconfig_file:
         xmlconfig_file.write(config)
 
-    logging.info("""running qaqc: 
+    logging.info("""running qaqc:
         executable_path: '{executable_path}'
         xmlconfig_path: '{xmlconfig_path}'
         query_template_path: '{query_template_path}'

@@ -30,7 +30,7 @@ def main():
            project_prefixes = [x.upper().strip() for x in args.project_prefixes.split(",")],
            results_dir=results_dir)
 
-            
+
     except Exception as ex:
         logging.exception("")
 
