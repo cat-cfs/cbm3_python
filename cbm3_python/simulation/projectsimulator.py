@@ -27,7 +27,7 @@ def clear_old_results(project_db):
 
 def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
        results_database_path=None, tempfiles_output_dir=None,
-       afforestation_only=False):
+       afforestation_only=False, stdout_path=None):
     '''
     runs the specified single simulation assumption project and loads the results
     @param aidb_path path to a CBM-CFS3 archive index database
@@ -43,6 +43,8 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
     @param afforestation_only when set to true the makelist routine will not be
            run. Used if the project contains no initially forested stands.
            For a mixture of non-forest, and forested stands, set to false (default)
+    @param stdout_path when set to a filepath will record all stdout from the different
+           executables to this file instead of dumping them to the caller's stdout.
     '''
     with AIDB(aidb_path, False) as aidb, \
          AccessDB(project_path, False) as proj:
@@ -57,7 +59,8 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                             simId,
                             os.path.dirname(project_path),
                             cbm_wd,
-                            toolbox_installation_dir)
+                            toolbox_installation_dir,
+                            stdout_path)
 
             s.CleanupRunDirectory()
             s.CreateMakelistFiles()
