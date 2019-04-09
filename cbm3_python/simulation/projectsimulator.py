@@ -65,7 +65,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
         if not use_exisiting_makelist_output:
             clear_old_results(proj)
 
-        if use_exisiting_makelist_output and not skip_makelist:
+        if use_existing_makelist_output and not skip_makelist:
             raise ValueError("conflicting arguments: cannot both use "
                              "existing makelist output and run makelist")
 
