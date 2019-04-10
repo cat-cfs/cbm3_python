@@ -81,7 +81,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                             stdout_path)
             aidb_path_original = s.getDefaultArchiveIndexPath()
             s.setDefaultArchiveIndexPath(aidb_path)
-
+            s.removeCBMProjfile(project_path)
             s.CleanupRunDirectory()
 
             if not skip_makelist:
