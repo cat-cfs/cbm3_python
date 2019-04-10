@@ -62,12 +62,13 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
     with AIDB(aidb_path, False) as aidb, \
          AccessDB(project_path, False) as proj:
 
-        if not use_existing_makelist_output:
-            clear_old_results(proj)
 
         if use_existing_makelist_output and not skip_makelist:
             raise ValueError("conflicting arguments: cannot both use "
                              "existing makelist output and run makelist")
+
+        if not use_existing_makelist_output:
+            clear_old_results(proj)
 
         simId = aidb.AddProjectToAIDB(proj)
         try:
@@ -78,6 +79,8 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                             cbm_wd,
                             toolbox_installation_dir,
                             stdout_path)
+            aidb_path_original = s.getDefaultArchiveIndexPath()
+            s.setDefaultArchiveIndexPath(aidb_path)
 
             s.CleanupRunDirectory()
 
@@ -96,10 +99,12 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                 s.loadMakelistSVLS()
             if not dist_classes_path is None:
                 #support for extended "kf6" results tracking
-                temp_proj_path = os.path.join(cbm_wd, os.path.basename(project_path))
-                with AccessDB(temp_proj_path, False) as temp_proj:
-                    cr = CreateAccountingRules(temp_proj, dist_classes_path, dist_rules_path)
+                with AccessDB(project_path, False) as proj:
+                    cr = CreateAccountingRules(proj, dist_classes_path, dist_rules_path)
                     cr.create_accounting_rules()
+                #copy the modified db to the working dir
+                s.CopyToWorkingDir(project_path)
+
             s.DumpMakelistSVLs()
             s.CreateCBMFiles()
             s.CopyCBMExecutable()
@@ -109,6 +114,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                 s.CopyTempFiles(output_dir=tempfiles_output_dir)
             s.LoadCBMResults(output_path = results_database_path)
         finally:
+            s.setDefaultArchiveIndexPath(aidb_path_original)
             aidb.DeleteProjectsFromAIDB(simId) #cleanup
         results_path = s.getDefaultResultsPath() if results_database_path is None else results_database_path
         return results_path
