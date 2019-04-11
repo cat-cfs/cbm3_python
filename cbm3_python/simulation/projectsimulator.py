@@ -94,6 +94,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                  # skip_makelist is enabled this step is needed to copy
                  # the project into the temp dir
                  s.CopyToWorkingDir(project_path)
+                 s.CreateEmptyMakelistOuput()
             if not use_existing_makelist_output:
                 s.loadMakelistSVLS()
             if not dist_classes_path is None:

@@ -112,6 +112,15 @@ class Simulator(object):
     def CopyToWorkingDir(self, filePath):
         shutil.copy(filePath, self.CBMTemp)
 
+    def CreateEmptyMakelistOuput(self):
+        '''
+        If the temp\Makelist\output dir does not exist the
+        makelistsvloader will crash.
+        Workaround for projects that do not run makelist, yet do need to 
+        run makelistsvlloader (afforestation only projects)
+        '''
+        os.makedirs(os.path.join(self.CBMTemp),"Makelist","output")
+
     def CreateMakelistFiles(self):
         logging.info("\n\n Creating make list files...\n")
         cmd = '"' + os.path.join(self.toolboxPath, r'createMakelistFiles.exe') + '" ' + str(self.simID)
