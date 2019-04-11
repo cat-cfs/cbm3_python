@@ -119,7 +119,7 @@ class Simulator(object):
         Workaround for projects that do not run makelist, yet do need to 
         run makelistsvlloader (afforestation only projects)
         '''
-        os.makedirs(os.path.join(self.CBMTemp),"Makelist","output")
+        os.makedirs(os.path.join(self.CBMTemp,"Makelist","output"))
 
     def CreateMakelistFiles(self):
         logging.info("\n\n Creating make list files...\n")
