@@ -123,7 +123,7 @@ class NIRSimulator(object):
 
             prepare_afforestation_db(self.get_local_project_path(project_prefix),
                                      self.config["af_start_year"], self.config["af_end_year"])
-            self.run_af_simulation(
+            run_af_simulation(
                 local_project_path = self.get_local_project_path(project_prefix),
                 local_aidb_path=self.config["local_aidb_path"],
                 cbm_exe_path= self.config["cbm_exe_path"])
