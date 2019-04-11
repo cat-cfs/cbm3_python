@@ -18,10 +18,11 @@ def main():
         parser = argparse.ArgumentParser(description="CBM-CFS3 simulation "
             "script. Simulates a CBM-CFS3 project access database by "
             "automating functions in the Operational-Scale CBM-CFS3 toolbox")
-        parser.add_argument("--aidb_path",
-            help="aidb_path path to a CBM-CFS3 archive index database")
+
         parser.add_argument("--project_path",
             help="path to a cbm project database file")
+        parser.add_argument("--aidb_path", nargs="?",
+            help="aidb_path path to a CBM-CFS3 archive index database")
         parser.add_argument("--toolbox_installation_dir", nargs="?",
             help="the Operational-Scale CBM-CFS3 toolbox installation "
                  "directory. If unspecified a typical default value is used.")
