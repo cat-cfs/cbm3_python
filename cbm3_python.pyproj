@@ -41,6 +41,9 @@
     <Compile Include="cbm3_python\simulation\batchrunner.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="cbm3_python\simulation\etrsimulator.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="cbm3_python\simulation\projectsimulator.py">
       <SubType>Code</SubType>
     </Compile>
@@ -102,7 +105,7 @@
     </Compile>
     <Compile Include="cbm3_python\util\__init__.py" />
     <Compile Include="create_nir_path_config.py" />
-    <Compile Include="runnation.py" />
+    <Compile Include="run_etr_simulator.py" />
     <Compile Include="simulate.py" />
   </ItemGroup>
   <ItemGroup>

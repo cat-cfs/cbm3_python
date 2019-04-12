@@ -60,6 +60,9 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
            configure extended kf6 accounting (requires NIR CBM.exe)
     @param dist_rules_path one of a pair of optional file paths used to 
            configure extended kf6 accounting (requires NIR CBM.exe)
+    @param loader_settings if None the toolbox loader is used, otherwise 
+           specify loader specific settings. {"type": "python_loader"} 
+           is the only other currently supported item
     '''
     with AIDB(aidb_path, False) as aidb, \
          AccessDB(project_path, False) as proj:
@@ -129,6 +132,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
             #cleanup
             s.setDefaultArchiveIndexPath(aidb_path_original)
             aidb.DeleteProjectsFromAIDB(simId)
-        results_path = s.getDefaultResultsPath() if results_database_path is None else results_database_path
+        results_path = s.getDefaultResultsPath() if results_database_path \
+            is None else results_database_path
         return results_path
 

@@ -2,7 +2,7 @@
 #  as represented by the Minister of Natural Resources Canada
 
 import os, shutil, argparse, datetime, logging
-from cbm3_python.simulation.nirpathconfig import NIRPathConfig
+import cbm3_python.simulation.nirpathconfig as nirpathconfig
 from cbm3_python.util import loghelper
 def main():
     try:
@@ -23,8 +23,7 @@ def main():
         args = parser.parse_args()
         results_dir = "RESULTS" \
             if not args.results_dir else args.results_dir
-        n = NIRPathConfig();
-        n.create(
+        nirpathconfig.create(
            output_path = os.path.abspath(args.output_path),
            base_project_dir = os.path.abspath(args.base_project_dir),
            project_prefixes = [x.upper().strip() for x in args.project_prefixes.split(",")],
