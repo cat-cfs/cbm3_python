@@ -4,68 +4,36 @@
 import os, shutil, logging, stat
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.cbm3data.aidb import AIDB
-from cbm3_python.cbm3data.access_templates import *
-from cbm3_python.cbm3data.resultsloader import ResultsLoader
+
 from cbm3_python.cbm3data.rollup import Rollup
 
-from cbm3_python.simulation.simulator import Simulator
+import cbm3_python.simulation.projectsimulator
 from cbm3_python.simulation.tools.createaccountingrules import CreateAccountingRules
 from cbm3_python.simulation.nir_sql.afforestation_fixes import *
 from cbm3_python.simulation.nir_sql.unmanaged_forest_fixes import *
 
 def run_af_simulation(local_project_path, local_aidb_path,
-                        cbm_exe_path,
-                        toolbox_path = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3"):
-    with AIDB(local_aidb_path, False) as aidb, \
-            AccessDB(local_project_path, False) as proj:
-        aidb.DeleteProjectsFromAIDB()
-        simId = aidb.AddProjectToAIDB(proj)
-        cbm_wd = os.path.join(toolbox_path,"temp")
-        s = Simulator(cbm_exe_path,
-                        simId,
-                        os.path.dirname(local_project_path),
-                        cbm_wd,
-                        toolbox_path)
-        s.CleanupRunDirectory()
-        s.CopyToWorkingDir(local_project_path)
-        s.CreateCBMFiles()
+                      cbm_exe_path,
+                      toolbox_path = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3"):
 
-        s.CopyCBMExecutable()
-        s.DumpMakelistSVLs()
-        s.RunCBM()
-        s.CopyTempFiles()
+    cbm3_python.simulation.projectsimulator.run(
+        local_aidb_path, local_project_path, toolbox_path, cbm_exe_path,
+        results_database_path=None, tempfiles_output_dir=None,
+        skip_makelist=True, stdout_path=None, use_existing_makelist_output=False,
+        dist_classes_path = None, dist_rules_path = None, 
+        loader_settings={"type": "python_loader"})
 
-def run_cbm_simulation(local_project_path, local_aidb_path,
-                        cbm_exe_path, dist_classes_path, dist_rules_path,
-                        toolbox_path = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3"):
+def run_cbm_simulation(local_project_path, local_aidb_path, cbm_exe_path,
+                       dist_classes_path, dist_rules_path, toolbox_path,
+                       results_database_path, skip_makelist):
 
-    with AIDB(local_aidb_path, False) as aidb, \
-            AccessDB(local_project_path, False) as proj:
-        aidb.DeleteProjectsFromAIDB()
-        simId = aidb.AddProjectToAIDB(proj)
-        cbm_wd = os.path.join(toolbox_path,"temp")
-        s = Simulator(cbm_exe_path,
-                        simId,
-                        os.path.dirname(local_project_path),
-                        cbm_wd,
-                        toolbox_path)
+    cbm3_python.simulation.projectsimulator.run(
+        local_aidb_path, local_project_path, toolbox_path, cbm_exe_path,
+        results_database_path=None, tempfiles_output_dir=None,
+        skip_makelist=skip_makelist, stdout_path=None, use_existing_makelist_output=False,
+        dist_classes_path = dist_classes_path, dist_rules_path = dist_rules_path,
+        loader_settings={"type": "python_loader"})
 
-        s.CleanupRunDirectory()
-        s.CreateMakelistFiles()
-        s.copyMakelist()
-        s.runMakelist()
-        s.loadMakelistSVLS()
-
-        temp_proj_path = os.path.join(cbm_wd, os.path.basename(local_project_path))
-        with AccessDB(temp_proj_path, False) as temp_proj:
-            cr = CreateAccountingRules(temp_proj, dist_classes_path, dist_rules_path)
-            cr.create_accounting_rules()
-
-        s.copyMakelistOutput()
-        s.CreateCBMFiles()
-        s.CopyCBMExecutable()
-        s.RunCBM()
-        s.CopyTempFiles()
 
 class NIRSimulator(object):
 
@@ -163,15 +131,6 @@ class NIRSimulator(object):
     def load_project_results(self, project_prefix):
         local_results_path =  self.get_local_results_path(project_prefix)
         local_project_path = self.get_local_project_path(project_prefix)
-        local_aidb_path = self.config["local_aidb_path"]
-        r = ResultsLoader()
-        copy_rrdb_template(local_results_path)
-        output = r.loadResults(
-            outputDBPath=local_results_path,
-            aidbPath=local_aidb_path,
-            projectDBPath=local_project_path,
-            projectSimulationDirectory=r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\temp",
-            loadPreDistAge=False)
         if project_prefix == "UF":
             run_uf_results_fixes(local_results_path)
         if project_prefix == "AF":

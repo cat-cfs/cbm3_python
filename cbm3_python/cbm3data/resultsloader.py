@@ -4,6 +4,7 @@
 import sys, os, shutil, math
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.cbm3data.projectdb import ProjectDB
+from cbm3_python.cbm3data.access_templates import *
 import logging
 from math import floor
 
@@ -35,6 +36,8 @@ class ResultsLoader(object):
             self.copyProjectTables(projectDB, outputDBPath)
             self.cset_dict = {}
             self.BuildCsetLookup(projectDB)
+
+        copy_rrdb_template(outputDBPath)
 
         with AccessDB(outputDBPath,False) as load_db:
             logging.info("creating indexes")

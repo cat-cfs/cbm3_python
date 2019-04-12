@@ -2,6 +2,7 @@ import os
 from cbm3_python.cbm3data.aidb import AIDB
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.cbm3data.projectdb import ProjectDB
+from cbm3_python.cbm3data.resultsloader import ResultsLoader
 from cbm3_python.simulation.simulator import Simulator
 from cbm3_python.simulation.tools.createaccountingrules import CreateAccountingRules
 
@@ -29,7 +30,8 @@ def clear_old_results(project_db):
 def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
        results_database_path=None, tempfiles_output_dir=None,
        skip_makelist=False, stdout_path=None, use_existing_makelist_output=False,
-       dist_classes_path = None, dist_rules_path = None):
+       dist_classes_path = None, dist_rules_path = None,
+       loader_settings=None):
     '''
     runs the specified single simulation assumption project and loads the
     results
@@ -112,10 +114,21 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
 
             if tempfiles_output_dir:
                 s.CopyTempFiles(output_dir=tempfiles_output_dir)
-            s.LoadCBMResults(output_path = results_database_path)
+            if loader_settings is None:
+                s.LoadCBMResults(output_path = results_database_path)
+            elif loader_settings["type"] == "python_loader":
+                r = ResultsLoader()
+                r.loadResults(
+                    outputDBPath=results_database_path,
+                    aidbPath=aidb_path,
+                    projectDBPath=project_path,
+                    projectSimulationDirectory=cbm_wd)
+            else:
+                raise ValueError("unknown loader settings")
         finally:
+            #cleanup
             s.setDefaultArchiveIndexPath(aidb_path_original)
-            aidb.DeleteProjectsFromAIDB(simId) #cleanup
+            aidb.DeleteProjectsFromAIDB(simId)
         results_path = s.getDefaultResultsPath() if results_database_path is None else results_database_path
         return results_path
 
