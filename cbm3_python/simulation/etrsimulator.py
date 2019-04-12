@@ -22,10 +22,10 @@ class ETRSimulator():
         self.local_working_dir = local_working_dir
         
         if not os.path.exists(local_working_dir):
-            os.makedirs(working_dir)
+            os.makedirs(local_working_dir)
 
-        config["local_working_dir"] = local_working_dir
-        self.ns = NIRSimulator(config, nirpathconfig.load(base_path_config_file))
+        self.config["local_working_dir"] = local_working_dir
+        self.ns = NIRSimulator(self.config, nirpathconfig.load(base_path_config_file))
 
     def load_project_prefixes(self, prefix_filter):
         if prefix_filter:
@@ -95,7 +95,7 @@ class ETRSimulator():
     def run(self, prefix_filter, copy_local, preprocess, simulate, rollup, hwp_input, 
             qaqc, copy_to_final_results_dir):
 
-        project_prefixes = load_project_prefixes(prefix_filter)
+        project_prefixes = self.load_project_prefixes(prefix_filter)
 
         if copy_local:
             logging.info("copying databases to working dir")
@@ -109,7 +109,7 @@ class ETRSimulator():
                     continue
                 logging.info("pre-processing {}".format(p))
                 local_project_path = self.ns.get_local_project_path(p)
-                preprocess(self.config, p, local_project_path)
+                self.preprocess(self.config, p, local_project_path)
                 logging.info("finished pre-processing {}".format(p))
 
         if simulate:
