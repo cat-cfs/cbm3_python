@@ -1,8 +1,9 @@
 # Copyright (C) Her Majesty the Queen in Right of Canada,
 #  as represented by the Minister of Natural Resources Canada
 
+import os, argparse, datetime
 from cbm3_python.simulation.etrsimulator import ETRSimulator
-
+from cbm3_python.util import loghelper
 def get_date_stamp():
     return datetime.datetime.now().strftime("%Y-%m-%d %H_%M_%S")
 

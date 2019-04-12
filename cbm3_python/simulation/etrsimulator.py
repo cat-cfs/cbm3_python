@@ -1,5 +1,5 @@
 
-import os, sys, shutil, argparse, json, logging, datetime
+import os, shutil, json, logging
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.simulation.nirsimulator import NIRSimulator
 import cbm3_python.simulation.nirpathconfig as nirpathconfig
@@ -10,13 +10,10 @@ from cbm3_python.simulation.tools.disturbanceextender import DisturbanceExtender
 from cbm3_python.simulation.tools.disturbancegeneratorconfig import DisturbanceGeneratorConfig
 from cbm3_python.simulation.tools.disturbanceextension import DisturbanceExtension
 from cbm3_python.simulation.tools import qaqc
-from cbm3_python.util import loghelper
-
 
 def load_json(path):
     with open(path, 'r') as f:
         return json.loads(f.read())
-
 
 class ETRSimulator():
 

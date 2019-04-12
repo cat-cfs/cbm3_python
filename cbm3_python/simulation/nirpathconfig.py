@@ -8,7 +8,7 @@ def create(output_path, base_project_dir, project_prefixes, results_dir="RESULTS
     '''
     helper method to create a csv file containing validated baseline NIR project paths, and rrdb paths
     '''
-    with open(output_path, 'w') as csvfile:
+    with open(output_path, 'w', newline='') as csvfile:
         fieldNames = ["project_prefix", "project_path", "results_path"]
         writer = csv.DictWriter(csvfile, fieldnames= fieldNames)
         writer.writeheader()
