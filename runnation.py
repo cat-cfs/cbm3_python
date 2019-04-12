@@ -161,8 +161,8 @@ def main():
             for p in project_prefixes:
                 logging.info("simulating {}".format(p))
                 ns.run_cbm(p)
-                logging.info("finished simulating {}. Loading results".format(p))
-                ns.load_project_results(p)
+                logging.info("finished simulating {}. processing results".format(p))
+                ns.run_results_post_processing(p)
                 logging.info("{} simulation finished".format(p))
 
         if args.rollup:

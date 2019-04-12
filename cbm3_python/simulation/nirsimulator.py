@@ -12,29 +12,6 @@ from cbm3_python.simulation.tools.createaccountingrules import CreateAccountingR
 from cbm3_python.simulation.nir_sql.afforestation_fixes import *
 from cbm3_python.simulation.nir_sql.unmanaged_forest_fixes import *
 
-def run_af_simulation(local_project_path, local_aidb_path,
-                      cbm_exe_path,
-                      toolbox_path = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3"):
-
-    cbm3_python.simulation.projectsimulator.run(
-        local_aidb_path, local_project_path, toolbox_path, cbm_exe_path,
-        results_database_path=None, tempfiles_output_dir=None,
-        skip_makelist=True, stdout_path=None, use_existing_makelist_output=False,
-        dist_classes_path = None, dist_rules_path = None, 
-        loader_settings={"type": "python_loader"})
-
-def run_cbm_simulation(local_project_path, local_aidb_path, cbm_exe_path,
-                       dist_classes_path, dist_rules_path, toolbox_path,
-                       results_database_path, skip_makelist):
-
-    cbm3_python.simulation.projectsimulator.run(
-        local_aidb_path, local_project_path, toolbox_path, cbm_exe_path,
-        results_database_path=None, tempfiles_output_dir=None,
-        skip_makelist=skip_makelist, stdout_path=None, use_existing_makelist_output=False,
-        dist_classes_path = dist_classes_path, dist_rules_path = dist_rules_path,
-        loader_settings={"type": "python_loader"})
-
-
 class NIRSimulator(object):
 
     def __init__(self, config, base_projects):
@@ -81,30 +58,34 @@ class NIRSimulator(object):
             self.run_cbm(p)
 
             logging.info("{}: Load CBM Results".format(p))
-            rp = self.load_project_results(p)
+            rp = self.run_results_post_processing(p)
             local_results_paths.append(rp)
 
         return local_results_paths
 
     def run_cbm(self, project_prefix):
+
+        skip_makelist = False
+        dist_classes_path = self.config["dist_classes_path"]
+        dist_rules_path = self.config["dist_rules_path"]
         if project_prefix == "AF":
+            skip_makelist=True
+            dist_classes_path=None
+            dist_rules_path=None
 
-            prepare_afforestation_db(self.get_local_project_path(project_prefix),
-                                     self.config["af_start_year"], self.config["af_end_year"])
-            run_af_simulation(
-                local_project_path = self.get_local_project_path(project_prefix),
-                local_aidb_path=self.config["local_aidb_path"],
-                cbm_exe_path= self.config["cbm_exe_path"])
-            return
-
-        run_cbm_simulation(
-            local_project_path = self.get_local_project_path(project_prefix),
-            local_aidb_path=self.config["local_aidb_path"],
-            cbm_exe_path= self.config["cbm_exe_path"],
-            dist_classes_path=self.config["dist_classes_path"],
-            dist_rules_path=self.config["dist_rules_path"])
-
-
+        cbm3_python.simulation.projectsimulator.run(
+            aidb_path=self.config["local_aidb_path"],
+            project_path=self.get_local_project_path(project_prefix),
+            toolbox_installation_dir=self.config["toolbox_installation_dir"],
+            cbm_exe_path=self.config["cbm_exe_path"],
+            results_database_path=self.get_local_results_path(project_prefix),
+            tempfiles_output_dir=None,
+            skip_makelist=skip_makelist,
+            stdout_path=None,
+            use_existing_makelist_output=False,
+            dist_classes_path=dist_classes_path,
+            dist_rules_path=dist_rules_path,
+            loader_settings={"type": "python_loader"})
 
     def copy_aidb_local(self):
         logging.info("copying archive index - source: '{0}', dest: '{1}'"
@@ -128,14 +109,13 @@ class NIRSimulator(object):
         os.chmod(local_project_path, stat.S_IWRITE)
         return local_project_path
 
-    def load_project_results(self, project_prefix):
+    def run_results_post_processing(self, project_prefix):
         local_results_path =  self.get_local_results_path(project_prefix)
         local_project_path = self.get_local_project_path(project_prefix)
         if project_prefix == "UF":
             run_uf_results_fixes(local_results_path)
         if project_prefix == "AF":
             run_af_results_fixes(local_results_path)
-        return output
 
     def do_rollup(self, rrdbs):
         local_rollup_path = self.get_local_rollup_db_path()
