@@ -1,7 +1,7 @@
 # Copyright (C) Her Majesty the Queen in Right of Canada,
 #  as represented by the Minister of Natural Resources Canada
 
-import os, argparse, datetime
+import os, argparse, datetime, logging
 from cbm3_python.simulation.etrsimulator import ETRSimulator
 from cbm3_python.util import loghelper
 def get_date_stamp():
@@ -55,7 +55,7 @@ def main():
         es = ETRSimulator(config_path, base_path_config_file, local_working_dir)
 
         logpath = os.path.join(local_working_dir,
-                 "{0}_{1}.log".format(date_stamp, config["Name"]))
+                 "{0}_{1}.log".format(date_stamp, es.config["Name"]))
         loghelper.start_logging(logpath, 'w+')
 
         es.run(args.prefix_filter,

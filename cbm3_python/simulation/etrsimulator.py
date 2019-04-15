@@ -109,7 +109,7 @@ class ETRSimulator():
                     continue
                 logging.info("pre-processing {}".format(p))
                 local_project_path = self.ns.get_local_project_path(p)
-                self.preprocess(self.config, p, local_project_path)
+                self.preprocess(p, local_project_path)
                 logging.info("finished pre-processing {}".format(p))
 
         if simulate:
