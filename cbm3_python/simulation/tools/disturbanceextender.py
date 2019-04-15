@@ -35,7 +35,7 @@ class DisturbanceExtender(object):
             maxEventId = project.GetMaxID("tbldisturbanceevents", "disturbanceeventid")
 
             extraTimesteps = event.getToYear() - event.getFromYear()
-            for timestep in xrange(1, extraTimesteps + 1):
+            for timestep in range(1, extraTimesteps + 1):
                 for table in ("disturbance_event_additions", "dist_event_increments"):
                     if project.tableExists(table):
                         project.ExecuteQuery("DROP TABLE {0}".format(table))
