@@ -9,7 +9,7 @@ from cbm3_python.simulation.tools.avgdisturbanceextender import AvgDisturbanceEx
 from cbm3_python.simulation.tools.disturbanceextender import DisturbanceExtender
 from cbm3_python.simulation.tools.disturbancegeneratorconfig import DisturbanceGeneratorConfig
 from cbm3_python.simulation.tools.disturbanceextension import DisturbanceExtension
-from cbm3_python.simulation.tools import qaqc
+import cbm3_python.simulation.tools.qaqc
 
 def load_json(path):
     with open(path, 'r') as f:
@@ -103,6 +103,9 @@ class ETRSimulator():
             for p in project_prefixes:
                 self.ns.copy_project_local(p)
 
+            logging.info("copying tools to local working dir")
+
+
         if preprocess:
             for p in project_prefixes:
                 if p == "AF":
@@ -139,12 +142,12 @@ class ETRSimulator():
             for p in project_prefixes:
                 local_dir = self.ns.get_local_project_dir(p)
                 label = "{0}_{1}".format(p, self.config["Name"])
-                qaqc.run_qaqc(
+                cbm3_python.simulation.tools.qaqc.run_qaqc(
                     executable_path = self.config["QaqcExecutablePath"],
                     query_template_path = self.config["QaqcQueryTemplatePath"],
                     excel_template_path = self.config["QaqcExcelTemplatePath"],
                     excel_output_path = os.path.join(local_dir, "{}_qaqc.xlsx".format(label)),
-                    work_sheet_tasks = qaqc.get_nir_worksheet_tasks(
+                    work_sheet_tasks = cbm3_python.simulation.tools.qaqc.get_nir_worksheet_tasks(
                         RRDB_A_Label = "base_run",
                         RRDB_A_Path = self.ns.get_base_run_results_path(p),
                         RRDB_B_Label = label,

@@ -29,6 +29,8 @@ class ResultsLoader(object):
                     projectSimulationDirectory,
                     loadPreDistAge=False):
 
+        copy_rrdb_template(outputDBPath)
+
         with AccessDB(projectDBPath, False) as projectDB, \
              AccessDB(aidbPath, False) as aidb:
 
@@ -37,7 +39,7 @@ class ResultsLoader(object):
             self.cset_dict = {}
             self.BuildCsetLookup(projectDB)
 
-        copy_rrdb_template(outputDBPath)
+
 
         with AccessDB(outputDBPath,False) as load_db:
             logging.info("creating indexes")
