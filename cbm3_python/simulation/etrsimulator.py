@@ -27,6 +27,10 @@ class ETRSimulator():
         self.config["local_working_dir"] = local_working_dir
         self.ns = NIRSimulator(self.config, nirpathconfig.load(base_path_config_file))
 
+        self.local_tools_dir = os.path.join(local_working_dir, "tools")
+
+        self.local_qaqc_tool_dir = os.path.join(self.local_tools_dir)
+
     def load_project_prefixes(self, prefix_filter):
         if prefix_filter:
             #check that the user provided filter items actually exist in the config
@@ -41,6 +45,22 @@ class ETRSimulator():
             [x for x in self.config["project_prefixes"]
                 if x in prefix_filter.split(",")]
         return project_prefixes
+
+
+    def copy_tool_local(self, original_path):
+        local_dir = os.path.join(
+            self.local_tools_dir,
+            os.path.splitext(
+                os.path.basename(original_path))[0])
+        local_path = os.path.join(
+            local_dir,
+            os.path.basename(original_path))
+        if not os.path.exists(local_dir):
+            logging.info("copying {0} to {1}".format(original_path,local_dir))
+            shutil.copytree(src=os.path.dirname(original_path),
+                            dst=local_dir)
+        return local_path
+
 
     def preprocess(self, project_prefix, project_path):
         with AccessDB(project_path, False) as nir_project_db:
@@ -74,8 +94,11 @@ class ETRSimulator():
             disturbance_generator_config = self.config["DisturbanceGenerator"]
             if isinstance(disturbance_generator_config, dict):
                 logging.info("running disturbance generator")
+
+                dg_path = self.copy_tool_local(disturbance_generator_config["ExePath"])
+
                 disturbancegenerator = DisturbanceGeneratorConfig(
-                    os.path.abspath(disturbance_generator_config["ExePath"]),
+                    os.path.abspath(dg_path),
                     os.path.abspath(disturbance_generator_config["DefaultsPath"]),
                     self.config["local_aidb_path"],
                     disturbance_generator_config["Tasks"],
@@ -143,7 +166,7 @@ class ETRSimulator():
                 local_dir = self.ns.get_local_project_dir(p)
                 label = "{0}_{1}".format(p, self.config["Name"])
                 cbm3_python.simulation.tools.qaqc.run_qaqc(
-                    executable_path = self.config["QaqcExecutablePath"],
+                    executable_path = self.copy_tool_local(self.config["QaqcExecutablePath"]),
                     query_template_path = self.config["QaqcQueryTemplatePath"],
                     excel_template_path = self.config["QaqcExcelTemplatePath"],
                     excel_output_path = os.path.join(local_dir, "{}_qaqc.xlsx".format(label)),
