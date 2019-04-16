@@ -41,6 +41,11 @@ class NIRSimulator(object):
             self.get_local_project_dir(project_prefix),
             "results", self.config["local_results_format"].format(project_prefix))
 
+    def get_local_tempfiles_dir(self, project_prefix):
+        return os.path.join(
+            self.get_local_project_dir(project_prefix),
+            "results", "temp")
+
     def get_local_rollup_db_path(self):
         return os.path.join(
             self.config["local_working_dir"], self.config["local_rollup_filename"])
@@ -81,7 +86,7 @@ class NIRSimulator(object):
             toolbox_installation_dir=self.config["toolbox_installation_dir"],
             cbm_exe_path=self.config["cbm_exe_path"],
             results_database_path=self.get_local_results_path(project_prefix),
-            tempfiles_output_dir=None,
+            tempfiles_output_dir=self.get_local_tempfiles_dir(project_prefix),
             skip_makelist=skip_makelist,
             use_existing_makelist_output=False,
             copy_makelist_results=copy_makelist_results,
