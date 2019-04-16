@@ -58,14 +58,16 @@ def main():
                  "{0}_{1}.log".format(date_stamp, es.config["Name"]))
         loghelper.start_logging(logpath, 'w+')
 
-        es.run(args.prefix_filter,
+        es.run(
+               args.prefix_filter,
                args.copy_local,
                args.preprocess,
                args.simulate,
                args.rollup,
                args.hwp_input,
                args.qaqc,
-               args.copy_to_final_results_dir)
+               args.copy_to_final_results_dir,
+               date_stamp)
 
     except Exception as ex:
         logging.exception("")

@@ -29,8 +29,6 @@ class ETRSimulator():
 
         self.local_tools_dir = os.path.join(local_working_dir, "tools")
 
-        self.local_qaqc_tool_dir = os.path.join(self.local_tools_dir)
-
     def load_project_prefixes(self, prefix_filter):
         if prefix_filter:
             #check that the user provided filter items actually exist in the config
@@ -116,7 +114,7 @@ class ETRSimulator():
 
 
     def run(self, prefix_filter, copy_local, preprocess, simulate, rollup, hwp_input, 
-            qaqc, copy_to_final_results_dir):
+            qaqc, copy_to_final_results_dir, date_stamp):
 
         project_prefixes = self.load_project_prefixes(prefix_filter)
 
