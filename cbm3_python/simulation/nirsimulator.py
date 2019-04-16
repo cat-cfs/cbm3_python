@@ -4,14 +4,14 @@
 import os, shutil, logging, stat
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.cbm3data.aidb import AIDB
-
 from cbm3_python.cbm3data.rollup import Rollup
-
-import cbm3_python.simulation.projectsimulator
 from cbm3_python.simulation.tools.createaccountingrules import CreateAccountingRules
-from cbm3_python.simulation.nir_sql.afforestation_fixes import *
-from cbm3_python.simulation.nir_sql.unmanaged_forest_fixes import *
 
+import cbm3_python.simulation.projectsimulator as projectsimulator
+
+import cbm3_python.simulation.nir_sql.afforestation_fixes as afforestation_fixes
+import cbm3_python.simulation.nir_sql.unmanaged_forest_fixes as unmanaged_forest_fixes
+import cbm3_python.cbm3data.access_templates as access_templates
 class NIRSimulator(object):
 
     def __init__(self, config, base_projects):
@@ -73,7 +73,7 @@ class NIRSimulator(object):
             dist_classes_path=None
             dist_rules_path=None
 
-        cbm3_python.simulation.projectsimulator.run(
+        projectsimulator.run(
             aidb_path=self.config["local_aidb_path"],
             project_path=self.get_local_project_path(project_prefix),
             toolbox_installation_dir=self.config["toolbox_installation_dir"],
@@ -113,12 +113,12 @@ class NIRSimulator(object):
         local_results_path =  self.get_local_results_path(project_prefix)
         local_project_path = self.get_local_project_path(project_prefix)
         if project_prefix == "UF":
-            run_uf_results_fixes(local_results_path)
+            unmanaged_forest_fixes.run_uf_results_fixes(local_results_path)
         if project_prefix == "AF":
-            run_af_results_fixes(local_results_path)
+            afforestation_fixes.run_af_results_fixes(local_results_path)
 
     def do_rollup(self, rrdbs):
         local_rollup_path = self.get_local_rollup_db_path()
-        copy_rollup_template(local_rollup_path)
+        access_templates.copy_rollup_template(local_rollup_path)
         r = Rollup(rrdbs, local_rollup_path, self.config["local_aidb_path"])
         r.Roll()
