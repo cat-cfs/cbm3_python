@@ -121,9 +121,9 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
 
             if not copy_makelist_results:
                 s.DumpMakelistSVLs()
-            s.CreateCBMFiles()
-            if copy_makelist_results:
+            else:
                 s.copyMakelistOutput()
+            s.CreateCBMFiles()
             s.CopyCBMExecutable()
             s.RunCBM()
 
