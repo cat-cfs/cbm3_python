@@ -60,7 +60,7 @@ class ETRSimulator():
         return local_path
 
 
-    def preprocess(self, project_prefix, project_path):
+    def run_disturbance_extender(self, project_path):
         with AccessDB(project_path, False) as nir_project_db:
             events_to_delete = self.config["EventsToDelete"]
             if len(events_to_delete) > 0:
@@ -89,22 +89,25 @@ class ETRSimulator():
                 logging.info("disturbance extender finished")
             else: logging.info("disturbance extender skipped")
 
-            disturbance_generator_config = self.config["DisturbanceGenerator"]
-            if isinstance(disturbance_generator_config, dict):
-                logging.info("running disturbance generator")
+    def run_disturbance_generator(self, project_prefix, project_path):
+        disturbance_generator_config = self.config["DisturbanceGenerator"]
+        if isinstance(disturbance_generator_config, dict):
+            logging.info("running disturbance generator")
 
-                dg_path = self.copy_tool_local(disturbance_generator_config["ExePath"])
+            dg_path = self.copy_tool_local(disturbance_generator_config["ExePath"])
 
-                disturbancegenerator = DisturbanceGeneratorConfig(
-                    os.path.abspath(dg_path),
-                    os.path.abspath(disturbance_generator_config["DefaultsPath"]),
-                    self.config["local_aidb_path"],
-                    disturbance_generator_config["Tasks"],
-                    project_prefix, project_path)
-                disturbancegenerator.Run()
-                logging.info("disturbance generator finished")
-            else: logging.info("disturbance generator skipped")
+            disturbancegenerator = DisturbanceGeneratorConfig(
+                os.path.abspath(dg_path),
+                os.path.abspath(disturbance_generator_config["DefaultsPath"]),
+                self.config["local_aidb_path"],
+                disturbance_generator_config["Tasks"],
+                project_prefix, project_path)
+            disturbancegenerator.Run()
+            logging.info("disturbance generator finished")
+        else: logging.info("disturbance generator skipped")
 
+    def run_nir_sql(self, project_path):
+        with AccessDB(project_path, False) as nir_project_db:
             sql_run_length = nir_project_queries.sql_set_run_project_run_length(
                 self.config["numTimeSteps"])
             nir_project_db.ExecuteQuery(query=sql_run_length[0],
@@ -112,6 +115,13 @@ class ETRSimulator():
             nir_project_queries.run_simulation_id_cleanup(nir_project_db)
             nir_project_queries.update_random_seed(nir_project_db)
 
+    def run_nir_sql_af(self, project_path):
+        with AccessDB(project_path, False) as nir_project_db:
+            sql_run_length = nir_project_queries.sql_set_run_project_run_length(
+                self.config["af_end_year"]-self.config["af_start_year"] + 1)
+            nir_project_db.ExecuteQuery(query=sql_run_length[0],
+                                       params=sql_run_length[1])
+            nir_project_queries.run_simulation_id_cleanup(nir_project_db)
 
     def run(self, prefix_filter, copy_local, preprocess, simulate, rollup, hwp_input, 
             qaqc, copy_to_final_results_dir, date_stamp):
@@ -129,11 +139,15 @@ class ETRSimulator():
 
         if preprocess:
             for p in project_prefixes:
-                if p == "AF":
-                    continue
+
                 logging.info("pre-processing {}".format(p))
                 local_project_path = self.ns.get_local_project_path(p)
-                self.preprocess(p, local_project_path)
+                if p == "AF":
+                    self.run_nir_sql_af(local_project_path)
+                else:
+                    self.run_disturbance_extender(local_project_path)
+                    self.run_disturbance_generator(p,local_project_path)
+                    self.run_nir_sql(local_project_path)
                 logging.info("finished pre-processing {}".format(p))
 
         if simulate:
