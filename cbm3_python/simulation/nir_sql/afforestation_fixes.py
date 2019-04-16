@@ -51,7 +51,7 @@ def run_af_results_fixes(af_rrdb_path):
             ranges = rrdb.get_batched_query_ranges(sql_group["table"],sql_group["id_col"], 50000)
             for r in ranges:
                 for sql in sql_group["queries"]:
-                    rrdb.ExecuteQuery(query=sql, params=(r["min"], r["max"]))
+                    rrdb.ExecuteQuery(query=sql, params=r)
 
     logging.info("finished running afforestation results fixes.")
 
