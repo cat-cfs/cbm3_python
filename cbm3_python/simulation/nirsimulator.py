@@ -66,10 +66,12 @@ class NIRSimulator(object):
     def run_cbm(self, project_prefix):
 
         skip_makelist = False
+        copy_makelist_results = True
         dist_classes_path = self.config["dist_classes_path"]
         dist_rules_path = self.config["dist_rules_path"]
         if project_prefix == "AF":
             skip_makelist=True
+            copy_makelist_results=False
             dist_classes_path=None
             dist_rules_path=None
 
@@ -81,8 +83,9 @@ class NIRSimulator(object):
             results_database_path=self.get_local_results_path(project_prefix),
             tempfiles_output_dir=None,
             skip_makelist=skip_makelist,
-            stdout_path=None,
             use_existing_makelist_output=False,
+            copy_makelist_results=copy_makelist_results,
+            stdout_path=None,
             dist_classes_path=dist_classes_path,
             dist_rules_path=dist_rules_path,
             loader_settings={"type": "python_loader"})

@@ -5,15 +5,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ed5dc488-c8d0-4ab7-82f5-35a905e71134}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>simulate.py</StartupFile>
+    <StartupFile>run_etr_simulator.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>Global|PythonCore|2.7-32</InterpreterId>
-    <CommandLineArguments>
-    </CommandLineArguments>
+    <CommandLineArguments>--configuration M:\2019_ETR\05_working\00_testing\02_configuration.json --nir_base_path_config M:\2019_ETR\05_working\00_testing\01_base_paths.csv --local_working_dir c:\dev\etr_2019_test --prefix_filter "PEI" --copy_local --preprocess --simulate --qaqc</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
