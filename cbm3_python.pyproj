@@ -22,8 +22,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="batchrunner.py" />
-    <Compile Include="cbm3_python\adhoc\analyse_report_fil.py" />
-    <Compile Include="cbm3_python\adhoc\harvest_shortfall_allocator.py" />
     <Compile Include="cbm3_python\adhoc\run_NIR_with_pre_dist_age.py" />
     <Compile Include="cbm3_python\adhoc\update_oilsands_dms.py" />
     <Compile Include="cbm3_python\adhoc\update_SBW.py" />
