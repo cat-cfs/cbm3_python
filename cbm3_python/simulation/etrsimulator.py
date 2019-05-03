@@ -10,6 +10,7 @@ from cbm3_python.simulation.tools.disturbanceextender import DisturbanceExtender
 from cbm3_python.simulation.tools.disturbancegeneratorconfig import DisturbanceGeneratorConfig
 from cbm3_python.simulation.tools.disturbanceextension import DisturbanceExtension
 import cbm3_python.simulation.tools.qaqc
+from cbm3_python.simulation.tools.dgchecker import DGChecker
 
 def load_json(path):
     with open(path, 'r') as f:
@@ -28,6 +29,12 @@ class ETRSimulator():
         self.ns = NIRSimulator(self.config, nirpathconfig.load(base_path_config_file))
 
         self.local_tools_dir = os.path.join(local_working_dir, "tools")
+        
+        disturbance_generator_config = self.config["DisturbanceGenerator"]
+        if isinstance(disturbance_generator_config, dict):  
+            self.dg_checker =  DGChecker(
+                self.config["DisturbanceGenerator"]["DefaultsPath"],
+                self.config["DisturbanceGenerator"]["Tasks"])
 
     def load_project_prefixes(self, prefix_filter):
         if prefix_filter:
@@ -106,6 +113,15 @@ class ETRSimulator():
             logging.info("disturbance generator finished")
         else: logging.info("disturbance generator skipped")
 
+
+    def check_disturbance_generator_output(self, project_prefix, project_path):
+        disturbance_generator_config = self.config["DisturbanceGenerator"]
+        if isinstance(disturbance_generator_config, dict):
+            logging.info("checking disturbance generator output for {0}".format(project_prefix))
+            self.dg_checker.check(project_prefix, project_path)
+        else:logging.info("no disturbance event to check")
+
+
     def run_nir_sql(self, project_path):
         with AccessDB(project_path, False) as nir_project_db:
             sql_run_length = nir_project_queries.sql_set_run_project_run_length(
@@ -139,7 +155,6 @@ class ETRSimulator():
 
         if preprocess:
             for p in project_prefixes:
-
                 logging.info("pre-processing {}".format(p))
                 local_project_path = self.ns.get_local_project_path(p)
                 if p == "AF":
@@ -147,6 +162,7 @@ class ETRSimulator():
                 else:
                     self.run_disturbance_extender(local_project_path)
                     self.run_disturbance_generator(p,local_project_path)
+                    self.check_disturbance_generator_output(p,local_project_path)
                     self.run_nir_sql(local_project_path)
                 logging.info("finished pre-processing {}".format(p))
 
