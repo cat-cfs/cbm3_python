@@ -10,14 +10,8 @@ from pathlib import Path
 from cbm3_python.cbm3data.accessdb import AccessDB
  
 class DGChecker(object):
-    '''
-    classdocs
-    '''
-    
+
     def __init__(self, dg_default_path, tasks):
-        '''
-        Constructor
-        '''   
         self.tasks = tasks
         self.event_queries = self.__load_dg_metadata(dg_default_path)
         
@@ -128,6 +122,11 @@ class DGChecker(object):
             for task in self.tasks:
                 dist_class = task["DisturbanceClass"]
                 default_disturbance_types = self.__get_project_default_disturbance_ids(dist_class, project_prefix)
+                if len(default_disturbance_types) == 0:
+                    #if the disturbance query returns no disturbance types for
+                    #the specified project prefix, we can safely say the
+                    #disturbance generator did not export events to the project
+                    continue
                 str_default_distTypes =", " .join(str(id) for id in default_disturbance_types)
 
                 df_events = self.__get_event_data(dist_class, project_prefix)
@@ -139,5 +138,5 @@ class DGChecker(object):
 
                 df_check = pd.merge(df_events, df_proj, how='left', on=['DefaultDistType', 'HarvestYear'])
                 df_check['difference']= df_check['ProjectTarget_x'] - df_check['ProjectTarget_y']
-
-                df_check.to_csv(output)
+                with open(output, 'w', newline='') as out_file:
+                    df_check.to_csv(out_file)
