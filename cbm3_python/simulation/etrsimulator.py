@@ -29,12 +29,15 @@ class ETRSimulator():
         self.ns = NIRSimulator(self.config, nirpathconfig.load(base_path_config_file))
 
         self.local_tools_dir = os.path.join(local_working_dir, "tools")
-        
-        disturbance_generator_config = self.config["DisturbanceGenerator"]
-        if isinstance(disturbance_generator_config, dict):  
+
+        dg_config = self.get_disturbance_generator_config()
+        if dg_config is not None:
             self.dg_checker =  DGChecker(
-                self.config["DisturbanceGenerator"]["DefaultsPath"],
-                self.config["DisturbanceGenerator"]["Tasks"])
+                dg_config["DefaultsPath"],
+                dg_config["Tasks"])
+        else:
+            self.dg_checker = None
+
 
     def load_project_prefixes(self, prefix_filter):
         if prefix_filter:
@@ -96,9 +99,18 @@ class ETRSimulator():
                 logging.info("disturbance extender finished")
             else: logging.info("disturbance extender skipped")
 
-    def run_disturbance_generator(self, project_prefix, project_path):
+
+    def get_disturbance_generator_config(self):
         disturbance_generator_config = self.config["DisturbanceGenerator"]
         if isinstance(disturbance_generator_config, dict):
+            return disturbance_generator_config
+        else:
+            return None
+
+
+    def run_disturbance_generator(self, project_prefix, project_path):
+        disturbance_generator_config = self.get_disturbance_generator_config()
+        if disturbance_generator_config is not None:
             logging.info("running disturbance generator")
 
             dg_path = self.copy_tool_local(disturbance_generator_config["ExePath"])
@@ -111,16 +123,9 @@ class ETRSimulator():
                 project_prefix, project_path)
             disturbancegenerator.Run()
             logging.info("disturbance generator finished")
-        else: logging.info("disturbance generator skipped")
-
-
-    def check_disturbance_generator_output(self, project_prefix, project_path):
-        disturbance_generator_config = self.config["DisturbanceGenerator"]
-        if isinstance(disturbance_generator_config, dict):
             logging.info("checking disturbance generator output for {0}".format(project_prefix))
             self.dg_checker.check(project_prefix, project_path)
-        else:logging.info("no disturbance event to check")
-
+        else: logging.info("disturbance generator skipped")
 
     def run_nir_sql(self, project_path):
         with AccessDB(project_path, False) as nir_project_db:
@@ -162,7 +167,6 @@ class ETRSimulator():
                 else:
                     self.run_disturbance_extender(local_project_path)
                     self.run_disturbance_generator(p,local_project_path)
-                    self.check_disturbance_generator_output(p,local_project_path)
                     self.run_nir_sql(local_project_path)
                 logging.info("finished pre-processing {}".format(p))
 

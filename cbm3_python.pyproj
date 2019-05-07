@@ -44,6 +44,7 @@
     <Compile Include="cbm3_python\simulation\projectsimulator.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="cbm3_python\simulation\tools\dgchecker.py" />
     <Compile Include="cbm3_python\__init__.py">
       <SubType>Code</SubType>
     </Compile>
