@@ -114,29 +114,41 @@ class DGChecker(object):
         return qryStr
 
 
+    def create_check_df(self, dist_class, project_prefix, project_path):
+        default_disturbance_types = self.__get_project_default_disturbance_ids(dist_class, project_prefix)
+        if len(default_disturbance_types) == 0:
+            #if the disturbance query returns no disturbance types for
+            #the specified project prefix, we can safely say the
+            #disturbance generator did not export events to the project
+            return None
+        str_default_distTypes =", " .join(str(id) for id in default_disturbance_types)
+
+        df_events = self.__get_event_data(dist_class, project_prefix)
+        df_events = df_events.groupby(['ProjectName','DefaultDistType','TargetType', 'HarvestYear']).agg({"ProjectTarget": "sum"})
+
+        project_query = self.__build_project_events_query_string(project_path, str_default_distTypes)
+        with AccessDB(project_path) as project_db:
+            df_proj = pd.read_sql(project_query, project_db.connection)
+
+        df_check = pd.merge(df_events, df_proj, how='left', on=['DefaultDistType', 'HarvestYear'])
+        df_check['difference'] = df_check['ProjectTarget_x'] - df_check['ProjectTarget_y']
+        df_check['relative_difference'] = df_check['difference'].abs() / \
+            ((df_check['ProjectTarget_x'] + df_check['ProjectTarget_y']) / 2.0)
+        df_check['dist_class'] = dist_class
+        return df_check
+
     def check(self, project_prefix, project_path):
-        project_dir = Path(project_path).parent
-
         #create qaqc log file
-        with open(Path.joinpath(project_dir, "{0}_disturbance_generator_qaqc.csv".format(project_prefix)), 'a+') as output:
-            for task in self.tasks:
-                dist_class = task["DisturbanceClass"]
-                default_disturbance_types = self.__get_project_default_disturbance_ids(dist_class, project_prefix)
-                if len(default_disturbance_types) == 0:
-                    #if the disturbance query returns no disturbance types for
-                    #the specified project prefix, we can safely say the
-                    #disturbance generator did not export events to the project
-                    continue
-                str_default_distTypes =", " .join(str(id) for id in default_disturbance_types)
-
-                df_events = self.__get_event_data(dist_class, project_prefix)
-                df_events = df_events.groupby(['ProjectName','DefaultDistType','TargetType', 'HarvestYear']).agg({"ProjectTarget": "sum"})
-
-                project_query = self.__build_project_events_query_string(project_path, str_default_distTypes)
-                with AccessDB(project_path) as project_db:
-                    df_proj = pd.read_sql(project_query, project_db.connection)
-
-                df_check = pd.merge(df_events, df_proj, how='left', on=['DefaultDistType', 'HarvestYear'])
-                df_check['difference']= df_check['ProjectTarget_x'] - df_check['ProjectTarget_y']
-                with open(output, 'w', newline='') as out_file:
-                    df_check.to_csv(out_file)
+        df_check= pd.DataFrame()
+        for task in self.tasks:
+            df_check = df_check.append(
+                self.create_check_df(
+                    task["DisturbanceClass"],
+                    project_prefix, project_path))
+        if df_check.shape[0]==0:
+            #don't write a file with an empty dataframe
+            return
+        project_dir = Path(project_path).parent
+        out_path = Path.joinpath(project_dir, "{0}_disturbance_generator_qaqc.csv".format(project_prefix))
+        with open(out_path, 'w', newline='') as output:
+            df_check.to_csv(output)
