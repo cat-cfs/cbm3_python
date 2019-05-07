@@ -152,8 +152,10 @@ class DGChecker(object):
         out_path = Path.joinpath(project_dir, "{0}_disturbance_generator_qaqc.csv".format(project_prefix))
         with open(out_path, 'w', newline='') as output:
             df_check.to_csv(output)
-        if df_check['relative_difference'].max() > 5e-8: 
+        if df_check['relative_difference'].max() > 7e-8: 
             #since the project db format has 32bit precision
             #on some of the columns we are checking, we need
             # to tolerate a somewhat large difference
-            raise ValueError("large difference detected in disturbance generator output")
+            raise ValueError("large difference detected in disturbance "
+                             "generator output for project {0}. See: {1}"
+                             .format(project_path, out_path))
