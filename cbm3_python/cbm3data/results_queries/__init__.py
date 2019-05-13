@@ -10,6 +10,14 @@ def get_classifiers_view():
     with open(get_local_path("classifiers_view.sql")) as f:
         return f.read()
 
+def get_spatial_units_view():
+    with open(get_local_path("spatial_units_view.sql")) as f:
+        return f.read()
+
+def get_disturbance_indicators_view():
+    with open(get_local_path("disturbance_indicators_view.sql")) as f:
+        return f.read()
+
 def build_grouping(table_name,
     disturbance_type_grouping=False,
     spatial_unit_grouping=False,
