@@ -1,5 +1,6 @@
 SELECT
 tblDisturbanceType.DistTypeID,
+tblDisturbanceType.DefaultDistTypeID,
 tblDisturbanceType.DistTypeName,
 tblDisturbanceTypeDefault.DistTypeName
 FROM tblDisturbanceType 
