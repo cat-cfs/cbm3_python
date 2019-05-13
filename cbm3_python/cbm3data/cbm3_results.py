@@ -47,11 +47,13 @@ def load_pool_indicators(results_db_path,
         land_class_grouping=False):
     sql = results_queries.get_pool_indicators_view_sql(
         spatial_unit_grouping, classifier_set_grouping, land_class_grouping)
+    df  = as_data_frame(sql, results_db_path)
     if classifier_set_grouping:
-        df  = as_data_frame(sql, results_db_path)
-        return join_classifiers(df, get_classifier_values(results_db_path))
-    else:
-        return as_data_frame(sql, results_db_path)
+        df = join_classifiers(df, get_classifier_values(results_db_path))
+    if spatial_unit_grouping:
+        df = join_classifiers
+    
+    return df
 
 
 def load_stock_changes(results_db_path,
@@ -98,12 +100,18 @@ def load_disturbance_indicators(results_db_path,
         return as_data_frame(sql, results_db_path)
 
 def join_classifiers(indicators, classifiers):
-    df = pd.merge(
+    return pd.merge(
         indicators, classifiers,
         left_on ="UserDefdClassSetID",
         right_on="UserDefdClassSetID")
-    return df
 
+def join_spatial_units(indicators, spatial_units):
+    return pd.merge(indicators, spatial_units,
+                    left_on="SPUID", right_on="SPUID")
+
+def join_disturbance_types(indicators, disturbance_types):
+    return pd.merge(indicators, disturbance_types,
+                    left_on="DistTypeID", right_on="DistTypeID")
 
 def as_data_frame(query, results_db_path):
     with AccessDB(results_db_path) as results_db:
