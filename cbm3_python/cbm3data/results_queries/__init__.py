@@ -14,8 +14,8 @@ def get_spatial_units_view():
     with open(get_local_path("spatial_units_view.sql")) as f:
         return f.read()
 
-def get_disturbance_indicators_view():
-    with open(get_local_path("disturbance_indicators_view.sql")) as f:
+def get_disturbance_types_view():
+    with open(get_local_path("disturbance_types_view.sql")) as f:
         return f.read()
 
 def build_grouping(table_name,

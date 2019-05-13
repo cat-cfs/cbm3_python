@@ -51,8 +51,9 @@ def load_pool_indicators(results_db_path,
     if classifier_set_grouping:
         df = join_classifiers(df, get_classifier_values(results_db_path))
     if spatial_unit_grouping:
-        df = join_classifiers
-    
+        df = join_spatial_units(df, as_data_frame(
+            results_queries.get_spatial_units_view(),
+            results_db_path))
     return df
 
 
@@ -64,11 +65,18 @@ def load_stock_changes(results_db_path,
     sql = results_queries.get_stock_changes_view(
         disturbance_type_grouping, spatial_unit_grouping,
         classifier_set_grouping, land_class_grouping)
+    df  = as_data_frame(sql, results_db_path)
     if classifier_set_grouping:
-        df  = as_data_frame(sql, results_db_path)
-        return join_classifiers(df, get_classifier_values(results_db_path))
-    else:
-        return as_data_frame(sql, results_db_path)
+        df = join_classifiers(df, get_classifier_values(results_db_path))
+    if spatial_unit_grouping:
+        df = join_spatial_units(df, as_data_frame(
+            results_queries.get_spatial_units_view(),
+            results_db_path))
+    if disturbance_type_grouping:
+        df = join_disturbance_types(df, as_data_frame(
+            results_queries.get_disturbance_types_view(),
+            results_db_path))
+    return df
 
 
 def load_age_indicators(results_db_path,
@@ -78,11 +86,14 @@ def load_age_indicators(results_db_path,
     sql = results_queries.get_age_indicators_view_sql(
         spatial_unit_grouping, classifier_set_grouping,
         land_class_grouping)
+    df  = as_data_frame(sql, results_db_path)
     if classifier_set_grouping:
-        df  = as_data_frame(sql, results_db_path)
-        return join_classifiers(df, get_classifier_values(results_db_path))
-    else:
-        return as_data_frame(sql, results_db_path)
+        df = join_classifiers(df, get_classifier_values(results_db_path))
+    if spatial_unit_grouping:
+        df = join_spatial_units(df, as_data_frame(
+            results_queries.get_spatial_units_view(),
+            results_db_path))
+    return df
 
 
 def load_disturbance_indicators(results_db_path,
@@ -93,11 +104,18 @@ def load_disturbance_indicators(results_db_path,
     sql = results_queries.get_disturbance_indicators_view_sql(
         disturbance_type_grouping, spatial_unit_grouping,
         classifier_set_grouping, land_class_grouping)
+    df  = as_data_frame(sql, results_db_path)
     if classifier_set_grouping:
-        df  = as_data_frame(sql, results_db_path)
-        return join_classifiers(df, get_classifier_values(results_db_path))
-    else:
-        return as_data_frame(sql, results_db_path)
+        df = join_classifiers(df, get_classifier_values(results_db_path))
+    if spatial_unit_grouping:
+        df = join_spatial_units(df, as_data_frame(
+            results_queries.get_spatial_units_view(),
+            results_db_path))
+    if disturbance_type_grouping:
+        df = join_disturbance_types(df, as_data_frame(
+            results_queries.get_disturbance_types_view(),
+            results_db_path))
+    return df
 
 def join_classifiers(indicators, classifiers):
     return pd.merge(
