@@ -22,7 +22,7 @@ sum(tpi.HW_Merch) as [Hardwood Merchantable],
 sum(tpi.HW_Foliage) as [Hardwood Foliage],
 sum(tpi.HW_Other) as [Hardwood Other],
 sum(tpi.HW_Coarse) as [Hardwood Coarse Roots],
-sum(tpi.HW_Fine) as [Hardwood Find Roots],
+sum(tpi.HW_Fine) as [Hardwood Fine Roots],
 sum(tpi.SW_Merch+tpi.SW_Foliage+tpi.SW_Other+tpi.SW_Coarse
     +tpi.SW_Fine+tpi.HW_Merch+tpi.HW_Foliage+tpi.HW_Other 
     +tpi.HW_Coarse+tpi.HW_Fine) as [Total Biomass],
