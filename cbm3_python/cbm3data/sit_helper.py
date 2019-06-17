@@ -25,7 +25,7 @@ class SITConfig(object):
     '''
     Class for working with standard import tool. Can be used to create configurations and import projects
     '''
-    def __init__(self, imported_project_path, initialize_mapping=False):
+    def __init__(self, imported_project_path, initialize_mapping=False, archive_index_db_path=None):
         self.config = {
             "output_path": imported_project_path,
             "mapping_config": {
@@ -40,6 +40,8 @@ class SITConfig(object):
                 "nonforest": None
             }
         }
+        if archive_index_db_path:
+            self.config["archive_index_db_path"] = archive_index_db_path
 
     def save(self, path):
         dir = os.path.dirname(path)
