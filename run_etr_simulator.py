@@ -17,6 +17,9 @@ def main():
                             "containing the baseline project, and run results "
                             "database paths by project prefix")
         parser.add_argument("--local_working_dir", help="local working directory")
+        parser.add_argument("--local_tool_dir", nargs="?", default=None,
+                            help="optional local tool directory. if unspecified a "
+                                 "default in the local_working_dir is used")
         parser.add_argument("--prefix_filter", help="optional comma delimited "
                             "prefixes, if included only the specified projects "
                             "will be included")
@@ -24,6 +27,9 @@ def main():
                            dest="copy_local", help="if present, copy the "
                            "projects and archive index to the local working "
                            "dir")
+        parser.add_argument("--copy_tool_local", action="store_true",
+                           dest="copy_tool_local", help="if present, copy the "
+                           "etr related tools to the local tools dir")
         parser.add_argument("--preprocess", action="store_true",
                            dest="preprocess", help="if present, run the "
                            "pre-processing steps on the local copies of "
@@ -52,7 +58,10 @@ def main():
         config_path = os.path.abspath(args.configuration)
         base_path_config_file = os.path.abspath(args.nir_base_path_config)
         local_working_dir = os.path.abspath(args.local_working_dir)
-        es = ETRSimulator(config_path, base_path_config_file, local_working_dir)
+        local_tools_dir = None
+        if args.local_tool_dir:
+            local_tools_dir = os.path.abspath(args.local_tool_dir)
+        es = ETRSimulator(config_path, base_path_config_file, local_working_dir, local_tools_dir)
 
         logpath = os.path.join(local_working_dir,
                  "{0}_{1}.log".format(date_stamp, es.config["Name"]))
@@ -61,6 +70,7 @@ def main():
         es.run(
                args.prefix_filter,
                args.copy_local,
+               args.copy_tool_local,
                args.preprocess,
                args.simulate,
                args.rollup,

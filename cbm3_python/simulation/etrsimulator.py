@@ -18,7 +18,8 @@ def load_json(path):
 
 class ETRSimulator():
 
-    def __init__(self, config_path, base_path_config_file, local_working_dir):
+
+    def __init__(self, config_path, base_path_config_file, local_working_dir, local_tool_dir=None):
         self.config = load_json(config_path)
         self.local_working_dir = local_working_dir
         
@@ -28,10 +29,10 @@ class ETRSimulator():
         self.config["local_working_dir"] = local_working_dir
         self.ns = NIRSimulator(self.config, nirpathconfig.load(base_path_config_file))
 
-        if not "local_tool_dir" in self.config:
+        if not local_tool_dir:
             self.local_tools_dir = os.path.join(local_working_dir, "tools")
         else:
-            self.local_tools_dir = self.config["local_tool_dir"]
+            self.local_tools_dir = local_tool_dir
 
         dg_config = self.get_disturbance_generator_config()
         if dg_config is not None:
@@ -58,19 +59,30 @@ class ETRSimulator():
         return project_prefixes
 
 
-    def copy_tool_local(self, original_path):
-        local_dir = os.path.join(
+    def get_local_tool_dir(self, original_path):
+        return os.path.join(
             self.local_tools_dir,
             os.path.splitext(
                 os.path.basename(original_path))[0])
+
+
+    def get_local_tool_path(self, original_path):
+        local_dir = self.get_local_tool_dir(original_path)
         local_path = os.path.join(
             local_dir,
             os.path.basename(original_path))
+        return local_path
+
+
+    def copy_tool_local(self, original_path):
+        local_dir = self.get_local_tool_dir(original_path)
         if not os.path.exists(local_dir):
             logging.info("copying {0} to {1}".format(original_path,local_dir))
             shutil.copytree(src=os.path.dirname(original_path),
                             dst=local_dir)
-        return local_path
+        else:
+            raise ValueError("local tool {0} already found, clear working and tool directories first"
+                             .format(local_dir))
 
 
     def run_disturbance_extender(self, project_path):
@@ -116,7 +128,7 @@ class ETRSimulator():
         if disturbance_generator_config is not None:
             logging.info("running disturbance generator")
 
-            dg_path = self.copy_tool_local(disturbance_generator_config["ExePath"])
+            dg_path = self.get_local_tool_path(disturbance_generator_config["ExePath"])
 
             disturbancegenerator = DisturbanceGeneratorConfig(
                 os.path.abspath(dg_path),
@@ -130,14 +142,16 @@ class ETRSimulator():
             self.dg_checker.check(project_prefix, project_path)
         else: logging.info("disturbance generator skipped")
 
+
     def run_nir_sql(self, project_path):
         with AccessDB(project_path, False) as nir_project_db:
             sql_run_length = nir_project_queries.sql_set_run_project_run_length(
                 self.config["numTimeSteps"])
             nir_project_db.ExecuteQuery(query=sql_run_length[0],
-                                       params=sql_run_length[1])
+                                        params=sql_run_length[1])
             nir_project_queries.run_simulation_id_cleanup(nir_project_db)
             nir_project_queries.update_random_seed(nir_project_db)
+
 
     def run_nir_sql_af(self, project_path):
         with AccessDB(project_path, False) as nir_project_db:
@@ -147,7 +161,8 @@ class ETRSimulator():
                                        params=sql_run_length[1])
             nir_project_queries.run_simulation_id_cleanup(nir_project_db)
 
-    def run(self, prefix_filter, copy_local, preprocess, simulate, rollup, hwp_input, 
+
+    def run(self, prefix_filter, copy_local, copy_tool_local, preprocess, simulate, rollup, hwp_input, 
             qaqc, copy_to_final_results_dir, date_stamp):
 
         project_prefixes = self.load_project_prefixes(prefix_filter)
@@ -158,8 +173,12 @@ class ETRSimulator():
             for p in project_prefixes:
                 self.ns.copy_project_local(p)
 
-            logging.info("copying tools to local working dir")
-
+        if copy_tool_local:
+            logging.info("copying tools to local dir")
+            self.copy_tool_local(self.config["QaqcExecutablePath"])
+            dgconfig = self.get_disturbance_generator_config()
+            if dgconfig is not None:
+                self.copy_tool_local(dgconfig["ExePath"])
 
         if preprocess:
             for p in project_prefixes:
@@ -201,7 +220,7 @@ class ETRSimulator():
                 local_dir = self.ns.get_local_project_dir(p)
                 label = "{0}_{1}".format(p, self.config["Name"])
                 cbm3_python.simulation.tools.qaqc.run_qaqc(
-                    executable_path = self.copy_tool_local(self.config["QaqcExecutablePath"]),
+                    executable_path = self.get_local_tool_path(self.config["QaqcExecutablePath"]),
                     query_template_path = self.config["QaqcQueryTemplatePath"],
                     excel_template_path = self.config["QaqcExcelTemplatePath"],
                     excel_output_path = os.path.join(local_dir, "{}_qaqc.xlsx".format(label)),
