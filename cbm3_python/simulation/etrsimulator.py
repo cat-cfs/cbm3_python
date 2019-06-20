@@ -28,7 +28,10 @@ class ETRSimulator():
         self.config["local_working_dir"] = local_working_dir
         self.ns = NIRSimulator(self.config, nirpathconfig.load(base_path_config_file))
 
-        self.local_tools_dir = os.path.join(local_working_dir, "tools")
+        if not "local_tool_dir" in self.config:
+            self.local_tools_dir = os.path.join(local_working_dir, "tools")
+        else:
+            self.local_tools_dir = self.config["local_tool_dir"]
 
         dg_config = self.get_disturbance_generator_config()
         if dg_config is not None:
