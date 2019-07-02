@@ -78,6 +78,27 @@ def load_stock_changes(results_db_path,
             results_db_path))
     return df
 
+def load_flux_indicators(results_db_path,
+        disturbance_type_grouping=False,
+        spatial_unit_grouping=False,
+        classifier_set_grouping=False,
+        land_class_grouping=False):
+    sql = results_queries.get_flux_indicators_view(
+        disturbance_type_grouping, spatial_unit_grouping,
+        classifier_set_grouping, land_class_grouping)
+    df  = as_data_frame(sql, results_db_path)
+    if classifier_set_grouping:
+        df = join_classifiers(df, get_classifier_values(results_db_path))
+    if spatial_unit_grouping:
+        df = join_spatial_units(df, as_data_frame(
+            results_queries.get_spatial_units_view(),
+            results_db_path))
+    if disturbance_type_grouping:
+        df = join_disturbance_types(df, as_data_frame(
+            results_queries.get_disturbance_types_view(),
+            results_db_path))
+    return df
+
 
 def load_age_indicators(results_db_path,
         spatial_unit_grouping=False,
