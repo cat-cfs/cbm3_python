@@ -6,15 +6,19 @@ from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
 
-def load_standard_import_tool_plugin():
+def load_standard_import_tool_plugin(local_dir=None):
     '''
-    Download the 1.2.2.1 release of StandardImportToolPlugin from Github and unzip it locally.
+    Download the 1.3.0.1 release of StandardImportToolPlugin from Github and unzip it locally.
+    
+    If the arg local_dir is specified, the tool is downloaded to that
+    directory, and otherwise it is downloaded to {cwd}\StandardImportToolPlugin
     '''
-    StandardImportToolPluginDir = os.path.join(".","StandardImportToolPlugin")
+    StandardImportToolPluginDir = os.path.join(".","StandardImportToolPlugin") \
+        if local_dir is None else local_dir
     #extra subdir in the archive
     StandardImportToolPluginExe = os.path.join(StandardImportToolPluginDir,"Release", "StandardImportToolPlugin.exe")
     if not os.path.exists(StandardImportToolPluginExe):
-        resp = urlopen('https://github.com/cat-cfs/StandardImportToolPlugin/releases/download/1.2.2.1/Release.zip')
+        resp = urlopen('https://github.com/cat-cfs/StandardImportToolPlugin/releases/download/1.3.0.1/Release.zip')
         zipfile = ZipFile(BytesIO(resp.read()))
 
         #os.makedirs(StandardImportToolPluginDir)
