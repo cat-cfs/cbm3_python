@@ -1,0 +1,6 @@
+pyodbc
+pywin32
+pandas
+numpy
+xlrd
+matplotlib

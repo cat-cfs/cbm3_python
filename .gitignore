@@ -5,3 +5,6 @@
 
 # IDE files #
 /.idea
+/dist
+/build
+/cbm3_python.egg-info
