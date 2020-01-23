@@ -39,7 +39,7 @@ class Rollup(object):
         self.OutputPath = outputPath
         self.AIDBPath = aidbpath
 
-    def Roll(self):
+    def Roll(self, include_predist_age=False):
         sqlMakeAgeInd = \
             """
             CREATE TABLE tblAgeIndicators (
@@ -501,8 +501,9 @@ class Rollup(object):
                 logging.info("running pool indicators query on project {0}".format(project))
                 rollup.ExecuteQuery(sqlPoolIndInc)
 
-                logging.info("running pre dist ages query on project {0}".format(project))
-                rollup.ExecuteQuery(sql_predistage.format(project))
+                if include_predist_age:
+                    logging.info("running pre dist ages query on project {0}".format(project))
+                    rollup.ExecuteQuery(sql_predistage.format(project))
 
             logging.info('I worked')
 
