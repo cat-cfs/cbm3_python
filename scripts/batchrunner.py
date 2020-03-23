@@ -5,7 +5,7 @@ import os, logging
 from cbm3_python.util import loghelper
 from cbm3_python.simulation.batchrunner import BatchRunner
 
-if __name__ == '__main__':
+def main():
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -54,3 +54,6 @@ if __name__ == '__main__':
     except Exception as ex:
         logging.exception("error in batchrunner")
         raise ex
+        
+if __name__ == '__main__':
+    main()

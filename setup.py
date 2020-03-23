@@ -37,6 +37,14 @@ setup(
         "cbm3_python":
             access_templates + results_queries
     },
+    entry_points={
+        "console_scripts": [
+            "cbm3_batch_runner = cbm3_python.scripts.batchrunner:main",
+            "cbm3_create_nir_path_config = cbm3_python.scripts.create_nir_path_config:main",
+            "cbm3_run_etr_simulator = cbm3_python.scripts.run_etr_simulator:main",
+            "cbm3_simulate = cbm3_python.scripts.simulate:main"
+        ]
+    },
     install_requires=requirements
 )
 
