@@ -10,17 +10,10 @@ def get_classifier_values(results_path):
     indexed collection to serve for labels, grouping and filtering CBM results tables
     '''
     sql= results_queries.get_classifiers_view()
-    columns = OrderedDict([("UserDefdClassSetID",[])])
-    with AccessDB(results_path) as rrdb:
-        for row in rrdb.Query(sql):
-            if len(columns["UserDefdClassSetID"]) == 0 or \
-                columns["UserDefdClassSetID"][-1] != row.UserDefdClassSetID:
-                columns["UserDefdClassSetID"].append(row.UserDefdClassSetID)
-            if row.ClassDesc in columns:
-                columns[row.ClassDesc].append(row.UserDefdSubClassName)
-            else:
-                columns[row.ClassDesc] = [row.UserDefdSubClassName]
-    return pd.DataFrame(columns)
+    df  = as_data_frame(sql, results_path)
+    return df.pivot(
+        index="UserDefdClassSetID", columns="ClassDesc",
+        values="UserDefdSubClassName")
 
 
 def pivot(df, group_col, pivot_col):
