@@ -1,9 +1,9 @@
-SELECT 
-tai.TimeStep,{0}
-sum(tai.Area) as [Area],
-sum(tai.Biomass * tai.Area)/sum(tai.Area) as [Average Biomass],
-sum(tai.DOM * tai.Area)/sum(tai.Area) as [Average DOM],
-sum(tai.AveAge * tai.Area)/sum(tai.Area) as [Average Age]
-from tblAgeIndicators tai
-group by tai.TimeStep{1}
-order by tai.TimeStep{1}
+SELECT tai.TimeStep, tblAgeClasses.AgeRange,{0}
+Sum(tai.Area) AS Area,
+Sum(tai.Biomass*tai.Area)/Sum(tai.Area) AS [Average Biomass],
+Sum(tai.DOM*tai.Area)/Sum(tai.Area) AS [Average DOM],
+Sum(tai.AveAge*tai.Area)/Sum(tai.Area) AS [Average Age]
+FROM tblAgeIndicators AS tai INNER JOIN tblAgeClasses
+    ON tai.AgeClassID = tblAgeClasses.AgeClassID
+GROUP BY tai.TimeStep, tblAgeClasses.AgeClassID, tblAgeClasses.AgeRange{1}
+ORDER BY tai.TimeStep, tblAgeClasses.AgeClassID{1}
