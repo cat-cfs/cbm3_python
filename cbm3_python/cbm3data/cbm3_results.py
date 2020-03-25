@@ -16,24 +16,6 @@ def get_classifier_values(results_path):
         values="UserDefdSubClassName")
 
 
-def pivot(df, group_col, pivot_col):
-
-    unique_values = df[pivot_col].unique()
-    value_cols = set(list(df)) - set([pivot_col])
-    outList = []
-    for item in unique_values:
-        subset = df.loc[df[pivot_col]==item][value_cols].groupby(group_col).sum()
-        pivot_headers = ["{pivot_col}: {pivot_val} {variable}"
-                         .format(
-                            pivot_col=pivot_col,
-                            pivot_val=item,
-                            variable=x) for x in subset.columns.values]
-        subset.columns = pivot_headers
-        outList.append(subset)
-    output = pd.concat(outList, axis=1)
-    return output
-
-
 def load_pool_indicators(results_db_path,
         spatial_unit_grouping=False,
         classifier_set_grouping=False,
