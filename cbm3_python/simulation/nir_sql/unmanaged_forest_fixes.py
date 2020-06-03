@@ -2,17 +2,25 @@
 #  as represented by the Minister of Natural Resources Canada
 
 from cbm3_python.cbm3data.accessdb import AccessDB
-import logging
+
 
 def run_uf_results_fixes(uf_rrdb_path):
 
+    sql = [
+        "CREATE TABLE tblFixLandClasses "
+        "(FromClass Int, OldToClass Int, NewToClass Int);",
 
-    sql =[
-        "CREATE TABLE tblFixLandClasses (FromClass Int, OldToClass Int, NewToClass Int);",
-        "INSERT INTO tblFixLandClasses (FromClass,OldToClass,NewToClass) VALUES (16,13,19);",
-        "INSERT INTO tblFixLandClasses (FromClass,OldToClass,NewToClass) VALUES (16,14,20);",
-        "INSERT INTO tblFixLandClasses (FromClass,OldToClass,NewToClass) VALUES (19,0,3);",
-        "INSERT INTO tblFixLandClasses (FromClass,OldToClass,NewToClass) VALUES (20,0,4);",
+        "INSERT INTO tblFixLandClasses "
+        "(FromClass,OldToClass,NewToClass) VALUES (16,13,19);",
+
+        "INSERT INTO tblFixLandClasses "
+        "(FromClass,OldToClass,NewToClass) VALUES (16,14,20);",
+
+        "INSERT INTO tblFixLandClasses "
+        "(FromClass,OldToClass,NewToClass) VALUES (19,0,3);",
+
+        "INSERT INTO tblFixLandClasses "
+        "(FromClass,OldToClass,NewToClass) VALUES (20,0,4);",
 
         """UPDATE tblAgeIndicators
         INNER JOIN tblFixLandClasses
@@ -35,7 +43,8 @@ def run_uf_results_fixes(uf_rrdb_path):
         """UPDATE tblNIRSpecialOutput INNER JOIN tblFixLandClasses
         ON (tblNIRSpecialOutput.LandClass_To=tblFixLandClasses.OldToClass)
         AND (tblNIRSpecialOutput.LandClass_From=tblFixLandClasses.FromClass)
-        SET tblNIRSpecialOutput.LandClass_To = tblFixLandClasses.NewToClass;""",
+        SET tblNIRSpecialOutput.LandClass_To =
+            tblFixLandClasses.NewToClass;""",
 
         """
         UPDATE tblPoolIndicators INNER JOIN tblFixLandClasses
@@ -51,7 +60,3 @@ def run_uf_results_fixes(uf_rrdb_path):
     with AccessDB(uf_rrdb_path) as rrdb:
         for q in sql:
             rrdb.ExecuteQuery(q)
-
-
-
-

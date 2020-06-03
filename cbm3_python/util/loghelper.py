@@ -3,7 +3,8 @@
 
 import logging
 
-def start_logging(fn=".\\script.log",fmode='w', use_console=True):
+
+def start_logging(fn=".\\script.log", fmode='w', use_console=True):
     #set up logging to print to console window and to log file
     #
     # From http://docs.python.org/2/howto/logging-cookbook.html#logging-cookbook

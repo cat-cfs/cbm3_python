@@ -1,33 +1,43 @@
 
-import os, shutil, json, logging
+import os
+import shutil
+import json
+import logging
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.simulation.nirsimulator import NIRSimulator
 import cbm3_python.simulation.nirpathconfig as nirpathconfig
 from cbm3_python.simulation.nir_sql import nir_project_queries
 from cbm3_python.simulation.nir_sql import hwpinput
-from cbm3_python.simulation.tools.avgdisturbanceextender import AvgDisturbanceExtender
-from cbm3_python.simulation.tools.disturbanceextender import DisturbanceExtender
-from cbm3_python.simulation.tools.disturbancegeneratorconfig import DisturbanceGeneratorConfig
-from cbm3_python.simulation.tools.disturbanceextension import DisturbanceExtension
+from cbm3_python.simulation.tools.avgdisturbanceextender import \
+    AvgDisturbanceExtender
+from cbm3_python.simulation.tools.disturbanceextender import \
+    DisturbanceExtender
+from cbm3_python.simulation.tools.disturbancegeneratorconfig import \
+    DisturbanceGeneratorConfig
+from cbm3_python.simulation.tools.disturbanceextension import \
+    DisturbanceExtension
 import cbm3_python.simulation.tools.qaqc
 from cbm3_python.simulation.tools.dgchecker import DGChecker
+
 
 def load_json(path):
     with open(path, 'r') as f:
         return json.loads(f.read())
 
+
 class ETRSimulator():
 
-
-    def __init__(self, config_path, base_path_config_file, local_working_dir, local_tool_dir=None):
+    def __init__(self, config_path, base_path_config_file, local_working_dir,
+                 local_tool_dir=None):
         self.config = load_json(config_path)
         self.local_working_dir = local_working_dir
-        
+
         if not os.path.exists(local_working_dir):
             os.makedirs(local_working_dir)
 
         self.config["local_working_dir"] = local_working_dir
-        self.ns = NIRSimulator(self.config, nirpathconfig.load(base_path_config_file))
+        self.ns = NIRSimulator(self.config, nirpathconfig.load(
+            base_path_config_file))
 
         if not local_tool_dir:
             self.local_tools_dir = os.path.join(local_working_dir, "tools")
@@ -36,18 +46,18 @@ class ETRSimulator():
 
         dg_config = self.get_disturbance_generator_config()
         if dg_config is not None:
-            self.dg_checker =  DGChecker(
+            self.dg_checker = DGChecker(
                 dg_config["DefaultsPath"],
                 dg_config["Tasks"])
         else:
             self.dg_checker = None
 
-
     def load_project_prefixes(self, prefix_filter):
         if prefix_filter:
-            #check that the user provided filter items actually exist in the config
+            # check that the user provided filter items actually exist in the
+            # config
             for x in prefix_filter.split(","):
-                if not x in self.config["project_prefixes"]:
+                if x not in self.config["project_prefixes"]:
                     raise AssertionError(
                         "specified prefix filter item {} does not exist in "
                         "configuration project_prefixes".format(x))
@@ -58,13 +68,11 @@ class ETRSimulator():
                 if x in prefix_filter.split(",")]
         return project_prefixes
 
-
     def get_local_tool_dir(self, original_path):
         return os.path.join(
             self.local_tools_dir,
             os.path.splitext(
                 os.path.basename(original_path))[0])
-
 
     def get_local_tool_path(self, original_path):
         local_dir = self.get_local_tool_dir(original_path)
@@ -73,28 +81,34 @@ class ETRSimulator():
             os.path.basename(original_path))
         return local_path
 
-
     def copy_tool_local(self, original_path):
         local_dir = self.get_local_tool_dir(original_path)
         if not os.path.exists(local_dir):
-            logging.info("copying {0} to {1}".format(original_path,local_dir))
+            logging.info(
+                "copying {0} to {1}".format(original_path, local_dir))
             shutil.copytree(src=os.path.dirname(original_path),
                             dst=local_dir)
         else:
-            raise ValueError("local tool {0} already found, clear working and tool directories first"
-                             .format(local_dir))
-
+            raise ValueError(
+                f"local tool {local_dir} already found, clear working and "
+                "tool directories first")
 
     def run_disturbance_extender(self, project_path):
         with AccessDB(project_path, False) as nir_project_db:
             events_to_delete = self.config["EventsToDelete"]
             if len(events_to_delete) > 0:
-                sql_delete_events = nir_project_queries.sql_delete_disturbance_events(events_to_delete)
-                nir_project_db.ExecuteQuery(query=sql_delete_events[0], params=sql_delete_events[1])
+                sql_delete_events = \
+                    nir_project_queries.sql_delete_disturbance_events(
+                        events_to_delete)
+                nir_project_db.ExecuteQuery(
+                    query=sql_delete_events[0], params=sql_delete_events[1])
 
             post_delete_year = self.config["postDeleteYear"]
-            sql_post_delete_year = nir_project_queries.sql_delete_post_year_events(post_delete_year)
-            nir_project_db.ExecuteQuery(query=sql_post_delete_year[0], params=sql_post_delete_year[1])
+            sql_post_delete_year = \
+                nir_project_queries.sql_delete_post_year_events(
+                    post_delete_year)
+            nir_project_db.ExecuteQuery(
+                query=sql_post_delete_year[0], params=sql_post_delete_year[1])
 
             disturbance_extender_config = self.config["DisturbanceExtender"]
             if isinstance(disturbance_extender_config, list):
@@ -102,7 +116,7 @@ class ETRSimulator():
                 simpleDisturbanceExtender = DisturbanceExtender()
                 logging.info("running disturbance extender")
                 for mode, extender in (("Simple", simpleDisturbanceExtender),
-                                        ("Avg", avgDisturbanceExtender)):
+                                       ("Avg", avgDisturbanceExtender)):
                     disturbanceExtensions = [DisturbanceExtension(
                             extension["Name"],
                             defaultDistTypeIDs=extension["DisturbanceTypeIDs"],
@@ -112,8 +126,8 @@ class ETRSimulator():
                         if extension["Mode"] == mode]
                     extender.Run(nir_project_db, disturbanceExtensions)
                 logging.info("disturbance extender finished")
-            else: logging.info("disturbance extender skipped")
-
+            else:
+                logging.info("disturbance extender skipped")
 
     def get_disturbance_generator_config(self):
         disturbance_generator_config = self.config["DisturbanceGenerator"]
@@ -122,13 +136,13 @@ class ETRSimulator():
         else:
             return None
 
-
     def run_disturbance_generator(self, project_prefix, project_path):
         disturbance_generator_config = self.get_disturbance_generator_config()
         if disturbance_generator_config is not None:
             logging.info("running disturbance generator")
 
-            dg_path = self.get_local_tool_path(disturbance_generator_config["ExePath"])
+            dg_path = self.get_local_tool_path(
+                disturbance_generator_config["ExePath"])
 
             disturbancegenerator = DisturbanceGeneratorConfig(
                 os.path.abspath(dg_path),
@@ -138,32 +152,36 @@ class ETRSimulator():
                 project_prefix, project_path)
             disturbancegenerator.Run()
             logging.info("disturbance generator finished")
-            logging.info("checking disturbance generator output for {0}".format(project_prefix))
+            logging.info(
+                "checking disturbance generator output for {0}".format(
+                    project_prefix))
             self.dg_checker.check(project_prefix, project_path)
-        else: logging.info("disturbance generator skipped")
-
+        else:
+            logging.info("disturbance generator skipped")
 
     def run_nir_sql(self, project_path):
         with AccessDB(project_path, False) as nir_project_db:
-            sql_run_length = nir_project_queries.sql_set_run_project_run_length(
-                self.config["numTimeSteps"])
+            sql_run_length = \
+                nir_project_queries.sql_set_run_project_run_length(
+                    self.config["numTimeSteps"])
             nir_project_db.ExecuteQuery(query=sql_run_length[0],
                                         params=sql_run_length[1])
             nir_project_queries.run_simulation_id_cleanup(nir_project_db)
             nir_project_queries.update_random_seed(nir_project_db)
 
-
     def run_nir_sql_af(self, project_path):
         with AccessDB(project_path, False) as nir_project_db:
-            sql_run_length = nir_project_queries.sql_set_run_project_run_length(
-                self.config["af_end_year"]-self.config["af_start_year"] + 1)
-            nir_project_db.ExecuteQuery(query=sql_run_length[0],
-                                       params=sql_run_length[1])
+            sql_run_length = \
+                nir_project_queries.sql_set_run_project_run_length(
+                    self.config["af_end_year"] -
+                    self.config["af_start_year"] + 1)
+            nir_project_db.ExecuteQuery(
+                query=sql_run_length[0], params=sql_run_length[1])
             nir_project_queries.run_simulation_id_cleanup(nir_project_db)
 
-
-    def run(self, prefix_filter, copy_local, copy_tool_local, preprocess, simulate, rollup, hwp_input, 
-            qaqc, copy_to_final_results_dir, date_stamp):
+    def run(self, prefix_filter, copy_local, copy_tool_local, preprocess,
+            simulate, rollup, hwp_input, qaqc, copy_to_final_results_dir,
+            date_stamp):
 
         project_prefixes = self.load_project_prefixes(prefix_filter)
 
@@ -188,7 +206,7 @@ class ETRSimulator():
                     self.run_nir_sql_af(local_project_path)
                 else:
                     self.run_disturbance_extender(local_project_path)
-                    self.run_disturbance_generator(p,local_project_path)
+                    self.run_disturbance_generator(p, local_project_path)
                     self.run_nir_sql(local_project_path)
                 logging.info("finished pre-processing {}".format(p))
 
@@ -196,21 +214,26 @@ class ETRSimulator():
             for p in project_prefixes:
                 logging.info("simulating {}".format(p))
                 self.ns.run_cbm(p)
-                logging.info("finished simulating {}. processing results".format(p))
+                logging.info(
+                    "finished simulating {}. processing results".format(p))
                 self.ns.run_results_post_processing(p)
                 logging.info("{} simulation finished".format(p))
 
         if rollup:
-            rrdbs = [self.ns.get_local_results_path(p) for p in project_prefixes]
-            logging.info("rolling up results dbs \n    {}".format("\n    ".join(rrdbs)))
+            rrdbs = [
+                self.ns.get_local_results_path(p) for p in project_prefixes]
+            logging.info(
+                "rolling up results dbs \n    {}".format("\n    ".join(rrdbs)))
             self.ns.do_rollup(rrdbs)
 
         if hwp_input:
-            logging.info("generating hwp input in dir {}".format(self.local_working_dir))
+            logging.info(
+                "generating hwp input in dir {}"
+                .format(self.local_working_dir))
             with AccessDB(self.ns.get_local_rollup_db_path()) as rollupDB:
                 hwpinput.GeneratHWPInput(
                     rollupDB=rollupDB,
-                    workingDir = self.local_working_dir)
+                    workingDir=self.local_working_dir)
             logging.info("generate hwp finished")
 
         if qaqc:
@@ -219,29 +242,38 @@ class ETRSimulator():
             for p in project_prefixes:
                 local_dir = self.ns.get_local_project_dir(p)
                 label = "{0}_{1}".format(p, self.config["Name"])
-                cbm3_python.simulation.tools.qaqc.run_qaqc(
-                    executable_path = self.get_local_tool_path(self.config["QaqcExecutablePath"]),
-                    query_template_path = self.config["QaqcQueryTemplatePath"],
-                    excel_template_path = self.config["QaqcExcelTemplatePath"],
-                    excel_output_path = os.path.join(local_dir, "{}_qaqc.xlsx".format(label)),
-                    work_sheet_tasks = cbm3_python.simulation.tools.qaqc.get_nir_worksheet_tasks(
-                        RRDB_A_Label = "base_run",
-                        RRDB_A_Path = self.ns.get_base_run_results_path(p),
-                        RRDB_B_Label = label,
-                        RRDB_B_Path = self.ns.get_local_results_path(p),
-                        ProjectLabel = label,
-                        ProjectPath = self.ns.get_local_project_path(p),
+
+                work_sheet_tasks = \
+                    cbm3_python.simulation.tools.qaqc.get_nir_worksheet_tasks(
+                        RRDB_A_Label="base_run",
+                        RRDB_A_Path=self.ns.get_base_run_results_path(p),
+                        RRDB_B_Label=label,
+                        RRDB_B_Path=self.ns.get_local_results_path(p),
+                        ProjectLabel=label,
+                        ProjectPath=self.ns.get_local_project_path(p),
                         GWP_CH4=self.config["GWP_CH4"],
-                        GWP_N2O=self.config["GWP_N2O"]))
+                        GWP_N2O=self.config["GWP_N2O"])
+
+                cbm3_python.simulation.tools.qaqc.run_qaqc(
+                    executable_path=self.get_local_tool_path(
+                        self.config["QaqcExecutablePath"]),
+                    query_template_path=self.config["QaqcQueryTemplatePath"],
+                    excel_template_path=self.config["QaqcExcelTemplatePath"],
+                    excel_output_path=os.path.join(
+                        local_dir, "{}_qaqc.xlsx".format(label)),
+                    work_sheet_tasks=work_sheet_tasks)
             logging.info("generating qaqc spreadsheets finished")
 
         if copy_to_final_results_dir:
 
-            final_results_dir = os.path.abspath(self.config["final_results_dir"])
+            final_results_dir = os.path.abspath(
+                self.config["final_results_dir"])
             if not os.path.exists(final_results_dir):
                 os.makedirs(final_results_dir)
             final_results_subdir = os.path.join(final_results_dir, date_stamp)
-            logging.info("copying all contents of '{src}' to '{dest}'"
-                         .format(src=self.local_working_dir, dest=final_results_subdir))
+            logging.info(
+                "copying all contents of '{src}' to '{dest}'".format(
+                    src=self.local_working_dir,
+                    dest=final_results_subdir))
             shutil.copytree(self.local_working_dir, final_results_subdir)
             logging.info("finished copying")

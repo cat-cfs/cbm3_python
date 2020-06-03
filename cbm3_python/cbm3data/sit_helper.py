@@ -1,35 +1,46 @@
-#Copyright (C) Her Majesty the Queen in Right of Canada,
-#as represented by the Minister of Natural Resources Canada
+# Copyright (C) Her Majesty the Queen in Right of Canada,
+# as represented by the Minister of Natural Resources Canada
 
-import os, subprocess, json, tempfile
+import os
+import subprocess
+import json
+import tempfile
 from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
 
+
 def load_standard_import_tool_plugin(local_dir=None):
     '''
-    Download the 1.3.0.1 release of StandardImportToolPlugin from Github and unzip it locally.
-    
+    Download the 1.3.0.1 release of StandardImportToolPlugin from Github and
+    unzip it locally.
+
     If the arg local_dir is specified, the tool is downloaded to that
-    directory, and otherwise it is downloaded to {cwd}\StandardImportToolPlugin
+    directory, and otherwise it is downloaded to {cwd}/StandardImportToolPlugin
     '''
-    StandardImportToolPluginDir = os.path.join(".","StandardImportToolPlugin") \
+    StandardImportToolPluginDir = os.path.join(
+        ".", "StandardImportToolPlugin") \
         if local_dir is None else local_dir
-    #extra subdir in the archive
-    StandardImportToolPluginExe = os.path.join(StandardImportToolPluginDir,"Release", "StandardImportToolPlugin.exe")
+    # extra subdir in the archive
+    StandardImportToolPluginExe = os.path.join(
+        StandardImportToolPluginDir, "Release", "StandardImportToolPlugin.exe")
     if not os.path.exists(StandardImportToolPluginExe):
-        resp = urlopen('https://github.com/cat-cfs/StandardImportToolPlugin/releases/download/1.3.0.1/Release.zip')
+        resp = urlopen(
+            'https://github.com/cat-cfs/StandardImportToolPlugin/releases'
+            '/download/1.3.0.1/Release.zip')
         zipfile = ZipFile(BytesIO(resp.read()))
 
-        #os.makedirs(StandardImportToolPluginDir)
         zipfile.extractall(path=StandardImportToolPluginDir)
     return StandardImportToolPluginExe
 
+
 class SITConfig(object):
     '''
-    Class for working with standard import tool. Can be used to create configurations and import projects
+    Class for working with standard import tool. Can be used to create
+    configurations and import projects
     '''
-    def __init__(self, imported_project_path, initialize_mapping=False, archive_index_db_path=None):
+    def __init__(self, imported_project_path, initialize_mapping=False,
+                 archive_index_db_path=None):
         self.config = {
             "output_path": imported_project_path,
             "mapping_config": {
@@ -58,67 +69,87 @@ class SITConfig(object):
         if config_save_path is None:
             with tempfile.NamedTemporaryFile(mode='w') as f:
                 f.write(json.dumps(self.config))
-                subprocess.check_call([exe_path,'-c', f.name])
+                subprocess.check_call([exe_path, '-c', f.name])
         else:
             self.save(config_save_path)
-            subprocess.check_call([exe_path,'-c', config_save_path])
+            subprocess.check_call([exe_path, '-c', config_save_path])
 
     def set_species_classifier(self, name):
         self.config["mapping_config"]["species"]["species_classifier"] = name
 
     def set_single_spatial_unit(self, id):
         self.config["mapping_config"]["spatial_units"] = {}
-        self.config["mapping_config"]["spatial_units"]["mapping_mode"] = "SingleDefaultSpatialUnit"
+        self.config["mapping_config"]["spatial_units"]["mapping_mode"] \
+            = "SingleDefaultSpatialUnit"
         self.config["mapping_config"]["spatial_units"]["default_spuid"] = id
 
     def set_admin_eco_mapping(self, admin_classifier, eco_classifier):
         self.config["mapping_config"]["spatial_units"] = {}
-        self.config["mapping_config"]["spatial_units"]["mapping_mode"] = "SeperateAdminEcoClassifiers"
-        self.config["mapping_config"]["spatial_units"]["admin_classifier"] = admin_classifier
-        self.config["mapping_config"]["spatial_units"]["eco_classifier"] = eco_classifier
+        self.config["mapping_config"]["spatial_units"]["mapping_mode"] = \
+            "SeperateAdminEcoClassifiers"
+        self.config["mapping_config"]["spatial_units"]["admin_classifier"] = \
+            admin_classifier
+        self.config["mapping_config"]["spatial_units"]["eco_classifier"] = \
+            eco_classifier
 
     def set_spatial_unit_mapping(self, spatial_unit_classifier):
         self.config["mapping_config"]["spatial_units"] = {}
-        self.config["mapping_config"]["spatial_units"]["mapping_mode"] = "JoinedAdminEcoClassifier"
-        self.config["mapping_config"]["spatial_units"]["spu_classifier"] = spatial_unit_classifier
+        self.config["mapping_config"]["spatial_units"]["mapping_mode"] = \
+            "JoinedAdminEcoClassifier"
+        self.config["mapping_config"]["spatial_units"]["spu_classifier"] = \
+            spatial_unit_classifier
 
     def set_non_forest_classifier(self, non_forest_classifier):
         self.config["mapping_config"]["nonforest"] = {}
-        self.config["mapping_config"]["nonforest"]["nonforest_classifier"] = non_forest_classifier
+        self.config["mapping_config"]["nonforest"]["nonforest_classifier"] = \
+            non_forest_classifier
 
     def map_disturbance_type(self, user, default):
         if self.config["mapping_config"]["disturbance_types"] is None:
             self.config["mapping_config"]["disturbance_types"] = {}
-            self.config["mapping_config"]["disturbance_types"]["disturbance_type_mapping"] = []
-        self.config["mapping_config"]["disturbance_types"]["disturbance_type_mapping"].append({
-            "user_dist_type": user,
-            "default_dist_type": default
-        })
+            self.config[
+                "mapping_config"]["disturbance_types"][
+                    "disturbance_type_mapping"] = []
+        self.config[
+            "mapping_config"]["disturbance_types"][
+                "disturbance_type_mapping"].append({
+                    "user_dist_type": user,
+                    "default_dist_type": default})
 
     def map_admin_boundary(self, user, default):
-        if self.config["mapping_config"]["spatial_units"]["mapping_mode"] != "SeperateAdminEcoClassifiers":
-            raise ValueError("cannot map admin boundary without admin/eco classifier mapping set")
-        if not "admin_mapping" in self.config["mapping_config"]["spatial_units"]:
-            self.config["mapping_config"]["spatial_units"]["admin_mapping"] = []
-        self.config["mapping_config"]["spatial_units"]["admin_mapping"].append({
-            "user_admin_boundary": user,
-            "default_admin_boundary": default
-        })
+        if self.config["mapping_config"]["spatial_units"]["mapping_mode"] \
+                != "SeperateAdminEcoClassifiers":
+            raise ValueError(
+                "cannot map admin boundary without admin/eco classifier "
+                "mapping set")
+        if "admin_mapping" not in self.config[
+                "mapping_config"]["spatial_units"]:
+            self.config["mapping_config"]["spatial_units"]["admin_mapping"] = \
+                []
+        self.config[
+            "mapping_config"]["spatial_units"]["admin_mapping"].append({
+                "user_admin_boundary": user,
+                "default_admin_boundary": default})
 
     def map_eco_boundary(self, user, default):
-        if self.config["mapping_config"]["spatial_units"]["mapping_mode"] != "SeperateAdminEcoClassifiers":
-            raise ValueError("cannot map eco boundary without admin/eco classifier mapping set")
-        if not "eco_mapping" in self.config["mapping_config"]["spatial_units"]:
+        if self.config["mapping_config"]["spatial_units"]["mapping_mode"] \
+                != "SeperateAdminEcoClassifiers":
+            raise ValueError(
+                "cannot map eco boundary without admin/eco classifier "
+                "mapping set")
+        if "eco_mapping" not in self.config["mapping_config"]["spatial_units"]:
             self.config["mapping_config"]["spatial_units"]["eco_mapping"] = []
         self.config["mapping_config"]["spatial_units"]["eco_mapping"].append({
             "user_eco_boundary": user,
-            "default_eco_boundary": default
-        })
+            "default_eco_boundary": default})
 
     def map_spatial_unit(self, user_spatial_unit, default_admin, default_eco):
-        if self.config["mapping_config"]["spatial_units"]["mapping_mode"] != "JoinedAdminEcoClassifier":
-            raise ValueError("cannot map spatial unit without spatial unit classifier mapping set")
-        if not "spu_mapping" in self.config["mapping_config"]["spatial_units"]:
+        if self.config["mapping_config"]["spatial_units"]["mapping_mode"] \
+                != "JoinedAdminEcoClassifier":
+            raise ValueError(
+                "cannot map spatial unit without spatial unit classifier "
+                "mapping set")
+        if "spu_mapping" not in self.config["mapping_config"]["spatial_units"]:
             self.config["mapping_config"]["spatial_units"]["spu_mapping"] = []
         self.config["mapping_config"]["spatial_units"]["spu_mapping"].append({
             "user_spatial_unit": user_spatial_unit,
@@ -129,7 +160,7 @@ class SITConfig(object):
         })
 
     def map_species(self, user, default):
-        if not "species_mapping" in self.config["mapping_config"]["species"]:
+        if "species_mapping" not in self.config["mapping_config"]["species"]:
             self.config["mapping_config"]["species"]["species_mapping"] = []
         self.config["mapping_config"]["species"]["species_mapping"].append({
             "user_species": user,
@@ -138,19 +169,24 @@ class SITConfig(object):
 
     def map_nonforest(self, user, default):
         if self.config["mapping_config"]["nonforest"] is None:
-            raise ValueError("cannot map non forest value without non-forest classifier set")
-        if not "nonforest_mapping" in self.config["mapping_config"]["nonforest"]:
-            self.config["mapping_config"]["nonforest"]["nonforest_mapping"] = []
-        self.config["mapping_config"]["nonforest"]["nonforest_mapping"].append({
-            "user_nonforest_type": user,
-            "default_nonforest_type": default
-        })
+            raise ValueError(
+               "cannot map non forest value without non-forest classifier set")
+        if "nonforest_mapping" not in self.config[
+                "mapping_config"]["nonforest"]:
+            self.config["mapping_config"]["nonforest"]["nonforest_mapping"] = \
+                 []
+        self.config[
+            "mapping_config"]["nonforest"]["nonforest_mapping"].append({
+                "user_nonforest_type": user,
+                "default_nonforest_type": default})
 
     def text_file_paths(self, ageclass_path, classifiers_path,
-        disturbance_events_path, disturbance_types_path, inventory_path,
-        transition_rules_path, yield_path):
+                        disturbance_events_path, disturbance_types_path,
+                        inventory_path, transition_rules_path, yield_path):
         if "import_config" in self.config or "data" in self.config:
-            raise ValueError("only one call of function of text_file_paths, database_path, data_config may be used")
+            raise ValueError(
+                "only one call of function of text_file_paths, database_path, "
+                "data_config may be used")
 
         self.config["import_config"] = {
             "ageclass_path": ageclass_path,
@@ -162,12 +198,15 @@ class SITConfig(object):
             "yield_path": yield_path
         }
 
-    def database_path(self, db_path, age_class_table_name, classifiers_table_name,
-        disturbance_events_table_name, disturbance_types_table_name,
-        inventory_table_name, transition_rules_table_name, yield_table_name):
+    def database_path(self, db_path, age_class_table_name,
+                      classifiers_table_name, disturbance_events_table_name,
+                      disturbance_types_table_name, inventory_table_name,
+                      transition_rules_table_name, yield_table_name):
 
         if "import_config" in self.config or "data" in self.config:
-            raise ValueError("only one call of function of text_file_paths, database_path, data_config may be used")
+            raise ValueError(
+                "only one call of function of text_file_paths, "
+                "database_path, data_config may be used")
 
         self.config["import_config"] = {
             "path": db_path,
@@ -183,10 +222,14 @@ class SITConfig(object):
     def data_config(self, age_class_size, num_age_classes, classifiers):
 
         if "import_config" in self.config or "data" in self.config:
-            raise ValueError("only one call of function of text_file_paths, database_path, data_config may be used")
+            raise ValueError(
+                "only one call of function of text_file_paths, database_path, "
+                "data_config may be used")
 
         self.config["data"] = {
-            "age_class": {"age_class_size":age_class_size, "num_age_classes":num_age_classes},
+            "age_class": {
+                "age_class_size": age_class_size,
+                "num_age_classes": num_age_classes},
             "classifiers": classifiers,
             "disturbance_events": [],
             "inventory": [],

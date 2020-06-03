@@ -1,10 +1,11 @@
 import os
 from cbm3_python.cbm3data.aidb import AIDB
 from cbm3_python.cbm3data.accessdb import AccessDB
-from cbm3_python.cbm3data.projectdb import ProjectDB
 from cbm3_python.cbm3data.resultsloader import ResultsLoader
 from cbm3_python.simulation.simulator import Simulator
-from cbm3_python.simulation.tools.createaccountingrules import CreateAccountingRules
+from cbm3_python.simulation.tools.createaccountingrules \
+    import CreateAccountingRules
+
 
 def clear_old_results(project_db):
     """
@@ -22,17 +23,19 @@ def clear_old_results(project_db):
         table_name="tblSVLAttributes",
         id_colname="SVOID",
         max_batch_size=50000)
-    for range in ranges:
+    for query_range in ranges:
         project_db.ExecuteQuery(
-            "delete from tblSVLAttributes where tblSVLAttributes.SVOID BETWEEN ? and ?",
-            range)
+            "delete from tblSVLAttributes where tblSVLAttributes.SVOID "
+            "BETWEEN ? and ?",
+            query_range)
+
 
 def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
-       results_database_path = None, tempfiles_output_dir = None,
-       skip_makelist = False, use_existing_makelist_output = False,
-       copy_makelist_results = False, stdout_path = None, 
-       dist_classes_path = None, dist_rules_path = None,
-       loader_settings = None):
+        results_database_path=None, tempfiles_output_dir=None,
+        skip_makelist=False, use_existing_makelist_output=False,
+        copy_makelist_results=False, stdout_path=None,
+        dist_classes_path=None, dist_rules_path=None,
+        loader_settings=None):
     '''
     runs the specified single simulation assumption project and loads the
     results
@@ -70,14 +73,16 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
            is the only other currently supported item
     '''
     with AIDB(aidb_path, False) as aidb, \
-         AccessDB(project_path, False) as proj:
+            AccessDB(project_path, False) as proj:
 
         if use_existing_makelist_output and not skip_makelist:
-            raise ValueError("conflicting arguments: Cannot both use "
+            raise ValueError(
+                "conflicting arguments: Cannot both use "
                 "existing makelist output and run makelist.")
 
         if skip_makelist and copy_makelist_results:
-            raise ValueError("conflicting arguments: Cannot skip makelist "
+            raise ValueError(
+                "conflicting arguments: Cannot skip makelist "
                 "and copy makelist output.")
 
         if not use_existing_makelist_output:
@@ -86,12 +91,13 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
         simId = aidb.AddProjectToAIDB(proj)
         try:
             cbm_wd = os.path.join(toolbox_installation_dir, "temp")
-            s = Simulator(cbm_exe_path,
-                            simId,
-                            os.path.dirname(project_path),
-                            cbm_wd,
-                            toolbox_installation_dir,
-                            stdout_path)
+            s = Simulator(
+                cbm_exe_path,
+                simId,
+                os.path.dirname(project_path),
+                cbm_wd,
+                toolbox_installation_dir,
+                stdout_path)
             aidb_path_original = s.getDefaultArchiveIndexPath()
             s.setDefaultArchiveIndexPath(aidb_path)
             s.removeCBMProjfile(project_path)
@@ -102,21 +108,21 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                 s.copyMakelist()
                 s.runMakelist()
             else:
-                 # one side effect of "CreateMakelistFiles" is that the 
-                 # project database is copied into the temp dir. When 
-                 # skip_makelist is enabled this step is needed to copy
-                 # the project into the temp dir
-                 s.CopyToWorkingDir(project_path)
-                 s.CreateEmptyMakelistOuput()
+                # one side effect of "CreateMakelistFiles" is that the
+                # project database is copied into the temp dir. When
+                # skip_makelist is enabled this step is needed to copy
+                # the project into the temp dir
+                s.CopyToWorkingDir(project_path)
+                s.CreateEmptyMakelistOuput()
             if not use_existing_makelist_output:
                 s.loadMakelistSVLS()
-            if not dist_classes_path is None:
-                #support for extended "kf6" results tracking
+            if dist_classes_path is not None:
+                # support for extended "kf6" results tracking
                 with AccessDB(project_path, False) as proj:
                     cr = CreateAccountingRules(proj, dist_classes_path,
                                                dist_rules_path)
                     cr.create_accounting_rules()
-                #copy the modified db to the working dir
+                # copy the modified db to the working dir
                 s.CopyToWorkingDir(project_path)
 
             if not copy_makelist_results:
@@ -130,7 +136,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
             if tempfiles_output_dir:
                 s.CopyTempFiles(output_dir=tempfiles_output_dir)
             if loader_settings is None:
-                s.LoadCBMResults(output_path = results_database_path)
+                s.LoadCBMResults(output_path=results_database_path)
             elif loader_settings["type"] == "python_loader":
                 r = ResultsLoader()
                 r.loadResults(
@@ -141,10 +147,9 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
             else:
                 raise ValueError("unknown loader settings")
         finally:
-            #cleanup
+            # cleanup
             s.setDefaultArchiveIndexPath(aidb_path_original)
             aidb.DeleteProjectsFromAIDB(simId)
         results_path = s.getDefaultResultsPath() if results_database_path \
             is None else results_database_path
         return results_path
-
