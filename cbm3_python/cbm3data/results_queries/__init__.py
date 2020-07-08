@@ -14,12 +14,27 @@ def get_classifiers_view():
         return f.read()
 
 
-def get_spatial_units_view():
-    with open(get_local_path("spatial_units_view.sql")) as f:
+def get_spatial_units_view(rollup_format=False):
+
+    if rollup_format:
+        query_file = "spatial_units_rollup_view.sql"
+    else:
+        query_file = "spatial_units_view.sql"
+
+    with open(get_local_path(query_file)) as f:
         return f.read()
 
 
-def get_disturbance_types_view():
+def get_disturbance_types_view(rollup_format=False):
+
+    if rollup_format:
+        query_file = "disturbance_types_rollup_view.sql"
+    else:
+        query_file = "disturbance_types_view.sql"
+
+    with open(get_local_path(query_file)) as f:
+        return f.read()
+
     with open(get_local_path("disturbance_types_view.sql")) as f:
         return f.read()
 
