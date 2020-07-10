@@ -35,9 +35,6 @@ def get_disturbance_types_view(rollup_format=False):
     with open(get_local_path(query_file)) as f:
         return f.read()
 
-    with open(get_local_path("disturbance_types_view.sql")) as f:
-        return f.read()
-
 
 def build_grouping(table_name,
                    disturbance_type_grouping=False,
