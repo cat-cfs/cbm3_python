@@ -93,7 +93,10 @@ class NIRSimulator(object):
             stdout_path=None,
             dist_classes_path=dist_classes_path,
             dist_rules_path=dist_rules_path,
-            loader_settings={"type": "python_loader"})
+            loader_settings={"type": "python_loader"},
+            python2_exe=self.config["python2_exe"],
+            queryrunner_script=self.config["queryrunner_script"],
+            results_load_ini=self.config["results_load_ini"])
 
     def copy_aidb_local(self):
         logging.info("copying archive index - source: '{0}', dest: '{1}'"

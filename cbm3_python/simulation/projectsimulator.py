@@ -5,6 +5,10 @@ from cbm3_python.cbm3data.projectdb import ProjectDB
 from cbm3_python.cbm3data.resultsloader import ResultsLoader
 from cbm3_python.simulation.simulator import Simulator
 from cbm3_python.simulation.tools.createaccountingrules import CreateAccountingRules
+import logging
+import pyodbc
+import subprocess
+
 
 def clear_old_results(project_db):
     """
@@ -32,7 +36,8 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
        skip_makelist = False, use_existing_makelist_output = False,
        copy_makelist_results = False, stdout_path = None, 
        dist_classes_path = None, dist_rules_path = None,
-       loader_settings = None):
+       loader_settings = None,
+       python2_exe=None, queryrunner_script=None, results_load_ini=None):
     '''
     runs the specified single simulation assumption project and loads the
     results
@@ -68,6 +73,7 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
     @param loader_settings if None the toolbox loader is used, otherwise
            specify loader specific settings. {"type": "python_loader"}
            is the only other currently supported item
+    @param python2_exe, queryrunner_script, results_load_ini new from Ben H.
     '''
     with AIDB(aidb_path, False) as aidb, \
          AccessDB(project_path, False) as proj:
@@ -133,11 +139,31 @@ def run(aidb_path, project_path, toolbox_installation_dir, cbm_exe_path,
                 s.LoadCBMResults(output_path = results_database_path)
             elif loader_settings["type"] == "python_loader":
                 r = ResultsLoader()
-                r.loadResults(
-                    outputDBPath=results_database_path,
-                    aidbPath=aidb_path,
-                    projectDBPath=project_path,
-                    projectSimulationDirectory=cbm_wd)
+                try:
+                    r.loadResults(
+                        outputDBPath=results_database_path,
+                        aidbPath=aidb_path,
+                        projectDBPath=project_path,
+                        projectSimulationDirectory=cbm_wd)
+                    results_loading_str = "Results loading successful\nMS Access load-style: {}".format(results_database_path)
+                    logging.info(results_loading_str)
+                except pyodbc.Error as err:
+                    pre, ext = os.path.splitext(results_database_path)
+                    results_database_path = pre + '.db'
+                    flat_results_path = os.path.join(cbm_wd, "CBMRun", "output")
+                    results_loading_str = "Results loading failed: {}\nAttempting load to SQL database\n SQL load-style: {}".format(err, results_database_path)
+                    logging.info(results_loading_str)
+                    args = [python2_exe, queryrunner_script,
+                            "--config", results_load_ini,
+                            "--flat_results_path", flat_results_path,
+                            "--input_db", project_path,
+                            "--output_db", results_database_path]
+                    print(args)
+                    subprocess.check_call(args)
+                finally:
+                    if tempfiles_output_dir:
+                        with open(os.path.join(tempfiles_output_dir, "results_loading_status.txt"), "w") as file:
+                            file.write(results_loading_str)
             else:
                 raise ValueError("unknown loader settings")
         finally:

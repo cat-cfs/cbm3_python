@@ -18,7 +18,7 @@ def __create_worksheet_task(worksheet_name, insertion_cell, query_template_name,
         <WorksheetName>{worksheet_name}</WorksheetName>
         <InsertionCell>{insertion_cell}</InsertionCell>
         <DataSources>
-        <DataSource xsi:type="ACEMDBDatasource">
+        <DataSource xsi:type="MDBDatasource">
             <QueryTemplateName>{query_template_name}</QueryTemplateName>
             <DatasourceParameters>
             {parameters}

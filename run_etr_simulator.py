@@ -4,8 +4,15 @@
 import os, argparse, datetime, logging
 from cbm3_python.simulation.etrsimulator import ETRSimulator
 from cbm3_python.util import loghelper
+
+
 def get_date_stamp():
     return datetime.datetime.now().strftime("%Y-%m-%d %H_%M_%S")
+
+
+def get_time_stamp():
+    return datetime.datetime.utcnow()
+
 
 def main():
     try:
@@ -34,6 +41,10 @@ def main():
                            dest="preprocess", help="if present, run the "
                            "pre-processing steps on the local copies of "
                            "project databases")
+        parser.add_argument("--update_criteria", action="store_true",
+                            dest="update_criteria", help="if present the "
+                            "eligibility update script will run based on "
+                            "values specified in configuration")
         parser.add_argument("--simulate", action="store_true", dest="simulate",
                            help="if present, run the simulations for each of "
                            "the local copies of project databases")
@@ -55,6 +66,9 @@ def main():
 
         date_stamp = get_date_stamp()
 
+        start_timestamp = get_time_stamp()
+        print("Started: {}".format(start_timestamp))
+
         config_path = os.path.abspath(args.configuration)
         base_path_config_file = os.path.abspath(args.nir_base_path_config)
         local_working_dir = os.path.abspath(args.local_working_dir)
@@ -72,12 +86,17 @@ def main():
                args.copy_local,
                args.copy_tool_local,
                args.preprocess,
+               args.update_criteria,
                args.simulate,
                args.rollup,
                args.hwp_input,
                args.qaqc,
                args.copy_to_final_results_dir,
                date_stamp)
+
+        end_timestamp = get_time_stamp()
+        print("Ended: {}".format(end_timestamp))
+        print("Duration: {}".format(end_timestamp - start_timestamp))
 
     except Exception as ex:
         logging.exception("")

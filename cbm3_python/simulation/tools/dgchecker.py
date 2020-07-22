@@ -124,7 +124,7 @@ class DGChecker(object):
         str_default_distTypes =", " .join(str(id) for id in default_disturbance_types)
 
         df_events = self.__get_event_data(dist_class, project_prefix)
-        df_events = df_events.groupby(['ProjectName','DefaultDistType','TargetType', 'HarvestYear']).agg({"ProjectTarget": "sum"})
+        df_events = df_events.groupby(['ProjectName','DefaultDistType','TargetType', 'HarvestYear'], as_index=False).agg({"ProjectTarget": "sum"})
 
         project_query = self.__build_project_events_query_string(project_path, str_default_distTypes)
         with AccessDB(project_path) as project_db:
@@ -150,7 +150,7 @@ class DGChecker(object):
             return
         project_dir = Path(project_path).parent
         out_path = Path.joinpath(project_dir, "{0}_disturbance_generator_qaqc.csv".format(project_prefix))
-        with open(out_path, 'w', newline='') as output:
+        with open(r'{}'.format(out_path), 'wb') as output:
             df_check.to_csv(output)
         if df_check['relative_difference'].max() > 7e-8: 
             #since the project db format has 32bit precision

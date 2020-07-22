@@ -9,6 +9,7 @@ from cbm3_python.simulation.tools.avgdisturbanceextender import AvgDisturbanceEx
 from cbm3_python.simulation.tools.disturbanceextender import DisturbanceExtender
 from cbm3_python.simulation.tools.disturbancegeneratorconfig import DisturbanceGeneratorConfig
 from cbm3_python.simulation.tools.disturbanceextension import DisturbanceExtension
+from cbm3_python.simulation.tools import update_eligibility_criteria
 import cbm3_python.simulation.tools.qaqc
 from cbm3_python.simulation.tools.dgchecker import DGChecker
 
@@ -81,8 +82,9 @@ class ETRSimulator():
             shutil.copytree(src=os.path.dirname(original_path),
                             dst=local_dir)
         else:
-            raise ValueError("local tool {0} already found, clear working and tool directories first"
-                             .format(local_dir))
+            #raise ValueError("local tool {0} already found, clear working and tool directories first"
+            #                 .format(local_dir))
+            print("Using existing local tool {0}".format(local_dir))
 
 
     def run_disturbance_extender(self, project_path):
@@ -162,8 +164,30 @@ class ETRSimulator():
             nir_project_queries.run_simulation_id_cleanup(nir_project_db)
 
 
-    def run(self, prefix_filter, copy_local, copy_tool_local, preprocess, simulate, rollup, hwp_input, 
-            qaqc, copy_to_final_results_dir, date_stamp):
+    def run_criteria_updates(self, project_prefix, project_path):
+        
+        eligibility_updates = self.config["criteria_updates"]
+        if project_prefix not in eligibility_updates or \
+           not eligibility_updates[project_prefix]:
+            logging.info(f"no eligibility updates found for {project_prefix}")
+            return
+        
+        project_eligibility_updates = eligibility_updates[project_prefix]            
+        logging.info(f"running eligibility updates found for {project_prefix}")
+        for eligibility_update in project_eligibility_updates:
+            updates = update_eligibility_criteria.get_criteria_updates(
+                project_path, eligibility_update, eligibility_update["template_criteria_id"])
+            for update in updates:
+                logging.info("query: {}".format(update["query"]))
+                logging.info("parameters: {}".format(update["parameters"]))
+            update_eligibility_criteria.update_database(project_path, updates)
+            
+        logging.info(f"finished eligibility updates for {project_prefix}")
+
+
+    def run(self, prefix_filter, copy_local, copy_tool_local, preprocess,
+            update_criteria, simulate, rollup, hwp_input, qaqc,
+            copy_to_final_results_dir, date_stamp):
 
         project_prefixes = self.load_project_prefixes(prefix_filter)
 
@@ -190,6 +214,8 @@ class ETRSimulator():
                     self.run_disturbance_extender(local_project_path)
                     self.run_disturbance_generator(p,local_project_path)
                     self.run_nir_sql(local_project_path)
+                if update_criteria:
+                    self.run_criteria_updates(p, local_project_path)
                 logging.info("finished pre-processing {}".format(p))
 
         if simulate:
@@ -241,7 +267,11 @@ class ETRSimulator():
             if not os.path.exists(final_results_dir):
                 os.makedirs(final_results_dir)
             final_results_subdir = os.path.join(final_results_dir, date_stamp)
-            logging.info("copying all contents of '{src}' to '{dest}'"
-                         .format(src=self.local_working_dir, dest=final_results_subdir))
-            shutil.copytree(self.local_working_dir, final_results_subdir)
+            for p in project_prefixes:
+                logging.info("copying all contents of '{src}' to '{dest}'' for '{project}'"
+                             .format(src=self.local_working_dir, dest=final_results_subdir, project=p))
+                shutil.copytree(os.path.join(self.local_working_dir, p), os.path.join(final_results_subdir, p))
+            for file in os.listdir(self.local_working_dir):
+                if file.endswith(".log"):
+                    shutil.copyfile(os.path.join(self.local_working_dir, file), os.path.join(final_results_subdir, file))
             logging.info("finished copying")
