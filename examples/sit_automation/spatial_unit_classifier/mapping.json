@@ -1,0 +1,49 @@
+{
+"nonforest": null,
+	"species": {
+		"species_classifier": "Species",
+		"species_mapping": [
+			{"user_species": "Unspecified softwood species", "default_species": "Unspecified softwood species"},
+			{"user_species": "Unspecified hardwood species", "default_species": "Unspecified hardwood species"}
+		]
+	},
+	"spatial_units": {
+		"mapping_mode": "JoinedAdminEcoClassifier",
+		"spu_classifier": "spatial_unit",
+		"spu_mapping": [
+			{
+				"user_spatial_unit": "ab_montane_cordillera",
+				"default_spatial_unit": {
+					"admin_boundary": "Alberta",
+					"eco_boundary": "Montane Cordillera"
+				}
+			},
+			{
+				"user_spatial_unit": "bc_montane_cordillera",
+				"default_spatial_unit": {
+					"admin_boundary": "British Columbia",
+					"eco_boundary": "Montane Cordillera"
+				}
+            },
+			{
+				"user_spatial_unit": "bc_pacific",
+				"default_spatial_unit": {
+					"admin_boundary": "British Columbia",
+					"eco_boundary": "Pacific Maritime"
+				}
+            },
+			{
+				"user_spatial_unit": "ab_taiga_plains",
+				"default_spatial_unit": {
+					"admin_boundary": "Alberta",
+					"eco_boundary": "Taiga Plains"
+            	}
+			}
+		]
+	},
+	"disturbance_types": {
+		"disturbance_type_mapping": [
+			{"user_dist_type": "Fire", "default_dist_type": "Wildfire"}
+		]
+	}
+}

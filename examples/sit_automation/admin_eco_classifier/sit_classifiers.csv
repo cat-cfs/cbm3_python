@@ -1,0 +1,11 @@
+id,name,description
+3,_CLASSIFIER,Species
+3,SW,Unspecified softwood species
+3,HW,Unspecified hardwood species
+1,_CLASSIFIER,Admin
+1,ab,Alberta
+1,bc,British Columbia
+2,_CLASSIFIER,Eco
+2,montane_cordillera,Montane Cordillera
+2,pacific,Pacific Maritime
+2,taiga_plains,Taiga Plains

@@ -1,0 +1,11 @@
+spatial_unit,Species,using_id,age,area,delay,unfcccl,hist_dist,last_dist
+ab_montane_cordillera,SW,FALSE,100,100,0,0,1,1
+ab_montane_cordillera,SW,FALSE,90,100,0,0,1,1
+ab_montane_cordillera,SW,FALSE,80,100,0,0,1,1
+bc_montane_cordillera,SW,FALSE,70,100,0,0,1,1
+bc_montane_cordillera,SW,FALSE,60,100,0,0,1,1
+bc_pacific,SW,FALSE,50,100,0,0,1,1
+bc_pacific,SW,FALSE,40,100,0,0,1,1
+bc_pacific,SW,FALSE,30,100,0,0,1,1
+ab_taiga_plains,SW,FALSE,20,100,0,0,1,1
+ab_taiga_plains,SW,FALSE,10,100,0,0,1,1
