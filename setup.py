@@ -23,12 +23,13 @@ console_scripts = [
     "cbm3_create_nir_path_config = " +
     "cbm3_python.scripts.create_nir_path_config:main",
     "cbm3_run_etr_simulator = cbm3_python.scripts.run_etr_simulator:main",
-    "cbm3_simulate = cbm3_python.scripts.simulate:main"
+    "cbm3_simulate = cbm3_python.scripts.simulate:main",
+    "cbm3_sit_import = cbm3_python.scripts.sit_import:main"
 ]
 
 setup(
     name="cbm3_python",
-    version="0.5.3",
+    version="0.5.4",
     description="Scripts to automate tasks with CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
