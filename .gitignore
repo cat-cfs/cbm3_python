@@ -8,3 +8,5 @@
 /dist
 /build
 /cbm3_python.egg-info
+/.vscode
+.ipynb_checkpoints
