@@ -1,12 +1,12 @@
 # cbm3_python
 
-python scripts for automating CBM-CFS3 tasks
+Python scripts for automating CBM-CFS3 tasks
 
 ## requirements
 
 * The [Operational-Scale CBM-CFS3 toolbox](https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107)
 
-* `cbm3_python` is windows only since the CBM-CFS3 only operates in windows
+* `cbm3_python` is windows only since the CBM-CFS3 model only operates in windows
 * python 3x
 * [python packages](https://github.com/cat-cfs/cbm3_python/blob/master/requirements.txt)
 
