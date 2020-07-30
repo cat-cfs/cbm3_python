@@ -8,6 +8,8 @@ import tempfile
 from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
+from cbm3_python.cbm3data import access_templates
+from cbm3_python.cbm3data.accessdb import AccessDB
 
 
 def load_standard_import_tool_plugin(local_dir=None):
@@ -32,6 +34,66 @@ def load_standard_import_tool_plugin(local_dir=None):
 
         zipfile.extractall(path=StandardImportToolPluginDir)
     return StandardImportToolPluginExe
+
+
+def csv_import(csv_dir, imported_project_path,
+               initialize_mapping=False, archive_index_db_path=None,
+               working_dir=None):
+
+    if not working_dir:
+        working_dir = os.path.join(csv_dir, "sit_import")
+
+    sit_plugin_path = os.path.join(
+        os.getenv("LOCALAPPDATA"), "StandardImportToolPlugin")
+    sit_path = load_standard_import_tool_plugin(sit_plugin_path)
+
+    sit_config = SITConfig(
+        imported_project_path, initialize_mapping, archive_index_db_path)
+
+    with open(os.path.join(csv_dir, "mapping.json"), 'r') as mapping_file:
+        mapping = json.load(mapping_file)
+
+    sit_config.config["mapping_config"]["nonforest"] = \
+        mapping["nonforest"]
+    sit_config.config["mapping_config"]["species"] = \
+        mapping["species"]
+    sit_config.config["mapping_config"]["spatial_units"] = \
+        mapping["spatial_units"]
+    sit_config.config["mapping_config"]["disturbance_types"] = \
+        mapping["disturbance_types"]
+
+    sit_import_db_path = os.path.join(working_dir, "sit_input.mdb")
+
+    sit_tables = [
+        "sit_classifiers",
+        "sit_disturbance_types",
+        "sit_age_classes",
+        "sit_inventory",
+        "sit_yield",
+        "sit_events",
+        "sit_transitions"]
+
+    access_templates.copy_mdb_template(sit_import_db_path)
+    with AccessDB(sit_import_db_path, False) as sit_db:
+        for item in sit_tables:
+            query = \
+                f"SELECT * INTO [{item}] FROM " + \
+                "[text;HDR=Yes;FMT=Delimited(,);" + \
+                f"Database={csv_dir}].{item}.csv;"
+            sit_db.ExecuteQuery(query)
+
+    sit_config.database_path(
+        db_path=sit_import_db_path,
+        age_class_table_name="sit_age_classes",
+        classifiers_table_name="sit_classifiers",
+        disturbance_events_table_name="sit_events",
+        disturbance_types_table_name="sit_disturbance_types",
+        inventory_table_name="sit_inventory",
+        transition_rules_table_name="sit_transitions",
+        yield_table_name="sit_yield")
+
+    sit_config.import_project(
+        sit_path, os.path.join(working_dir, "import_config.json"))
 
 
 class SITConfig(object):
