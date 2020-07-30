@@ -26,7 +26,7 @@ def main():
         parser.add_argument("--toolbox_installation_dir", nargs="?",
             help="the Operational-Scale CBM-CFS3 toolbox installation "
                  "directory. If unspecified a typical default value is used.")
-        parser.add_argument("--cbm_exe_path", nargs="?", 
+        parser.add_argument("--cbm_exe_path", nargs="?",
             help="directory containing CBM.exe and Makelist.exe. If unspecified "
                  "a typical default value is used.")
         parser.add_argument("--results_database_path", nargs="?",
@@ -96,6 +96,7 @@ def main():
             skip_makelist=skip_makelist,
             stdout_path=stdout_path,
             use_existing_makelist_output=use_existing_makelist_output,
+            copy_makelist_results=copy_makelist_results,
             dist_classes_path=dist_classes_path,
             dist_rules_path=dist_rules_path)
         logging.info("simulation finish, results path: {0}"
