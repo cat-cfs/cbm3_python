@@ -10,3 +10,5 @@
 /cbm3_python.egg-info
 /.vscode
 .ipynb_checkpoints
+*.ipynb
+/development.md
