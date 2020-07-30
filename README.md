@@ -26,7 +26,7 @@ pip install git+https://github.com/cat-cfs/cbm3_python.git
 
 cbm3_python has the ability to import CBM3 projects by calling the CBM Standard import tool as a library.
 
-There are [example files with step by step instructions](.\examples\sit_automation) for importing via command line, python script or jupyter notebook contained in the repository.
+There are [example files with step by step instructions](./examples/sit_automation) for importing via command line, python script or jupyter notebook contained in the repository.
 
 
 ### Simulating CBM3 Projects
