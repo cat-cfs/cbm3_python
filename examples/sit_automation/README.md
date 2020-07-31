@@ -106,7 +106,7 @@ This example corresponds to the Standard import tool user interface in the follo
 
 ### No spatial unit classifier
 
-[/examples/no_spatial_unit_classifier](./spatial_unit_classifier) 
+[/examples/no_spatial_unit_classifier](./no_spatial_unit_classifier) 
 
 This example demonstrates a CBM3 SIT project which is mapped to a single CBM3 Default spatial unit
 
