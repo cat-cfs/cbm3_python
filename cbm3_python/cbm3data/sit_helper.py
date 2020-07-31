@@ -41,7 +41,7 @@ def csv_import(csv_dir, imported_project_path,
                working_dir=None):
 
     if not working_dir:
-        working_dir = os.path.join(csv_dir, "sit_import")
+        working_dir = os.path.dirname(os.path.abspath(imported_project_path))
 
     sit_plugin_path = os.path.join(
         os.getenv("LOCALAPPDATA"), "StandardImportToolPlugin")
