@@ -1,7 +1,7 @@
-import os
 import argparse
 import logging
 from cbm3_python.cbm3data import sit_helper
+from cbm3_python import toolbox_defaults
 
 
 def main():
@@ -30,15 +30,13 @@ def main():
             "--working_dir",
             help="Optional working dir where logs, and intermediate files are "
                  "created during the sit process.  If not specified a sub "
-                 "directory in the specfied 'sit_data_dir' is used.")
+                 "directory in the specified 'sit_data_dir' is used.")
 
         args = parser.parse_args()
 
         aidb_path = args.aidb_path
         if not aidb_path:
-            toolbox_path = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3"
-            aidb_path = os.path.join(
-                toolbox_path, "Admin", "DBs", "ArchiveIndex_Beta_Install.mdb")
+            aidb_path = toolbox_defaults.ARCHIVE_INDEX_PATH
 
         sit_helper.csv_import(
             csv_dir=args.sit_data_dir,
