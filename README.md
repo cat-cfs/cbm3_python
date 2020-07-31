@@ -46,12 +46,11 @@ See [simulate.py](cbm3_python/scripts/simulate.py) for the full list of optional
 #### from python
 
 ```python
-import cbm3_python.simulation.projectsimulator as projectsimulator
+from cbm3_python.simulation import projectsimulator
 
-projectsimulator.simulate(
+projectsimulator.run(
     project_path="/projects/my_cbm_project.mdb",
     results_database_path="/projects/my_cbm_project_results.mdb")
 ```
 
 ### Analysis of CBM3 Results Database
-

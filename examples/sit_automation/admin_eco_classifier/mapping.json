@@ -1,5 +1,5 @@
 {
-"nonforest": null,
+	"nonforest": null,
 	"species": {
 		"species_classifier": "Species",
 		"species_mapping": [
@@ -13,11 +13,11 @@
 		"eco_classifier": "Eco",
 		"admin_mapping": [
 			{
-				"user_admin_boundary": "Alberta", 
+				"user_admin_boundary": "Alberta",
 				"default_admin_boundary": "Alberta"
 			},
 			{
-				"user_admin_boundary": "British Columbia", 
+				"user_admin_boundary": "British Columbia",
 				"default_admin_boundary": "British Columbia"
 			}
 		],
