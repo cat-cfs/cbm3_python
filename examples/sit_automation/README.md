@@ -27,7 +27,7 @@ cbm3_sit_import <sit_data_dir> <output_filename>
 
 The csv files are in the tabular Standard import tool format which is described in chapter 3 of the [Operational-Scale CBM-CFS3 user guide](https://cfs.nrcan.gc.ca/pubwarehouse/pdfs/35717.pdf)
 
-The format of mapping.json is described [here](https://github.com/cat-cfs/StandardImportToolPlugin/wiki/Configuration)
+The format of mapping.json is described [here](https://github.com/cat-cfs/StandardImportToolPlugin/wiki/Mapping-Configuration)
 
 ## Running as a library
 
@@ -47,7 +47,7 @@ sit_helper.csv_import(
 
 ## Initial set up steps
 
-See the *requirements* section in the [docs](../../)
+See the *requirements* section in the [docs](https://github.com/cat-cfs/cbm3_python/)
 
 If cbm3_python is not already installed, it can be installed from this command:
 
