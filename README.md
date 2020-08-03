@@ -54,3 +54,11 @@ projectsimulator.run(
 ```
 
 ### Analysis of CBM3 Results Database
+
+cbm3_python has functions to assist results processing using [pandas](https://pandas.pydata.org/)
+
+An example notebook is included in notebook format and also markdown notebook format (using [jupytext](https://github.com/mwouts/jupytext))
+
+* [ipynb](./examples/results/results_processing.ipynb)
+* [jupytext markdown](./examples/results/results_processing.md)
+
