@@ -1,12 +1,12 @@
 # CBM-CFS3 Standard import tool automation
 
-The CBM-CFS3 standard import tool (SIT) can be run via the cbm3_python package via bundles command line tools or by calling cbm3_python as a library from a python script or jupyter notebook
+The CBM-CFS3 Standard Import Tool (SIT) can be run using the cbm3_python package via bundles command line tools, or by calling cbm3_python as a library from a python script or Jupyter Notebook.
 
-## Running from the command line
+## Running from the Windows command line
 
 The examples can be run using the cbm3_python built-in command `cbm3_sit_import`
 
-The command's syntax is
+The command's syntax is:
 
 ```
 cbm3_sit_import <sit_data_dir> <output_filename>
@@ -25,15 +25,15 @@ cbm3_sit_import <sit_data_dir> <output_filename>
 * sit_events.csv
 * sit_transitions.csv
 
-The csv files are in the tabular Standard import tool format which is described in chapter 3 of the [Operational-Scale CBM-CFS3 user guide](https://cfs.nrcan.gc.ca/pubwarehouse/pdfs/35717.pdf)
+The .csv files are in the tabular CBM Standard Import Tool format that is described in Chapter 3, section 3.1.1 of the [Operational-Scale CBM-CFS3 user guide](https://cfs.nrcan.gc.ca/pubwarehouse/pdfs/39768.pdf)
 
-The format of mapping.json is described [here](https://github.com/cat-cfs/StandardImportToolPlugin/wiki/Mapping-Configuration)
+The format of the mapping.json file is described [here](https://github.com/cat-cfs/StandardImportToolPlugin/wiki/Mapping-Configuration).
 
 ## Running as a library
 
-The following python demonstrates importing an sit dataset into a CBM-CFS3 project Access database
+The python below can be used to import a SIT csv formatted dataset converting it to a CBM-CFS3 project Access database.
 
-The pair of required parameters are the same as those described in the *Running from the command line* section above.
+The pair of parameters required parameters are the same as those described in the *Running from the Windows command line* section above.
 
 ```python
 from cbm3_python.cbm3data import sit_helper
@@ -72,35 +72,35 @@ You now have a copy of cbm3_python sit_automation example files at `my_dir/cbm3_
 
 ## Examples
 
-### Administrative/Ecological classifier mapping
+### Administrative and Ecological classifier mapping
 
 [/examples/admin_eco_classifier](./admin_eco_classifier) 
 
-This example demonstrates a CBM3 SIT project which had data mappable to CBM3 Default administrative and ecological boundaries
+This example demonstrates a CBM-CFS3 SIT project that had data easily mapped to the CBM-CFS3 default administrative and ecological boundaries.
 
-Run from command line
+Run from the Windows command line
 
 ```bash
 cbm3_sit_import my_dir/cbm3_python/examples/sit_automation/admin_eco_classifier my_project.mdb
 ```
 
-This example corresponds to the Standard import tool user interface in the following image.  Note the 3rd radio button is checked.
+This example corresponds with the CBM SIT user interface configuration in the image below.  Note that the 3<sup>rd</sup> radio button is checked.
 
 ![img](./img/admin_eco_classifiers.png)
 
-### Spatial Unit classifier mapping
+### Spatial unit classifier mapping
 
 [/examples/spatial_unit_classifier](./spatial_unit_classifier) 
 
-This example demonstrates a CBM3 SIT project which had data mappable to CBM3 Default spatial unit
+The example above demonstrates a CBM-CFS3 SIT project that had data easily mapped to the CBM3 default spatial units.
 
-Run from command line
+Run from the Windows command line:
 
 ```bash
 cbm3_sit_import my_dir/cbm3_python/examples/sit_automation/spatial_unit_classifier my_project.mdb
 ```
 
-This example corresponds to the Standard import tool user interface in the following image.  Note the 2nd radio button is checked.
+This example corresponds with the CBM SIT user interface configuration in the image below.  Note the 2<sup>nd</sup> radio button is checked.
 
 ![img](./img/spatial_classifier.png)
 
@@ -108,14 +108,14 @@ This example corresponds to the Standard import tool user interface in the follo
 
 [/examples/no_spatial_unit_classifier](./no_spatial_unit_classifier) 
 
-This example demonstrates a CBM3 SIT project which is mapped to a single CBM3 Default spatial unit
+This example demonstrates a CBM-CFS3 SIT project that was mapped to a single CBM-CFS3 default spatial unit
 
-Run from command line
+Run from the Windows command line:
 
 ```bash
 cbm3_sit_import my_dir/cbm3_python/examples/sit_automation/no_spatial_unit_classifier my_project.mdb
 ```
 
-This example corresponds to the Standard import tool user interface in the following image.  Note the 1st radio button is checked.
+This example corresponds with the CBM SIT user interface configuration in the image below.  Note the 1<sup>st</sup> radio button is checked.
 
 ![img](./img/no_spatial_classifier.png)
