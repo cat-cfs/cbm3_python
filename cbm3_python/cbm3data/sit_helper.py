@@ -118,6 +118,10 @@ class SITConfig(object):
             }
         }
         if archive_index_db_path:
+            if not os.path.exists(archive_index_db_path):
+                raise ValueError(
+                    "specified archive index path does not exist: "
+                    f"'{archive_index_db_path}'")
             self.config["archive_index_db_path"] = archive_index_db_path
 
     def save(self, path):
