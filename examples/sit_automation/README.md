@@ -1,6 +1,6 @@
 # CBM-CFS3 Standard import tool automation
 
-The CBM-CFS3 Standard Import Tool (SIT) can be run using the cbm3_python package via bundles command line tools, or by calling cbm3_python as a library from a python script or Jupyter Notebook.
+The CBM-CFS3 Standard Import Tool (SIT) can be run using the cbm3_python package via bundled command line tools, or by calling cbm3_python as a library from a python script or Jupyter Notebook.
 
 ## Running from the Windows command line
 
@@ -41,6 +41,31 @@ from cbm3_python.cbm3data import sit_helper
 sit_helper.csv_import(
     csv_dir=sit_data_dir, 
     imported_project_path=cbm3_project_path)
+```
+
+## Import with your own Archive Index database
+
+If you have your own custom archive index database the SIT import process can target it. See the following command line or python script examples
+
+**Windows command line with custom archive index**
+
+Add the `--aidb_path` command line argument with the path to your custom archive index:
+
+```bash
+cbm3_sit_import <sit_data_dir> <output_filename> --aidb_path my_custom_archive_index.mdb
+```
+
+**Python script with custom archive index**
+
+Specify the `archive_index_db_path` parameter in your call to the `csv_import` function
+
+```python
+from cbm3_python.cbm3data import sit_helper
+
+sit_helper.csv_import(
+    csv_dir=sit_data_dir, 
+    imported_project_path=cbm3_project_path,
+	archive_index_db_path="my_custom_archive_index.mdb")
 ```
 
 
