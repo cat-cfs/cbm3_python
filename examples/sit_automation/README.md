@@ -45,7 +45,7 @@ sit_helper.csv_import(
 
 ## Import with your own Archive Index database
 
-If you have your own custom archive index database the SIT import process can target it. See the following command line or python script examples
+If you have your own archive index database the SIT import process can target it. See the following command line and python script examples.
 
 **Windows command line with custom archive index**
 
@@ -57,7 +57,7 @@ cbm3_sit_import <sit_data_dir> <output_filename> --aidb_path my_custom_archive_i
 
 **Python script with custom archive index**
 
-Specify the `archive_index_db_path` parameter in your call to the `csv_import` function
+Specify the `archive_index_db_path` parameter in your call to the `csv_import` function.
 
 ```python
 from cbm3_python.cbm3data import sit_helper
@@ -65,7 +65,7 @@ from cbm3_python.cbm3data import sit_helper
 sit_helper.csv_import(
     csv_dir=sit_data_dir, 
     imported_project_path=cbm3_project_path,
-	archive_index_db_path="my_custom_archive_index.mdb")
+    archive_index_db_path="my_custom_archive_index.mdb")
 ```
 
 
