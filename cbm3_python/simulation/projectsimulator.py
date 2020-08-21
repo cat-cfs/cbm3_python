@@ -101,6 +101,8 @@ def run(project_path, aidb_path=None, toolbox_installation_dir=None,
         results_database_path, tempfiles_output_dir, stdout_path,
         dist_classes_path, dist_rules_path]
     for path in paths:
+        if path is None:
+            continue
         if not os.path.isabs(path):
             raise ValueError(
                 "Relative paths detected. They may cause failures in CBM "
