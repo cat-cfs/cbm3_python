@@ -1,4 +1,5 @@
 import os
+import shutil
 from cbm3_python.cbm3data.aidb import AIDB
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.cbm3data.resultsloader import ResultsLoader
@@ -29,6 +30,18 @@ def clear_old_results(project_db):
             "delete from tblSVLAttributes where tblSVLAttributes.SVOID "
             "BETWEEN ? and ?",
             query_range)
+
+
+def _delete_old_tempfiles(tempfiles_output_dir):
+    # do a little validation before dropping a rmtree on the wrong dir
+    # due to a typo etc.
+    ok_to_delete = \
+        tempfiles_output_dir is not None and \
+        os.path.exists(tempfiles_output_dir) and \
+        os.path.isabs(tempfiles_output_dir) and \
+        os.path.exists(os.path.join(tempfiles_output_dir, "CBMRun"))
+    if ok_to_delete:
+        shutil.rmtree(tempfiles_output_dir)
 
 
 def run(project_path, aidb_path=None, toolbox_installation_dir=None,
@@ -95,18 +108,23 @@ def run(project_path, aidb_path=None, toolbox_installation_dir=None,
         toolbox_installation_dir = toolbox_defaults.INSTALL_PATH
 
     # don't allow relative paths here, it will cause failures later in CBM
-    # command line apps
-    paths = [
+    # command line apps that have difficult to understand error messages
+    existing_paths = [
         project_path, aidb_path, cbm_exe_path, toolbox_installation_dir,
-        results_database_path, tempfiles_output_dir, stdout_path,
         dist_classes_path, dist_rules_path]
-    for path in paths:
+    output_paths = [results_database_path, tempfiles_output_dir, stdout_path]
+    all_paths = existing_paths + output_paths
+    for path in all_paths:
         if path is None:
             continue
         if not os.path.isabs(path):
             raise ValueError(
                 "Relative paths detected. They may cause failures in CBM "
                 f"model command line processes: '{path}'")
+    for path in existing_paths:
+        if not os.path.exists(path):
+            raise ValueError(f"specified path does not exist '{path}'")
+    _delete_old_tempfiles(tempfiles_output_dir)
 
     with AIDB(aidb_path, False) as aidb, \
             AccessDB(project_path, False) as proj:
