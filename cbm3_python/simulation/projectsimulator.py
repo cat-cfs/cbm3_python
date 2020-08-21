@@ -94,15 +94,17 @@ def run(project_path, aidb_path=None, toolbox_installation_dir=None,
     if not toolbox_installation_dir:
         toolbox_installation_dir = toolbox_defaults.INSTALL_PATH
 
-    project_path = os.path.abspath(project_path)
-    aidb_path = os.path.abspath(aidb_path)
-    cbm_exe_path = os.path.abspath(cbm_exe_path)
-    toolbox_installation_dir = os.path.abspath(toolbox_installation_dir)
-    results_database_path = os.path.abspath(results_database_path)
-    tempfiles_output_dir = os.path.abspath(tempfiles_output_dir)
-    stdout_path = os.path.abspath(stdout_path)
-    dist_classes_path = os.path.abspath(dist_classes_path)
-    dist_rules_path = os.path.abspath(dist_rules_path)
+    # don't allow relative paths here, it will cause failures later in CBM
+    # command line apps
+    paths = [
+        project_path, aidb_path, cbm_exe_path, toolbox_installation_dir,
+        results_database_path, tempfiles_output_dir, stdout_path,
+        dist_classes_path, dist_rules_path]
+    for path in paths:
+        if not os.path.isabs(path):
+            raise ValueError(
+                "Relative paths detected. They may cause failures in CBM "
+                f"model command line processes: '{path}'")
 
     with AIDB(aidb_path, False) as aidb, \
             AccessDB(project_path, False) as proj:
