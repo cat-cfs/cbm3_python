@@ -5,11 +5,13 @@ import os
 import subprocess
 import json
 import tempfile
+import urllib
 from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
+from sqlalchemy import create_engine
+import pandas as pd
 from cbm3_python.cbm3data import access_templates
-from cbm3_python.cbm3data.accessdb import AccessDB
 
 
 def load_standard_import_tool_plugin(local_dir=None):
@@ -74,13 +76,20 @@ def csv_import(csv_dir, imported_project_path,
         "sit_transitions"]
 
     access_templates.copy_mdb_template(sit_import_db_path)
-    with AccessDB(sit_import_db_path, False) as sit_db:
-        for item in sit_tables:
-            query = \
-                f"SELECT * INTO [{item}] FROM " + \
-                "[text;HDR=Yes;FMT=Delimited(,);" + \
-                f"Database={csv_dir}].{item}.csv;"
-            sit_db.ExecuteQuery(query)
+    connection_string = (
+        r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
+        f'DBQ={sit_import_db_path};'
+        r'ExtendedAnsiSQL=1;'
+    )
+    connection_url = \
+        "access+pyodbc:///?odbc_connect=" \
+        f"{urllib.parse.quote_plus(connection_string)}"
+
+    engine = create_engine(connection_url)
+    for item in sit_tables:
+        csv_path = os.path.join(csv_dir, f"{item}.csv")
+        csv_data = pd.read_csv(csv_path)
+        csv_data.to_sql(item, engine, index=False, if_exists='fail')
 
     sit_config.database_path(
         db_path=sit_import_db_path,
