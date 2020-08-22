@@ -122,6 +122,8 @@ def run(project_path, aidb_path=None, toolbox_installation_dir=None,
                 "Relative paths detected. They may cause failures in CBM "
                 f"model command line processes: '{path}'")
     for path in existing_paths:
+        if path is None:
+            continue
         if not os.path.exists(path):
             raise ValueError(f"specified path does not exist '{path}'")
     _delete_old_tempfiles(tempfiles_output_dir)
