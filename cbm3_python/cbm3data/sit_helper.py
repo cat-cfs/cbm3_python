@@ -142,9 +142,11 @@ class SITConfig(object):
 
     def import_project(self, exe_path, config_save_path=None):
         if config_save_path is None:
-            with tempfile.NamedTemporaryFile(mode='w') as f:
-                f.write(json.dumps(self.config))
-                subprocess.check_call([exe_path, '-c', f.name])
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_file_name = os.path.join(temp_dir, "sit_config.json")
+                with open(temp_file_name, 'w', encoding="utf-8") as temp_file:
+                    temp_file.write(json.dumps(self.config))
+                subprocess.check_call([exe_path, '-c', temp_file_name])
         else:
             self.save(config_save_path)
             subprocess.check_call([exe_path, '-c', config_save_path])
