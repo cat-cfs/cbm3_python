@@ -52,7 +52,8 @@ def csv_import(csv_dir, imported_project_path,
     sit_config = SITConfig(
         imported_project_path, initialize_mapping, archive_index_db_path)
 
-    with open(os.path.join(csv_dir, "mapping.json"), 'r') as mapping_file:
+    mapping_path = os.path.join(csv_dir, "mapping.json")
+    with open(mapping_path, 'r', encoding="utf-8") as mapping_file:
         mapping = json.load(mapping_file)
 
     sit_config.config["mapping_config"]["nonforest"] = \
@@ -89,7 +90,8 @@ def csv_import(csv_dir, imported_project_path,
     for item in sit_tables:
         csv_path = os.path.join(csv_dir, f"{item}.csv")
         csv_data = pd.read_csv(csv_path)
-        csv_data.to_sql(item, engine, index=False, if_exists='fail')
+        csv_data.to_sql(
+            item, engine, index=False, if_exists='fail')
 
     sit_config.database_path(
         db_path=sit_import_db_path,
