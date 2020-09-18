@@ -27,6 +27,16 @@ def main():
             "project_path",
             help="path to a cbm project database file")
         parser.add_argument(
+            "--project_simulation_id",
+            help="integer id for the simulation scenario to run in the "
+                 "project (tblSimulation.SimulationID). If not specified "
+                 "the highest numeric SimulationID is used.")
+        parser.add_argument(
+            "--n_timesteps",
+            help="the number of timesteps to run the specified project. "
+                 "If not specified the value in tblRunTableDetails will be "
+                 "used.")
+        parser.add_argument(
             "--aidb_path",
             help="path to a CBM-CFS3 archive index database. If unspecified a "
                  "typical default value is used.")
@@ -117,6 +127,8 @@ def main():
 
         results_path = projectsimulator.run(
             project_path=project_path,
+            project_simulation_id=args.project_simulation_id,
+            n_timesteps=args.n_timesteps,
             aidb_path=aidb_path,
             toolbox_installation_dir=toolbox_installation_dir,
             cbm_exe_path=cbm_exe_path,

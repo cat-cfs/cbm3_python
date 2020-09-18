@@ -44,17 +44,23 @@ def _delete_old_tempfiles(tempfiles_output_dir):
         shutil.rmtree(tempfiles_output_dir)
 
 
-def run(project_path, aidb_path=None, toolbox_installation_dir=None,
-        cbm_exe_path=None, results_database_path=None,
-        tempfiles_output_dir=None, skip_makelist=False,
-        use_existing_makelist_output=False, copy_makelist_results=False,
-        stdout_path=None, dist_classes_path=None, dist_rules_path=None,
-        loader_settings=None):
+def run(project_path, project_simulation_id=None, n_timesteps=None,
+        aidb_path=None, toolbox_installation_dir=None, cbm_exe_path=None,
+        results_database_path=None, tempfiles_output_dir=None,
+        skip_makelist=False, use_existing_makelist_output=False,
+        copy_makelist_results=False, stdout_path=None, dist_classes_path=None,
+        dist_rules_path=None, loader_settings=None):
     """runs the specified single simulation assumption project and loads the
     results
 
     Args:
         project_path (str): Path to a CBM-CFS3 project to simulate.
+        project_simulation_id (int, optional): integer id for the simulation
+            scenario to run in the project (tblSimulation.SimulationID). If
+            not specified the highest numeric SimulationID is used.
+        n_timesteps (int, optional): the number of timesteps to run the
+            specified project. If not specified the value in tblRunTableDetails
+            will be used.
         aidb_path (str, optional): Path to a CBM-CFS3 archive index database.
             If unspecified a typical default value is used. Defaults to None.
         toolbox_installation_dir (str, optional): Path of the installed
@@ -144,7 +150,8 @@ def run(project_path, aidb_path=None, toolbox_installation_dir=None,
         if not use_existing_makelist_output:
             clear_old_results(proj)
 
-        simId = aidb.AddProjectToAIDB(proj)
+        simId = aidb.AddProjectToAIDB(
+            proj, project_sim_id=project_simulation_id)
         try:
             cbm_wd = os.path.join(toolbox_installation_dir, "temp")
             s = Simulator(
