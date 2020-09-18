@@ -5,7 +5,8 @@ from os.path import isdir, join
 import xml.etree.ElementTree as ET
 
 
-# credit to: https://stackoverflow.com/questions/52071642/python-copying-the-files-with-include-pattern
+# credit to:
+# https://stackoverflow.com/questions/52071642/python-copying-the-files-with-include-pattern
 def include_patterns(*patterns):
     """Factory function that can be used with copytree() ignore parameter.
 
