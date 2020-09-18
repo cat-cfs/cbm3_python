@@ -82,11 +82,26 @@ class AIDB(AccessDB):
             """, (simulationID, name, desc, author, standInitializationID,
                   CBMRunID, inputSimulationID, inputDBID))
 
-    def AddProjectToAIDB(self, project, simId=None):
-        '''
-        add a project to the AIDB with the next available SimulationID
-        returns the simulation ID
-        '''
+    def AddProjectToAIDB(self, project, project_sim_id=None):
+        """Add a single scenario form the specified project to the Archive
+        index database.  If the project_sim_id is specified, the simulation
+        scenario id matching that id will be added to the archive index, and
+        otherwise, the simulation scenario with the highest id value will be
+        added.
+
+        Args:
+            project (cbm3_python.cbm3data.accessdb.AccessDB): An access db
+                initialized with a path to a CBM project.
+            project_sim_id (int, optional): [description]. Defaults to None.
+
+        Raises:
+            ValueError: raised if a specified project_sim_id does not match a
+                simulation id found in the project database.
+
+        Returns:
+            int: Returns the Archive index database simulation ID for the
+                added project scenario.
+        """
         name_tokens = os.path.split(project.path)
         name = name_tokens[len(name_tokens) - 1]
         dir = os.path.dirname(project.path)
@@ -95,42 +110,49 @@ class AIDB(AccessDB):
         nextStandInitializationID = self.GetMaxID(
             "tblStandInitialization", "StandInitializationID") + 1
         nextCBMRunID = self.GetMaxID("tblCBMRun", "CBMRunID") + 1
-        if simId is not None:
-            nextSimulationID = simId
-        else:
-            nextSimulationID = self.GetMaxID(
-                "tblSimulation", "SimulationID") + 1
+        nextSimulationID = self.GetMaxID(
+            "tblSimulation", "SimulationID") + 1
 
         self.InsertRowTo_tblInputDB(dir, name, nextInputDBID)
+        if project_sim_id is None:
+            project_sim_id = project.GetMaxID("tblSimulation", "SimulationID")
 
-        ProjectToAIDBStandInitIDs = {}
-        for standInitRow in project.Query(
-                "SELECT * FROM tblStandInitialization").fetchall():
-            self.InsertRowTo_tblStandInitialization(
-                standInitRow.Name, standInitRow.Description, " ",
-                nextInputDBID, nextStandInitializationID,
-                standInitRow.StandInitID)
-            ProjectToAIDBStandInitIDs[standInitRow.StandInitID] = \
-                nextStandInitializationID
-            nextStandInitializationID += 1
+        project_tblSimulationRow = project.Query(
+            "SELECT * FROM tblSimulation WHERE "
+            "tblSimulation.SimulationID == ?",
+            (project_sim_id)).fetchone()
+        if not project_tblSimulationRow:
+            raise ValueError(
+                f"project simulation id {project_sim_id} id not correspond to "
+                "an id in project tblSimulation.")
 
-        RunIDToCBMRunIDLookup = {}
-        for runRow in project.Query("SELECT * FROM tblRunTable").fetchall():
-            self.InsertRowTo_tblCBMRun(
-                runRow.Name, runRow.Description, " ", nextInputDBID,
-                nextCBMRunID, runRow.RunID)
-            RunIDToCBMRunIDLookup[runRow.RunID] = nextCBMRunID
-            nextCBMRunID += 1
+        project_tblRunTableRow = project.Query(
+            "SELECT * FROM tblRunTable WHERE "
+            "tblRunTable.RunID == ?",
+            project_tblSimulationRow.RunID).fetchone()
 
-        for simRow in project.Query("SELECT * FROM tblSimulation").fetchall():
-            self.InsertRowTo_tblSimulation(
-                simRow.Name, simRow.Description, " ", nextInputDBID,
-                nextSimulationID,
-                ProjectToAIDBStandInitIDs[simRow.StandInitID],
-                RunIDToCBMRunIDLookup[simRow.RunID], simRow.SimulationID)
-            nextSimulationID += 1
+        project_tblStandInitializationRow = project.Query(
+            "SELECT * FROM tblStandInitialization WHERE"
+            "tblStandInitialization.StandInitID == ?",
+            project_tblSimulationRow.StandInitID).fetchone()
 
-        return nextSimulationID - 1
+        self.InsertRowTo_tblStandInitialization(
+            project_tblStandInitializationRow.Name,
+            project_tblStandInitializationRow.Description, " ",
+            nextInputDBID, nextStandInitializationID,
+            project_tblStandInitializationRow.StandInitID)
+
+        self.InsertRowTo_tblCBMRun(
+            project_tblRunTableRow.Name, project_tblRunTableRow.Description,
+            " ", nextInputDBID, nextCBMRunID, project_tblRunTableRow.RunID)
+
+        self.InsertRowTo_tblSimulation(
+            project_tblSimulationRow.Name,
+            project_tblSimulationRow.Description, " ", nextInputDBID,
+            nextSimulationID, nextStandInitializationID,
+            nextCBMRunID, project_tblSimulationRow.SimulationID)
+
+        return nextSimulationID
 
     def DeleteProjectsFromAIDB(self, simulation_id=None):
         '''
@@ -147,7 +169,7 @@ class AIDB(AccessDB):
         for item in keys:
             self.ExecuteQuery(
                 "DELETE FROM tblInputDB WHERE InputDBID = ?",
-                (item.InputDBID))
+                item.InputDBID)
 
     def getKeys(self, simulation_id=None):
 
