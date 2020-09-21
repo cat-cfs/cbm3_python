@@ -51,3 +51,8 @@ class ConcurrentRunner:
             shutil.copy(run_args["project_path"], local_project_db)
             args = [local_project_db]
             projectsimulator.run(*args, **kwargs)
+            return run_args["results_database_path"]
+
+    def run(self, run_args):
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            return list(executor.map(self.run_func, run_args))

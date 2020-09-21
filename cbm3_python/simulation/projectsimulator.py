@@ -7,6 +7,7 @@ from cbm3_python.cbm3data.resultsloader import ResultsLoader
 from cbm3_python.simulation.simulator import Simulator
 from cbm3_python.simulation.tools.createaccountingrules \
     import CreateAccountingRules
+from cbm3_python.simulation.concurrent_runner import ConcurrentRunner
 from cbm3_python import toolbox_defaults
 
 
@@ -223,3 +224,8 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
         results_path = s.getDefaultResultsPath() if results_database_path \
             is None else results_database_path
         return results_path
+
+
+def run_concurrent(run_args, toolbox_path):
+    runner = ConcurrentRunner(toolbox_path)
+    runner.run(run_args)
