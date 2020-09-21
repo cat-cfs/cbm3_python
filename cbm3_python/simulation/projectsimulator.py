@@ -1,6 +1,7 @@
 import os
 import shutil
 from cbm3_python.cbm3data.aidb import AIDB
+from cbm3_python.cbm3data.projectdb import ProjectDB
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.cbm3data.resultsloader import ResultsLoader
 from cbm3_python.simulation.simulator import Simulator
@@ -135,7 +136,7 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
     _delete_old_tempfiles(tempfiles_output_dir)
 
     with AIDB(aidb_path, False) as aidb, \
-            AccessDB(project_path, False) as proj:
+            ProjectDB(project_path, False) as proj:
 
         if use_existing_makelist_output and not skip_makelist:
             raise ValueError(
