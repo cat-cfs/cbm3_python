@@ -116,7 +116,7 @@ class AIDB(AccessDB):
         self.InsertRowTo_tblInputDB(dir, name, nextInputDBID)
         if project_sim_id is None:
             project_sim_id = project.GetMaxID("tblSimulation", "SimulationID")
-        print(f"value of project_sim_id: {project_sim_id}")
+
         project_tblSimulationRow = project.Query(
             "SELECT * FROM tblSimulation WHERE "
             "tblSimulation.SimulationID = ?",
@@ -132,7 +132,7 @@ class AIDB(AccessDB):
             project_tblSimulationRow.RunID).fetchone()
 
         project_tblStandInitializationRow = project.Query(
-            "SELECT * FROM tblStandInitialization WHERE"
+            "SELECT * FROM tblStandInitialization WHERE "
             "tblStandInitialization.StandInitID = ?",
             project_tblSimulationRow.StandInitID).fetchone()
 
