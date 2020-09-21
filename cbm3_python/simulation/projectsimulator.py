@@ -153,6 +153,10 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
 
         simId = aidb.AddProjectToAIDB(
             proj, project_sim_id=project_simulation_id)
+        original_run_length = None
+        if n_timesteps:
+            original_run_length = proj.get_run_length(project_simulation_id)
+            proj.set_run_length(n_timesteps, project_simulation_id)
         try:
             cbm_wd = os.path.join(toolbox_installation_dir, "temp")
             s = Simulator(
@@ -212,6 +216,8 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
                 raise ValueError("unknown loader settings")
         finally:
             # cleanup
+            if original_run_length:
+                proj.set_run_length(original_run_length, project_simulation_id)
             s.setDefaultArchiveIndexPath(aidb_path_original)
             aidb.DeleteProjectsFromAIDB(simId)
         results_path = s.getDefaultResultsPath() if results_database_path \
