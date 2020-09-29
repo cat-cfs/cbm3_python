@@ -19,7 +19,6 @@ results_queries = [
 ]
 
 console_scripts = [
-    "cbm3_batch_runner = cbm3_python.scripts.batchrunner:main",
     "cbm3_create_nir_path_config = " +
     "cbm3_python.scripts.create_nir_path_config:main",
     "cbm3_run_etr_simulator = cbm3_python.scripts.run_etr_simulator:main",
@@ -29,7 +28,7 @@ console_scripts = [
 
 setup(
     name="cbm3_python",
-    version="0.6.5",
+    version="0.6.6",
     description="Scripts to automate tasks with CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
