@@ -1,6 +1,6 @@
 import os
 import shutil
-import concurrent.futures
+from concurrent.futures import ProcessPoolExecutor
 import tempfile
 
 from cbm3_python.simulation import toolbox_env
@@ -34,7 +34,7 @@ class ConcurrentRunner:
                     * results_database_path
 
         Returns:
-            str: the results database path
+            dict: the input run_args
         """
         # the following args that are optional in the
         # non-concurrent run function are required here
@@ -74,7 +74,8 @@ class ConcurrentRunner:
             shutil.copy(run_args["project_path"], local_project_db)
             args = [local_project_db]
             projectsimulator.run(*args, **kwargs)
-            return run_args["results_database_path"]
+            run_args["log_path"] = log_path
+            return run_args
 
     def run(self, run_args, max_workers=None):
         """Runs CBM3 simulations as separate processes.
@@ -91,10 +92,12 @@ class ConcurrentRunner:
                 py:class:`concurrent.futures.ProcessPoolExecutor
                 Defaults to None.
 
-        Returns:
-            list: the list of results database paths for the concurrently run
-                simulations.
+        Yields:
+            dict: a dictionary describing the finished task yielded as each
+                task is finished.
         """
 
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            return list(executor.map(self.run_func, run_args))
+        with ProcessPoolExecutor(
+                max_workers=max_workers) as executor:
+            for item in executor.map(self.run_func, run_args):
+                yield item

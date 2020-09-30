@@ -228,4 +228,5 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
 
 def run_concurrent(run_args, toolbox_path):
     runner = ConcurrentRunner(toolbox_path)
-    runner.run(run_args)
+    for finished_task in runner.run(run_args):
+        yield finished_task
