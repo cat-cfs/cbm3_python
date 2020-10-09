@@ -83,14 +83,15 @@ class Simulator(object):
         which is stored in an XML file, to the specified path
         @param path the new default archive index path
         '''
-        xmlPath = os.path.join(self.toolboxPath, "Global.cbmproj")
-        tree = ET.parse(xmlPath)
-        root = tree.getroot()
-        ArchiveIndexDbPath = root[0].find("ArchiveIndexDbPath")
-        ArchiveIndexDbFileName = root[0].find("ArchiveIndexDbFileName")
-        ArchiveIndexDbPath.set("value", os.path.dirname(path))
-        ArchiveIndexDbFileName.set("value", os.path.basename(path))
-        tree.write(xmlPath)
+        for config_file in ["Global.cbmproj", "CBMToolbox.xml"]:
+            xmlPath = os.path.join(self.toolboxPath, config_file)
+            tree = ET.parse(xmlPath)
+            root = tree.getroot()
+            ArchiveIndexDbPath = root[0].find("ArchiveIndexDbPath")
+            ArchiveIndexDbFileName = root[0].find("ArchiveIndexDbFileName")
+            ArchiveIndexDbPath.set("value", os.path.dirname(path))
+            ArchiveIndexDbFileName.set("value", os.path.basename(path))
+            tree.write(xmlPath)
 
     def getDefaultArchiveIndexPath(self):
         '''
