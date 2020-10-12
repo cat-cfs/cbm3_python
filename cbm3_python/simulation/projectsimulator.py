@@ -7,7 +7,6 @@ from cbm3_python.cbm3data.resultsloader import ResultsLoader
 from cbm3_python.simulation.simulator import Simulator
 from cbm3_python.simulation.tools.createaccountingrules \
     import CreateAccountingRules
-from cbm3_python.simulation.concurrent_runner import ConcurrentRunner
 from cbm3_python import toolbox_defaults
 
 
@@ -227,6 +226,7 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
 
 
 def run_concurrent(run_args, toolbox_path):
+    from cbm3_python.simulation.concurrent_runner import ConcurrentRunner
     runner = ConcurrentRunner(toolbox_path)
     for finished_task in runner.run(run_args):
         yield finished_task
