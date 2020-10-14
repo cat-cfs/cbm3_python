@@ -225,8 +225,8 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
         return results_path
 
 
-def run_concurrent(run_args, toolbox_path):
+def run_concurrent(run_args, toolbox_path, max_workers=None):
     from cbm3_python.simulation.concurrent_runner import ConcurrentRunner
     runner = ConcurrentRunner(toolbox_path)
-    for finished_task in runner.run(run_args):
+    for finished_task in runner.run(run_args, max_workers=max_workers):
         yield finished_task
