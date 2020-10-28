@@ -22,6 +22,12 @@ def load_standard_import_tool_plugin(local_dir=None):
     If the arg local_dir is specified, the tool is downloaded to that
     directory, and otherwise it is downloaded to {cwd}/StandardImportToolPlugin
     '''
+
+    from warnings import warn
+    warn(
+        "This method is deprecated, please acquire and install "
+        "Operational-Scale CBM-CFS3 version 1.2.7605.312 or newer")
+
     StandardImportToolPluginDir = os.path.join(
         ".", "StandardImportToolPlugin") \
         if local_dir is None else local_dir
@@ -40,14 +46,23 @@ def load_standard_import_tool_plugin(local_dir=None):
 
 def csv_import(csv_dir, imported_project_path,
                initialize_mapping=False, archive_index_db_path=None,
-               working_dir=None):
+               working_dir=None, toolbox_install_dir=None):
 
     if not working_dir:
         working_dir = os.path.dirname(os.path.abspath(imported_project_path))
 
-    sit_plugin_path = os.path.join(
-        os.getenv("LOCALAPPDATA"), "StandardImportToolPlugin")
-    sit_path = load_standard_import_tool_plugin(sit_plugin_path)
+
+    if toolbox_install_dir:
+        if not os.path.exists(toolbox_install_dir):
+            raise ValueError(
+                f"specified toolbox dir {toolbox_install_dir} not found")
+        else:
+            sit_path = os.path.join(toolbox_install_dir, "StandardImportToolPlugin.exe")
+            if not os.path.exists(sit_plugin_path):
+                # fall back to deprecated method (pull app from github)
+                sit_plugin_dir = os.path.join(
+                    os.getenv("LOCALAPPDATA"), "StandardImportToolPlugin")
+                sit_path = load_standard_import_tool_plugin(sit_plugin_path)
 
     sit_config = SITConfig(
         imported_project_path, initialize_mapping, archive_index_db_path)
