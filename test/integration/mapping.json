@@ -1,0 +1,28 @@
+{
+    "nonforest": null,
+    "species": {
+        "species_classifier": "Species",
+        "species_mapping": [
+            {
+                "user_species": "Unspecified softwood species",
+                "default_species": "Unspecified softwood species"
+            },
+            {
+                "user_species": "Unspecified hardwood species",
+                "default_species": "Unspecified hardwood species"
+            }
+        ]
+    },
+    "spatial_units": {
+        "mapping_mode": "SingleDefaultSpatialUnit",
+        "default_spuid": 19
+    },
+    "disturbance_types": {
+        "disturbance_type_mapping": [
+            {
+                "user_dist_type": "Fire",
+                "default_dist_type": "Wildfire"
+            }
+        ]
+    }
+}
