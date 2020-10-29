@@ -17,8 +17,8 @@ def get_db_table_names():
         yield_table_name="sit_yield")
 
 
-def import_mdb_xls(working_dir, sit_mdb_path, mapping_file_path):
-    os.makedirs(working_dir)
+def import_mdb_xls(working_dir, sit_mdb_path, mapping_file_path, xls=False):
+
     imported_project_path = os.path.join(
         working_dir, "cbm3_project.mdb")
 
@@ -31,6 +31,9 @@ def import_mdb_xls(working_dir, sit_mdb_path, mapping_file_path):
         working_dir=working_dir,
         toolbox_install_dir=None)
 
+    table_names = get_db_table_names()
+    if xls:
+        table_names = {k: f"{v}$" for k, v in table_names.items()}
     import_args.update(get_db_table_names())
 
     sit_helper.mdb_xls_import(**import_args)
@@ -47,6 +50,7 @@ def mdb_to_xls(sit_mdb_path, excel_output_path):
     for k, v in get_db_table_names().items():
         df = as_data_frame(f"SELECT * FROM {v}", sit_mdb_path)
         df.to_excel(excel_output_path, sheet_name=k, index=False)
+    return excel_output_path
 
 
 def mdb_to_delimited(sit_mdb_path, ext, output_dir):
@@ -68,8 +72,17 @@ class IntegrationTests(unittest.TestCase):
         mapping_file_path = os.path.join(this_dir, "mapping.json")
         sit_mdb_path = os.path.join(this_dir, "cbm3_sit.mdb")
         with tempfile.TemporaryDirectory() as tempdir:
+
+            mdb_working_dir = os.path.join(tempdir, "mdb")
+            os.makedirs(mdb_working_dir)
             mdb_project = import_mdb_xls(
-                os.path.join(tempdir, "mdb"), sit_mdb_path, mapping_file_path)
+                mdb_working_dir, sit_mdb_path, mapping_file_path)
+
+            xls_working_dir = os.path.join(tempdir, "xls")
+            os.makedirs(xls_working_dir)
             xls_project = import_mdb_xls(
-                os.path.join(tempdir, "xls"), mdb_to_xls(sit_mdb_path),
-                mapping_file_path)
+                xls_working_dir,
+                mdb_to_xls(
+                    sit_mdb_path,
+                    os.path.join(xls_working_dir, "cbm3_sit.xls")),
+                mapping_file_path, xls=True)
