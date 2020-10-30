@@ -34,7 +34,7 @@ def import_mdb_xls(working_dir, sit_mdb_path, mapping_file_path, xls=False):
     table_names = get_db_table_names()
     if xls:
         table_names = {k: f"{v}$" for k, v in table_names.items()}
-    import_args.update(get_db_table_names())
+    import_args.update(table_names)
 
     sit_helper.mdb_xls_import(**import_args)
     return imported_project_path
@@ -44,13 +44,6 @@ def as_data_frame(query, access_db_path):
     with AccessDB(access_db_path) as access_db:
         df = pd.read_sql(query, access_db.connection)
     return df
-
-
-def mdb_to_xls(sit_mdb_path, excel_output_path):
-    for k, v in get_db_table_names().items():
-        df = as_data_frame(f"SELECT * FROM {v}", sit_mdb_path)
-        df.to_excel(excel_output_path, sheet_name=k, index=False)
-    return excel_output_path
 
 
 def mdb_to_delimited(sit_mdb_path, ext, output_dir):
@@ -71,6 +64,7 @@ class IntegrationTests(unittest.TestCase):
         this_dir = os.path.dirname(os.path.realpath(__file__))
         mapping_file_path = os.path.join(this_dir, "mapping.json")
         sit_mdb_path = os.path.join(this_dir, "cbm3_sit.mdb")
+        sit_xls_path = os.path.join(this_dir, "cbm3_sit.xls")
         with tempfile.TemporaryDirectory() as tempdir:
 
             mdb_working_dir = os.path.join(tempdir, "mdb")
@@ -82,7 +76,5 @@ class IntegrationTests(unittest.TestCase):
             os.makedirs(xls_working_dir)
             xls_project = import_mdb_xls(
                 xls_working_dir,
-                mdb_to_xls(
-                    sit_mdb_path,
-                    os.path.join(xls_working_dir, "cbm3_sit.xls")),
+                sit_xls_path,
                 mapping_file_path, xls=True)
