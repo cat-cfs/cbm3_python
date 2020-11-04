@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from cbm3_python.cbm3data import sit_helper
 import pandas as pd
+import numpy as np
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.simulation import projectsimulator
 from cbm3_python.cbm3data import cbm3_results
@@ -121,6 +122,9 @@ class IntegrationTests(unittest.TestCase):
 
             # double check the results are not empty
             self.assertFalse(mdb_pools.empty)
-            self.assertTrue(mdb_pools.equals(xls_pools))
-            self.assertTrue(mdb_pools.equals(csv_pools))
-            self.assertTrue(mdb_pools.equals(tab_pools))
+            self.assertTrue(
+                np.allclose(mdb_pools.to_numpy(), xls_pools.to_numpy()))
+            self.assertTrue(
+                np.allclose(mdb_pools.to_numpy(), csv_pools.to_numpy()))
+            self.assertTrue(
+                np.allclose(mdb_pools.to_numpy(), tab_pools.to_numpy()))
