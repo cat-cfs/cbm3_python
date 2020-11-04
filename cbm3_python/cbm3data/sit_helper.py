@@ -5,23 +5,29 @@ import os
 import subprocess
 import json
 import tempfile
-import urllib
 from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
-from sqlalchemy import create_engine
-import pandas as pd
-from cbm3_python.cbm3data import access_templates
+from cbm3_python import toolbox_defaults
 
 
 def load_standard_import_tool_plugin(local_dir=None):
     '''
-    Download the 1.3.0.1 release of StandardImportToolPlugin from Github and
+    # DEPRECATED StandardImportToolPlugin on Github has been moved into
+    # the Operational-Scale CBM-CFS3 1.2.7606.313 and newer versions
+
+    Download the 1.4.0.1 release of StandardImportToolPlugin from Github and
     unzip it locally.
 
     If the arg local_dir is specified, the tool is downloaded to that
     directory, and otherwise it is downloaded to {cwd}/StandardImportToolPlugin
     '''
+
+    from warnings import warn
+    warn(
+        "This method is deprecated, please acquire and install "
+        "Operational-Scale CBM-CFS3 version 1.2.7606.313 or newer.")
+
     StandardImportToolPluginDir = os.path.join(
         ".", "StandardImportToolPlugin") \
         if local_dir is None else local_dir
@@ -31,28 +37,65 @@ def load_standard_import_tool_plugin(local_dir=None):
     if not os.path.exists(StandardImportToolPluginExe):
         resp = urlopen(
             'https://github.com/cat-cfs/StandardImportToolPlugin/releases'
-            '/download/1.3.0.1/Release.zip')
+            '/download/1.4.0.1/Release.zip')
         zipfile = ZipFile(BytesIO(resp.read()))
 
         zipfile.extractall(path=StandardImportToolPluginDir)
     return StandardImportToolPluginExe
 
 
-def csv_import(csv_dir, imported_project_path,
-               initialize_mapping=False, archive_index_db_path=None,
-               working_dir=None):
+def _sit_executable(toolbox_install_dir=None):
+    if not toolbox_install_dir:
+        toolbox_install_dir = toolbox_defaults.INSTALL_PATH
 
-    if not working_dir:
-        working_dir = os.path.dirname(os.path.abspath(imported_project_path))
+    if not os.path.exists(toolbox_install_dir):
+        raise ValueError(
+            f"specified toolbox dir {toolbox_install_dir} not found")
 
-    sit_plugin_path = os.path.join(
-        os.getenv("LOCALAPPDATA"), "StandardImportToolPlugin")
-    sit_path = load_standard_import_tool_plugin(sit_plugin_path)
+    sit_path = os.path.join(
+        toolbox_install_dir, "StandardImportToolPlugin.exe")
+    if not os.path.exists(sit_path):
+        # fall back to deprecated method (pull app from github)
+        sit_plugin_dir = os.path.join(
+            os.getenv("LOCALAPPDATA"), "StandardImportToolPlugin_v1.4.0.1")
+        sit_path = load_standard_import_tool_plugin(sit_plugin_dir)
+    return sit_path
+
+
+def mdb_xls_import(mdb_xls_path, age_class_table_name, classifiers_table_name,
+                   disturbance_events_table_name, disturbance_types_table_name,
+                   inventory_table_name, transition_rules_table_name,
+                   yield_table_name, imported_project_path, mapping_path,
+                   initialize_mapping=False, archive_index_db_path=None,
+                   working_dir=None, toolbox_install_dir=None):
+
+    config = get_sit_config(
+        imported_project_path, mapping_path,
+        initialize_mapping=initialize_mapping,
+        archive_index_db_path=archive_index_db_path)
+
+    config.database_path(
+        db_path=mdb_xls_path,
+        age_class_table_name=age_class_table_name,
+        classifiers_table_name=classifiers_table_name,
+        disturbance_events_table_name=disturbance_events_table_name,
+        disturbance_types_table_name=disturbance_types_table_name,
+        inventory_table_name=inventory_table_name,
+        transition_rules_table_name=transition_rules_table_name,
+        yield_table_name=yield_table_name)
+
+    config.import_project(
+        _sit_executable(toolbox_install_dir),
+        os.path.join(working_dir, "import_config.json"))
+
+
+def get_sit_config(imported_project_path, mapping_path,
+                   initialize_mapping=False,
+                   archive_index_db_path=None):
 
     sit_config = SITConfig(
         imported_project_path, initialize_mapping, archive_index_db_path)
 
-    mapping_path = os.path.join(csv_dir, "mapping.json")
     with open(mapping_path, 'r', encoding="utf-8") as mapping_file:
         mapping = json.load(mapping_file)
 
@@ -65,46 +108,54 @@ def csv_import(csv_dir, imported_project_path,
     sit_config.config["mapping_config"]["disturbance_types"] = \
         mapping["disturbance_types"]
 
-    sit_import_db_path = os.path.join(working_dir, "sit_input.mdb")
+    return sit_config
 
-    sit_tables = [
-        "sit_classifiers",
-        "sit_disturbance_types",
-        "sit_age_classes",
-        "sit_inventory",
-        "sit_yield",
-        "sit_events",
-        "sit_transitions"]
 
-    access_templates.copy_mdb_template(sit_import_db_path)
-    connection_string = (
-        r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-        f'DBQ={sit_import_db_path};'
-        r'ExtendedAnsiSQL=1;'
-    )
-    connection_url = \
-        "access+pyodbc:///?odbc_connect=" \
-        f"{urllib.parse.quote_plus(connection_string)}"
+def _delimited_import(extension, path, imported_project_path,
+                      initialize_mapping=False, archive_index_db_path=None,
+                      working_dir=None, toolbox_install_dir=None):
+    mapping_path = os.path.join(path, "mapping.json")
 
-    engine = create_engine(connection_url)
-    for item in sit_tables:
-        csv_path = os.path.join(csv_dir, f"{item}.csv")
-        csv_data = pd.read_csv(csv_path)
-        csv_data.to_sql(
-            item, engine, index=False, if_exists='fail')
+    if not working_dir:
+        working_dir = os.path.dirname(
+            os.path.abspath(imported_project_path))
 
-    sit_config.database_path(
-        db_path=sit_import_db_path,
-        age_class_table_name="sit_age_classes",
-        classifiers_table_name="sit_classifiers",
-        disturbance_events_table_name="sit_events",
-        disturbance_types_table_name="sit_disturbance_types",
-        inventory_table_name="sit_inventory",
-        transition_rules_table_name="sit_transitions",
-        yield_table_name="sit_yield")
+    sit_config = get_sit_config(
+        imported_project_path, mapping_path, initialize_mapping,
+        archive_index_db_path)
+
+    sit_config.text_file_paths(
+        ageclass_path=os.path.join(path, f"sit_age_classes{extension}"),
+        classifiers_path=os.path.join(path, f"sit_classifiers{extension}"),
+        disturbance_events_path=os.path.join(path, f"sit_events{extension}"),
+        disturbance_types_path=os.path.join(
+            path, f"sit_disturbance_types{extension}"),
+        inventory_path=os.path.join(path, f"sit_inventory{extension}"),
+        transition_rules_path=os.path.join(
+            path, f"sit_transitions{extension}"),
+        yield_path=os.path.join(path, f"sit_yield{extension}"))
 
     sit_config.import_project(
-        sit_path, os.path.join(working_dir, "import_config.json"))
+        _sit_executable(toolbox_install_dir),
+        os.path.join(working_dir, "import_config.json"))
+
+
+def tab_import(tab_dir, imported_project_path,
+               initialize_mapping=False, archive_index_db_path=None,
+               working_dir=None, toolbox_install_dir=None):
+    _delimited_import(
+        ".tab", tab_dir, imported_project_path,
+        initialize_mapping, archive_index_db_path,
+        working_dir, toolbox_install_dir)
+
+
+def csv_import(csv_dir, imported_project_path,
+               initialize_mapping=False, archive_index_db_path=None,
+               working_dir=None, toolbox_install_dir=None):
+    _delimited_import(
+        ".csv", csv_dir, imported_project_path,
+        initialize_mapping, archive_index_db_path,
+        working_dir, toolbox_install_dir)
 
 
 class SITConfig(object):

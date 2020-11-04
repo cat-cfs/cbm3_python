@@ -28,19 +28,16 @@ console_scripts = [
 
 setup(
     name="cbm3_python",
-    version="0.6.9",
+    version="0.7.2",
     description="Scripts to automate tasks with CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Carbon Accounting Team - Canadian Forest Service',
-    author_email='scott.morken@canada.ca',
     maintainer='Scott Morken',
     maintainer_email='scott.morken@canada.ca',
     license="MPL-2.0",
-    url="",
-    download_url="",
-    packages=find_packages(),
+    packages=find_packages(exclude=['test*']),
     package_data={
         "cbm3_python":
             access_templates + results_queries
