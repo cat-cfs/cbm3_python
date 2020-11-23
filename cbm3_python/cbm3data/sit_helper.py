@@ -44,9 +44,9 @@ def load_standard_import_tool_plugin(local_dir=None):
     return StandardImportToolPluginExe
 
 
-def _sit_executable(toolbox_install_dir=None):
+def sit_executable(toolbox_install_dir=None):
     if not toolbox_install_dir:
-        toolbox_install_dir = toolbox_defaults.INSTALL_PATH
+        toolbox_install_dir = toolbox_defaults.get_install_path()
 
     if not os.path.exists(toolbox_install_dir):
         raise ValueError(
@@ -85,7 +85,7 @@ def mdb_xls_import(mdb_xls_path, age_class_table_name, classifiers_table_name,
         yield_table_name=yield_table_name)
 
     config.import_project(
-        _sit_executable(toolbox_install_dir),
+        sit_executable(toolbox_install_dir),
         os.path.join(working_dir, "import_config.json"))
 
 
@@ -136,7 +136,7 @@ def _delimited_import(extension, path, imported_project_path,
         yield_path=os.path.join(path, f"sit_yield{extension}"))
 
     sit_config.import_project(
-        _sit_executable(toolbox_install_dir),
+        sit_executable(toolbox_install_dir),
         os.path.join(working_dir, "import_config.json"))
 
 

@@ -36,7 +36,7 @@ def main():
 
         aidb_path = args.aidb_path
         if not aidb_path:
-            aidb_path = toolbox_defaults.ARCHIVE_INDEX_PATH
+            aidb_path = toolbox_defaults.get_archive_index_path()
 
         sit_helper.csv_import(
             csv_dir=args.sit_data_dir,

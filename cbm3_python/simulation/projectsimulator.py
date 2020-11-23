@@ -108,11 +108,11 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
     """
 
     if not aidb_path:
-        aidb_path = toolbox_defaults.ARCHIVE_INDEX_PATH
+        aidb_path = toolbox_defaults.get_archive_index_path()
     if not cbm_exe_path:
-        cbm_exe_path = toolbox_defaults.CBM_EXECUTABLE_DIR
+        cbm_exe_path = toolbox_defaults.get_cbm_executable_dir()
     if not toolbox_installation_dir:
-        toolbox_installation_dir = toolbox_defaults.INSTALL_PATH
+        toolbox_installation_dir = toolbox_defaults.get_install_path()
 
     # don't allow relative paths here, it will cause failures later in CBM
     # command line apps that have difficult to understand error messages

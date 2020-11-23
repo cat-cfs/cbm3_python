@@ -93,18 +93,18 @@ def main():
         args = parser.parse_args()
 
         toolbox_installation_dir = \
-            toolbox_defaults.INSTALL_PATH \
+            toolbox_defaults.get_install_path() \
             if not args.toolbox_installation_dir \
             else os.path.abspath(args.toolbox_installation_dir)
 
         aidb_path = \
-            toolbox_defaults.ARCHIVE_INDEX_PATH \
+            toolbox_defaults.get_archive_index_path() \
             if not args.aidb_path else os.path.abspath(args.aidb_path)
 
         project_path = os.path.abspath(args.project_path)
 
         cbm_exe_path = \
-            toolbox_defaults.CBM_EXECUTABLE_DIR \
+            toolbox_defaults.get_cbm_executable_dir() \
             if not args.cbm_exe_path else os.path.abspath(args.cbm_exe_path)
 
         results_database_path = None if not args.results_database_path else \
