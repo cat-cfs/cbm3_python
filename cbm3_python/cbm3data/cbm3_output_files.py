@@ -52,8 +52,22 @@ def load_age_indicators(dir, chunksize=None):
     column_names = \
         ["RunID", "TimeStep", "SPUID", "AgeClass"] + \
         get_classifier_column_names() + \
-        ["Area", "Biomass_C", "DOM_C", "Avg_Age"]
+        ["UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
+         "KFProjectType", "KFProjectID", "Area", "Biomass_C", "DOM_C",
+         "Avg_Age"]
 
     return pd.read_csv(
         os.path.join(dir, "ageind.out"), header=None, delim_whitespace=True,
+        names=column_names, chunksize=chunksize)
+
+
+def load_dist_indicators(dir, chunksize=None):
+    column_names = \
+        ["RunID", "TimeStep", "DistTypeID", "SPUID"] + \
+        get_classifier_column_names() + \
+        ["UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
+         "KFProjectType", "KFProjectID", "DistArea", "DistProduct"]
+
+    return pd.read_csv(
+        os.path.join(dir, "distinds.out"), header=None, delim_whitespace=True,
         names=column_names, chunksize=chunksize)
