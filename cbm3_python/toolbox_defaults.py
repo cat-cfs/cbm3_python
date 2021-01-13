@@ -22,7 +22,7 @@ def get_install_path():
         os.path.exists(os.path.join(program_files_dir, "Toolbox.exe"))
     use_appdata_dir = os.path.exists(appdata_dir) and \
         os.path.exists(os.path.join(appdata_dir, "Toolbox.exe"))
-    if use_program_files_dir and appdata_dir:
+    if use_program_files_dir and use_appdata_dir:
         raise ValueError(
             "multiple toolbox installations detected: ",
             f"'{program_files_dir}', '{appdata_dir}'")
