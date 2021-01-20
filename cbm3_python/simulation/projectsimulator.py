@@ -101,7 +101,8 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
             CBM.exe). Defaults to None.
         loader_settings (dict, optional): If None the toolbox loader is used,
             otherwise this arg specifies loader specific settings. Defaults to
-            None.
+            None.  If an empty dictionary or {"type": None} are specified then
+            the cbm results will not be loaded.
 
     Returns:
         str: The path to the loaded CBM results database
@@ -205,6 +206,8 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
                 s.CopyTempFiles(output_dir=tempfiles_output_dir)
             if loader_settings is None:
                 s.LoadCBMResults(output_path=results_database_path)
+            elif loader_settings == {} or loader_settings["type"] is None:
+                return None
             elif loader_settings["type"] == "python_loader":
                 r = ResultsLoader()
                 r.loadResults(

@@ -2,6 +2,7 @@
 #  as represented by the Minister of Natural Resources Canada
 
 import os
+import json
 import argparse
 import datetime
 import logging
@@ -89,6 +90,11 @@ def main():
             "--dist_rules_path",
             help="one of a pair of optional file paths used to configure "
                  "extended kf6 accounting (requires NIR CBM.exe)")
+        parser.add_argument(
+            "--loader_settings",
+            help="An optional json formatted string indicating settings for "
+                 "loading CBM results. If omitted the CBM-Toolbox built-in "
+                 "loader is used.")
 
         args = parser.parse_args()
 
@@ -125,6 +131,10 @@ def main():
             None if not args.dist_rules_path \
             else os.path.abspath(args.dist_rules_path)
 
+        loader_settings = \
+            None if not args.loader_settings \
+            else json.loads(args.loader_settings)
+
         results_path = projectsimulator.run(
             project_path=project_path,
             project_simulation_id=args.project_simulation_id,
@@ -139,7 +149,8 @@ def main():
             use_existing_makelist_output=args.use_existing_makelist_output,
             copy_makelist_results=args.copy_makelist_results,
             dist_classes_path=dist_classes_path,
-            dist_rules_path=dist_rules_path)
+            dist_rules_path=dist_rules_path,
+            loader_settings=loader_settings)
         logging.info("simulation finish, results path: {0}"
                      .format(results_path))
 
