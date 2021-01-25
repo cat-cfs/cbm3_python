@@ -1,0 +1,1 @@
+pytest --cov=cbm3_python --cov-report html:cov_html

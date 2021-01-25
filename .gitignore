@@ -13,3 +13,4 @@
 *.ipynb
 /development.md
 /cov_html
+/.coverage
