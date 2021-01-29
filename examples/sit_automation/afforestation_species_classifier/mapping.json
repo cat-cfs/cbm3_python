@@ -1,0 +1,22 @@
+{
+
+	"nonforest": null,
+	"species": {
+		"species_classifier": "Species",
+		"species_mapping": [
+			{"user_species": "Unspecified softwood species", "default_species": "Unspecified softwood species"},
+			{"user_species": "NonForest", "default_species": "Gleysolic"}
+		]
+	},
+	"spatial_units": {
+		"mapping_mode": "SingleDefaultSpatialUnit",
+		"default_spuid": 19
+	},
+	"disturbance_types": {
+		"disturbance_type_mapping":[
+			{"user_dist_type": "Fire", "default_dist_type": "Wildfire"},
+			{"user_dist_type": "Afforestation", "default_dist_type": "Afforestation"},
+			{"user_dist_type": "Deforestation", "default_dist_type": "Deforestation"}
+		]
+	}
+}

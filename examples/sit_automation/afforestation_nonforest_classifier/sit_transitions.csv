@@ -1,0 +1,2 @@
+ID,Species,NonForestType,using_id,sw_start,sw_end,hw_start,hw_end,dist_type_name,ID_transition,Species_Transition,NonForestType_transition,regen_delay,reset_age,percent
+2,?,GL,false,0,0,0,0,3,2,?,?,0,0,100

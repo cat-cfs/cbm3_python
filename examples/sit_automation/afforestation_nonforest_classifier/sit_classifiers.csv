@@ -1,0 +1,9 @@
+id,name,description
+2,_CLASSIFIER,Species
+2,SW,Unspecified softwood species
+3,_CLASSIFIER,NonForestType
+3,GL,GL
+3,Forest,Forest Only
+1,_CLASSIFIER,ID
+1,1,1
+1,2,2

@@ -1,0 +1,3 @@
+ID,Species,using_id,age,area,delay,unfcccl,hist_dist,last_dist
+1,SW,FALSE,10,10,0,0,1,1
+2,NonForest,FALSE,10,10,0,1,1,1

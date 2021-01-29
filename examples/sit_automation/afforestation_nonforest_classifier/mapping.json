@@ -1,0 +1,27 @@
+{
+
+	"nonforest": {
+		"nonforest_classifier": "NonForestType",
+		"nonforest_mapping": [
+			{"user_nonforest_type": "GL", "default_nonforest_type": "Gleysolic"},
+			{"user_nonforest_type": "Forest Only", "default_nonforest_type": null}
+		]
+	},
+	"species": {
+		"species_classifier": "Species",
+		"species_mapping": [
+			{"user_species": "Unspecified softwood species", "default_species": "Unspecified softwood species"}
+		]
+	},
+	"spatial_units": {
+		"mapping_mode": "SingleDefaultSpatialUnit",
+		"default_spuid": 19
+	},
+	"disturbance_types": {
+		"disturbance_type_mapping":[
+			{"user_dist_type": "Fire", "default_dist_type": "Wildfire"},
+			{"user_dist_type": "Afforestation", "default_dist_type": "Afforestation"},
+			{"user_dist_type": "Deforestation", "default_dist_type": "Deforestation"}
+		]
+	}
+}
