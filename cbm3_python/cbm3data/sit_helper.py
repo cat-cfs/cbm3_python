@@ -37,7 +37,7 @@ def load_standard_import_tool_plugin(local_dir=None):
     if not os.path.exists(StandardImportToolPluginExe):
         resp = urlopen(
             'https://github.com/cat-cfs/StandardImportToolPlugin/releases'
-            '/download/1.4.0.1/Release.zip')
+            '/download/1.4.0.2/Release.zip')
         zipfile = ZipFile(BytesIO(resp.read()))
 
         zipfile.extractall(path=StandardImportToolPluginDir)
@@ -57,7 +57,7 @@ def sit_executable(toolbox_install_dir=None):
     if not os.path.exists(sit_path):
         # fall back to deprecated method (pull app from github)
         sit_plugin_dir = os.path.join(
-            os.getenv("LOCALAPPDATA"), "StandardImportToolPlugin_v1.4.0.1")
+            os.getenv("LOCALAPPDATA"), "StandardImportToolPlugin_v1.4.0.2")
         sit_path = load_standard_import_tool_plugin(sit_plugin_dir)
     return sit_path
 
