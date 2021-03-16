@@ -1,10 +1,11 @@
+import os
 from types import SimpleNamespace
 import pandas as pd
 import pyodbc
 from cbm3_python.cbm3data import cbm3_output_files
 
 
-def query_access_db(path, query):
+def _query_access_db(path, query):
     """Return the result as a dataframe the specified query
     on the access database located at the specified path."""
     connection_string = \
@@ -15,22 +16,22 @@ def query_access_db(path, query):
         return pd.read_sql(query, connection)
 
 
-def load_archive_index_data(aidb_path):
+def _load_archive_index_data(aidb_path):
     # load default spu data from archive index
     return SimpleNamespace(
-        tblSPUDefault=query_access_db(
+        tblSPUDefault=_query_access_db(
             aidb_path, "SELECT * FROM tblSPUDefault"),
-        tblEcoBoundaryDefault=query_access_db(
+        tblEcoBoundaryDefault=_query_access_db(
             aidb_path, "SELECT * FROM tblEcoBoundaryDefault"),
-        tblAdminBoundaryDefault=query_access_db(
+        tblAdminBoundaryDefault=_query_access_db(
             aidb_path, "SELECT * FROM tblAdminBoundaryDefault"),
-        tblDisturbanceTypeDefault=query_access_db(
+        tblDisturbanceTypeDefault=_query_access_db(
             aidb_path, "SELECT * FROM tblDisturbanceTypeDefault"),
-        tblUNFCCCLandClass=query_access_db(
+        tblUNFCCCLandClass=_query_access_db(
             aidb_path, "SELECT * FROM tblUNFCCCLandClass"))
 
 
-def create_default_data_views(aidb_data):
+def _create_default_data_views(aidb_data):
     default_spu_view = aidb_data.tblSPUDefault[
         ["SPUID", "AdminBoundaryID", "EcoBoundaryID"]].merge(
         aidb_data.tblEcoBoundaryDefault[
@@ -63,26 +64,26 @@ def create_default_data_views(aidb_data):
         default_spu_view=default_spu_view)
 
 
-def load_project_level_data(project_db_path):
+def _load_project_level_data(project_db_path):
     # get project level info
     return SimpleNamespace(
-        tblSPU=query_access_db(
+        tblSPU=_query_access_db(
             project_db_path, "SELECT * FROM tblSPU"),
-        tblEcoBoundary=query_access_db(
+        tblEcoBoundary=_query_access_db(
             project_db_path, "SELECT * FROM tblEcoBoundary"),
-        tblAdminBoundary=query_access_db(
+        tblAdminBoundary=_query_access_db(
             project_db_path, "SELECT * FROM tblAdminBoundary"),
-        tblDisturbanceType=query_access_db(
+        tblDisturbanceType=_query_access_db(
             project_db_path, "SELECT * FROM tblDisturbanceType"),
-        tblClassifiers=query_access_db(
+        tblClassifiers=_query_access_db(
             project_db_path, "SELECT * FROM tblClassifiers"),
-        tblClassifierValues=query_access_db(
+        tblClassifierValues=_query_access_db(
             project_db_path, "SELECT * FROM tblClassifierValues"),
-        tblClassifierSetValues=query_access_db(
+        tblClassifierSetValues=_query_access_db(
             project_db_path, "SELECT * FROM tblClassifierSetValues"))
 
 
-def create_project_data_view(project_data, default_view):
+def _create_project_data_view(project_data, default_view):
     project_spu_view = project_data.tblSPU[
         ["SPUID", "AdminBoundaryID", "EcoBoundaryID", "DefaultSPUID"]
     ].merge(
@@ -117,10 +118,13 @@ def create_project_data_view(project_data, default_view):
         "DistTypeName": "ProjectDistTypeName",
         "Description": "ProjectDistTypeDescription"
     })
+    return SimpleNamespace(
+        project_spu_view=project_spu_view,
+        disturbance_type_view=disturbance_type_view)
 
 
-def create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
-                              cbm_results_dir, chunksize=None):
+def _create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
+                               cbm_results_dir, chunksize=None):
 
     if chunksize:
         raise ValueError("chunksize not yet supported")
@@ -158,7 +162,7 @@ def create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
     return cset_pivot
 
 
-def replace_with_classifier_set_id(raw_table, cset_pivot):
+def _replace_with_classifier_set_id(raw_table, cset_pivot):
     classifier_set_insertion_index = raw_table.columns.get_loc("c1")
     raw_cset_columns = [f"c{x+1}" for x in range(0, len(cset_pivot.columns)-1)]
     raw_table = cset_pivot.merge(
@@ -173,7 +177,7 @@ def replace_with_classifier_set_id(raw_table, cset_pivot):
     return raw_table
 
 
-def melt_loaded_csets(csets):
+def _melt_loaded_csets(csets):
     csets_melt = csets.copy()
     csets_melt.columns = \
         [csets_melt.columns[0]] + list(range(1, len(csets_melt.columns)))
@@ -185,23 +189,31 @@ def melt_loaded_csets(csets):
     return csets_melt
 
 
-def process_output_tables(loaded_csets, pool_indicators, flux_indicators,
-                          age_indicators, dist_indicators):
+def _get_local_file(filename):
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), filename)
 
-    pool_indicators_new = replace_with_classifier_set_id(
+
+def _process_output_tables(loaded_csets, pool_indicators, flux_indicators,
+                           age_indicators, dist_indicators):
+
+    pool_indicators_new = _replace_with_classifier_set_id(
         pool_indicators, loaded_csets)
-    flux_indicators_new = replace_with_classifier_set_id(
+    flux_indicators_new = _replace_with_classifier_set_id(
         flux_indicators, loaded_csets)
-    age_indicators_new = replace_with_classifier_set_id(
+    age_indicators_new = _replace_with_classifier_set_id(
         age_indicators, loaded_csets)
-    dist_indicators_new = replace_with_classifier_set_id(
+    dist_indicators_new = _replace_with_classifier_set_id(
         dist_indicators, loaded_csets)
     data = [
-        # TODO: store this information in package
-        (pool_indicators_new, "pool_indicators_column_mapping.csv"),
-        (flux_indicators_new, "flux_indicators_column_mapping.csv"),
-        (age_indicators_new, "age_indicators_column_mapping.csv"),
-        (dist_indicators_new, "dist_indicators_column_mapping.csv")]
+        (pool_indicators_new,
+         _get_local_file("pool_indicators_column_mapping.csv")),
+        (flux_indicators_new,
+         _get_local_file("flux_indicators_column_mapping.csv")),
+        (age_indicators_new,
+         _get_local_file("age_indicators_column_mapping.csv")),
+        (dist_indicators_new,
+         _get_local_file("dist_indicators_column_mapping.csv"))]
     for table, csv_path in data:
         mapping_data = pd.read_csv(csv_path)
         column_map = {
@@ -233,42 +245,7 @@ def process_output_tables(loaded_csets, pool_indicators, flux_indicators,
         dist_indicators=dist_indicators_new)
 
 
-def load_output_relational_tables(cbm_run_results_dir, project_db_path,
-                                  aidb_path, chunksize=None):
-
-    project_data = load_project_level_data(project_db_path)
-
-    aidb_data = load_archive_index_data(aidb_path)
-
-    loaded_csets = create_loaded_classifiers(
-        project_data.tblClassifiers,
-        project_data.tblClassifierSetValues,
-        cbm_run_results_dir, chunksize=chunksize)
-    project_data.tblClassifierSetValues = loaded_csets
-    results = load_results(
-        loaded_csets, cbm_run_results_dir, chunksize)
-
-    return SimpleNamespace(
-        **results.__dict__, **project_data.__dict__, **aidb_data.__dict__)
-
-
-def load_output_descriptive_tables(cbm_run_results_dir, project_db_path,
-                                   aidb_path, chunksize=None):
-    project_data = load_project_level_data(project_db_path)
-    aidb_data = load_archive_index_data(aidb_path)
-    default_view = create_default_data_views(aidb_data)
-    project_view = create_project_data_view(project_data, default_view)
-    loaded_csets = create_loaded_classifiers(
-        project_data.tblClassifiers,
-        project_data.tblClassifierSetValues,
-        cbm_run_results_dir, chunksize=chunksize)
-    results = load_results(loaded_csets, cbm_run_results_dir, chunksize)
-    # TODO: merge project_view with results tables
-    return results
-
-
-def load_results(loaded_csets, cbm_run_results_dir, project_db_path,
-                 chunksize=None):
+def _load_results(loaded_csets, cbm_run_results_dir, chunksize=None):
     if chunksize:
         raise ValueError("not yet supported.")
 
@@ -281,8 +258,106 @@ def load_results(loaded_csets, cbm_run_results_dir, project_db_path,
     pool_indicators = cbm3_output_files.load_pool_indicators(
         cbm_run_results_dir, chunksize)
 
-    result = process_output_tables(
+    result = _process_output_tables(
         loaded_csets, pool_indicators, flux_indicators, age_indicators,
         dist_indicators)
 
     return result
+
+
+def load_output_relational_tables(cbm_run_results_dir, project_db_path,
+                                  aidb_path, out_func, chunksize=None):
+
+    project_data = _load_project_level_data(project_db_path)
+
+    aidb_data = _load_archive_index_data(aidb_path)
+
+    loaded_csets = _create_loaded_classifiers(
+        project_data.tblClassifiers,
+        project_data.tblClassifierSetValues,
+        cbm_run_results_dir, chunksize=chunksize)
+    project_data.tblClassifierSetValues = _melt_loaded_csets(loaded_csets)
+    results = _load_results(
+        loaded_csets, cbm_run_results_dir, chunksize)
+
+    for k, v in aidb_data.__dict__.items():
+        out_func(k, v)
+    for k, v in project_data.__dict__.items():
+        out_func(k, v)
+    for k, v in results.__dict__.items():
+        out_func(k, v)
+
+
+def _map_classifier_descriptions(project_data, loaded_csets,
+                                 description_field="Name"):
+    cset_map = {}
+    for classifier in project_data.tblClassifierValues.ClassifierID.unique():
+        inner_map = {}
+        classifier_rows = project_data.tblClassifierValues[
+            project_data.tblClassifierValues.ClassifierID == classifier]
+        for _, row in classifier_rows.iterrows():
+            inner_map[int(row.ClassifierValueID)] = row[description_field]
+        cset_map[int(classifier)] = inner_map
+    mapped_csets = loaded_csets.copy()
+
+    for classifier_id, classifier_map in cset_map.items():
+        mapped_csets[f"c{classifier_id}"] = \
+            mapped_csets[f"c{classifier_id}"].map(classifier_map)
+    mapped_csets.columns = \
+        [mapped_csets.columns[0]] + \
+        list(project_data.tblClassifiers.sort_values(by="ClassifierID").Name)
+    return mapped_csets
+
+
+def load_output_descriptive_tables(cbm_run_results_dir, project_db_path,
+                                   aidb_path, out_func,
+                                   classifier_value_field="Name",
+                                   chunksize=None):
+    project_data = _load_project_level_data(project_db_path)
+    aidb_data = _load_archive_index_data(aidb_path)
+    default_view = _create_default_data_views(aidb_data)
+    project_view = _create_project_data_view(project_data, default_view)
+    loaded_csets = _create_loaded_classifiers(
+        project_data.tblClassifiers,
+        project_data.tblClassifierSetValues,
+        cbm_run_results_dir, chunksize=chunksize)
+
+    mapped_csets = _map_classifier_descriptions(
+        project_data, loaded_csets, classifier_value_field)
+
+    results = _load_results(loaded_csets, cbm_run_results_dir, chunksize)
+
+    results.pool_indicators = project_view.project_spu_view.merge(
+        results.pool_indicators, left_on="ProjectSPUID", right_on="SPUID")
+    results.pool_indicators = mapped_csets.merge(
+        results.pool_indicators, left_on="ClassifierSetID",
+        right_on="UserDefdClassSetID")
+
+    results.flux_indicators = project_view.disturbance_type_view.merge(
+        results.flux_indicators, left_on="ProjectDistTypeID",
+        right_on="DistTypeID", how="right")
+    results.flux_indicators = project_view.project_spu_view.merge(
+        results.flux_indicators, left_on="ProjectSPUID", right_on="SPUID")
+    results.flux_indicators = mapped_csets.merge(
+        results.flux_indicators, left_on="ClassifierSetID",
+        right_on="UserDefdClassSetID")
+
+    results.age_indicators = project_view.project_spu_view.merge(
+        results.age_indicators, left_on="ProjectSPUID", right_on="SPUID")
+    results.age_indicators = mapped_csets.merge(
+        results.age_indicators, left_on="ClassifierSetID",
+        right_on="UserDefdClassSetID")
+
+    results.dist_indicators = project_view.disturbance_type_view.merge(
+        results.dist_indicators, left_on="ProjectDistTypeID",
+        right_on="DistTypeID", how="right")
+    results.dist_indicators = project_view.project_spu_view.merge(
+        results.dist_indicators, left_on="ProjectSPUID", right_on="SPUID")
+    results.dist_indicators = mapped_csets.merge(
+        results.dist_indicators, left_on="ClassifierSetID",
+        right_on="UserDefdClassSetID")
+
+    out_func("pool_indicators", results.pool_indicators)
+    out_func("flux_indicators", results.flux_indicators)
+    out_func("age_indicators", results.age_indicators)
+    out_func("dist_indicators", results.dist_indicators)
