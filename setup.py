@@ -18,6 +18,10 @@ results_queries = [
     os.path.join("cbm3data", "results_queries", "*.sql")
 ]
 
+results_col_mapping_csv = [
+    os.path.join("cbm3data", "*.csv")
+]
+
 console_scripts = [
     "cbm3_simulate = cbm3_python.scripts.simulate:main",
     "cbm3_sit_import = cbm3_python.scripts.sit_import:main"
@@ -25,7 +29,7 @@ console_scripts = [
 
 setup(
     name="cbm3_python",
-    version="0.7.8",
+    version="0.7.9",
     description="Scripts to automate tasks with CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
@@ -37,7 +41,7 @@ setup(
     packages=find_packages(exclude=['test*']),
     package_data={
         "cbm3_python":
-            access_templates + results_queries
+            access_templates + results_queries + results_col_mapping_csv
     },
     entry_points={
         "console_scripts": console_scripts
