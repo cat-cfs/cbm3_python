@@ -29,7 +29,7 @@ console_scripts = [
 
 setup(
     name="cbm3_python",
-    version="0.7.9",
+    version="0.8.0",
     description="Scripts to automate tasks with CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
