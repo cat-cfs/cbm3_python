@@ -5,6 +5,14 @@ import pyodbc
 from cbm3_python.cbm3data import cbm3_output_files
 
 
+def _make_iterable(func, *args, **kwargs):
+    result = func(*args, **kwargs)
+    if hasattr(result, "__iter__"):
+        return result
+    else:
+        return [result]
+
+
 def _query_access_db(path, query):
     """Return the result as a dataframe the specified query
     on the access database located at the specified path."""
@@ -138,6 +146,7 @@ def _create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
     cset_pivot = cset_pivot.rename(columns={"index": "ClassifierSetID"})
 
     raw_classifier_data = pd.DataFrame()
+
 
     raw_results_tables = [
         cbm3_output_files.load_age_indicators(
