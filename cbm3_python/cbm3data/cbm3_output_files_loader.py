@@ -134,9 +134,6 @@ def _create_project_data_view(project_data, default_view):
 def _create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
                                cbm_results_dir, chunksize=None):
 
-    if chunksize:
-        raise ValueError("chunksize not yet supported")
-
     raw_cset_columns = [f"c{x+1}" for x in range(0, len(tblClassifiers.index))]
     cset_pivot = tblClassifierSetValues.pivot(
         index="ClassifierSetID", columns="ClassifierID")
@@ -147,21 +144,11 @@ def _create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
 
     raw_classifier_data = pd.DataFrame()
 
-
-    raw_results_tables = [
-        cbm3_output_files.load_age_indicators(
-            cbm_results_dir, chunksize),
-        cbm3_output_files.load_dist_indicators(
-            cbm_results_dir, chunksize),
-        cbm3_output_files.load_flux_indicators(
-            cbm_results_dir, chunksize),
-        cbm3_output_files.load_pool_indicators(
-            cbm_results_dir, chunksize)]
-
-
-    for table in raw_results_tables:
+    pool_indicators = _make_iterable(
+        cbm3_output_files.load_pool_indicators(cbm_results_dir, chunksize))
+    for chunk in pool_indicators:
         raw_classifier_data = raw_classifier_data.append(
-            table[raw_cset_columns]).drop_duplicates()
+            chunk[raw_cset_columns]).drop_duplicates()
 
     missing_csets = cset_pivot.merge(
         raw_classifier_data, how="right").reset_index(drop=True)
@@ -277,26 +264,6 @@ def _process_dist_indicator_table(loaded_csets, dist_indicators):
     return dist_indicators_new
 
 
-#def _load_results(loaded_csets, cbm_run_results_dir, chunksize=None):
-#    if chunksize:
-#        raise ValueError("not yet supported.")
-#
-#    age_indicators = cbm3_output_files.load_age_indicators(
-#        cbm_run_results_dir, chunksize)
-#    dist_indicators = cbm3_output_files.load_dist_indicators(
-#        cbm_run_results_dir, chunksize)
-#    flux_indicators = cbm3_output_files.load_flux_indicators(
-#        cbm_run_results_dir, chunksize)
-#    pool_indicators = cbm3_output_files.load_pool_indicators(
-#        cbm_run_results_dir, chunksize)
-#
-#    result = _process_output_tables(
-#        loaded_csets, pool_indicators, flux_indicators, age_indicators,
-#        dist_indicators)
-#
-#    return result
-
-
 def load_output_relational_tables(cbm_run_results_dir, project_db_path,
                                   aidb_path, out_func, chunksize=None):
 
@@ -310,17 +277,32 @@ def load_output_relational_tables(cbm_run_results_dir, project_db_path,
         cbm_run_results_dir, chunksize=chunksize)
     project_data.tblClassifierSetValues = _melt_loaded_csets(loaded_csets)
 
-
     for k, v in aidb_data.__dict__.items():
         out_func(k, v)
     for k, v in project_data.__dict__.items():
         out_func(k, v)
 
-    results = _load_results(
-        loaded_csets, cbm_run_results_dir, chunksize)
+    results_list = [
+        {"table_name": "tblAgeIndicators",
+         "load_function": cbm3_output_files.load_age_indicators,
+         "process_function": _process_age_indicator_table},
+        {"table_name": "tblDistIndicators",
+         "load_function": cbm3_output_files.load_dist_indicators,
+         "process_function": _process_dist_indicator_table},
+        {"table_name": "tblPoolIndicators",
+         "load_function": cbm3_output_files.load_pool_indicators,
+         "process_function": _process_pool_indicator_table},
+        {"table_name": "tblFluxIndicators",
+         "load_function": cbm3_output_files.load_flux_indicators,
+         "process_function": _process_flux_indicator_table}]
 
-    for k, v in results.__dict__.items():
-        out_func(k, v)
+    for result_item in results_list:
+        result_chunk_iterable = _make_iterable(
+            result_item["load_function"](cbm_run_results_dir, chunksize))
+        for chunk in result_chunk_iterable:
+            out_func(
+                result_item["table_name"],
+                result_item["process_function"](loaded_csets, chunk))
 
 
 def _map_classifier_descriptions(project_data, loaded_csets,
