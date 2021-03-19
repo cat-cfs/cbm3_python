@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 import unittest
-from cbm3_python.cbm3data import sit_helper
+from cbm3_python.cbm3data import cbm3_output_files_loader, sit_helper
 import pandas as pd
 import numpy as np
 from cbm3_python import toolbox_defaults
