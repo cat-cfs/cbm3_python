@@ -128,15 +128,6 @@ def _create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
 
     if chunksize:
         raise ValueError("chunksize not yet supported")
-    raw_results_tables = [
-        cbm3_output_files.load_age_indicators(
-            cbm_results_dir, chunksize),
-        cbm3_output_files.load_dist_indicators(
-            cbm_results_dir, chunksize),
-        cbm3_output_files.load_flux_indicators(
-            cbm_results_dir, chunksize),
-        cbm3_output_files.load_pool_indicators(
-            cbm_results_dir, chunksize)]
 
     raw_cset_columns = [f"c{x+1}" for x in range(0, len(tblClassifiers.index))]
     cset_pivot = tblClassifierSetValues.pivot(
@@ -147,6 +138,18 @@ def _create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
     cset_pivot = cset_pivot.rename(columns={"index": "ClassifierSetID"})
 
     raw_classifier_data = pd.DataFrame()
+
+    raw_results_tables = [
+        cbm3_output_files.load_age_indicators(
+            cbm_results_dir, chunksize),
+        cbm3_output_files.load_dist_indicators(
+            cbm_results_dir, chunksize),
+        cbm3_output_files.load_flux_indicators(
+            cbm_results_dir, chunksize),
+        cbm3_output_files.load_pool_indicators(
+            cbm_results_dir, chunksize)]
+
+
     for table in raw_results_tables:
         raw_classifier_data = raw_classifier_data.append(
             table[raw_cset_columns]).drop_duplicates()
@@ -194,40 +197,35 @@ def _get_local_file(filename):
         os.path.dirname(os.path.realpath(__file__)), filename)
 
 
-def _process_output_tables(loaded_csets, pool_indicators, flux_indicators,
-                           age_indicators, dist_indicators):
-
+def _process_pool_indicator_table(loaded_csets, pool_indicators):
     pool_indicators_new = _replace_with_classifier_set_id(
         pool_indicators, loaded_csets)
-    flux_indicators_new = _replace_with_classifier_set_id(
-        flux_indicators, loaded_csets)
-    age_indicators_new = _replace_with_classifier_set_id(
-        age_indicators, loaded_csets)
-    dist_indicators_new = _replace_with_classifier_set_id(
-        dist_indicators, loaded_csets)
-    data = [
-        (pool_indicators_new,
-         _get_local_file("pool_indicators_column_mapping.csv")),
-        (flux_indicators_new,
-         _get_local_file("flux_indicators_column_mapping.csv")),
-        (age_indicators_new,
-         _get_local_file("age_indicators_column_mapping.csv")),
-        (dist_indicators_new,
-         _get_local_file("dist_indicators_column_mapping.csv"))]
-    for table, csv_path in data:
-        mapping_data = pd.read_csv(csv_path)
-        column_map = {
-            row.CBM3_raw_column_name: row.RRDB_column_name
-            for _, row in mapping_data.dropna().iterrows()}
-        table.rename(columns=column_map, inplace=True)
-
+    mapping_data = pd.read_csv(
+        _get_local_file("pool_indicators_column_mapping.csv"))
+    column_map = {
+        row.CBM3_raw_column_name: row.RRDB_column_name
+        for _, row in mapping_data.dropna().iterrows()}
+    pool_indicators_new.rename(columns=column_map, inplace=True)
     pool_indicators_new.drop(columns="RunID", inplace=True)
     pool_indicators_new.insert(
         loc=0, column="PoolIndID", value=pool_indicators_new.index+1)
+    return pool_indicators_new
 
+
+def _process_flux_indicator_table(loaded_csets, flux_indicators):
+    flux_indicators_new = _replace_with_classifier_set_id(
+        flux_indicators, loaded_csets)
+    mapping_data = pd.read_csv(
+        _get_local_file("flux_indicators_column_mapping.csv"))
+    column_map = {
+        row.CBM3_raw_column_name: row.RRDB_column_name
+        for _, row in mapping_data.dropna().iterrows()}
+    flux_indicators_new.rename(columns=column_map, inplace=True)
     flux_indicators_new.drop(columns="RunID", inplace=True)
     flux_indicators_new.insert(
         loc=0, column="FluxIndicatorID", value=flux_indicators_new.index+1)
+    # gross growth AG and BG are composite flux indicators that are not
+    # included in RAW CBM3 output, but are present in tblFluxIndicators
     flux_indicators_new["GrossGrowth_AG"] = flux_indicators_new[
         ["DeltaBiomass_AG", "MerchLitterInput", "FolLitterInput",
          "OthLitterInput", "SubMerchLitterInput"]].sum(axis=1)
@@ -238,31 +236,56 @@ def _process_output_tables(loaded_csets, pool_indicators, flux_indicators,
     ].sum(axis=1)
     flux_indicators_new.loc[
         flux_indicators_new.DistTypeID != 0, "GrossGrowth_BG"] = 0.0
-    return SimpleNamespace(
-        pool_indicators=pool_indicators_new,
-        flux_indicators=flux_indicators_new,
-        age_indicators=age_indicators_new,
-        dist_indicators=dist_indicators_new)
 
 
-def _load_results(loaded_csets, cbm_run_results_dir, chunksize=None):
-    if chunksize:
-        raise ValueError("not yet supported.")
+def _process_age_indicator_table(loaded_csets, age_indicators):
+    age_indicators_new = _replace_with_classifier_set_id(
+        age_indicators, loaded_csets)
+    mapping_data = pd.read_csv(
+        _get_local_file("age_indicators_column_mapping.csv"))
+    column_map = {
+        row.CBM3_raw_column_name: row.RRDB_column_name
+        for _, row in mapping_data.dropna().iterrows()}
+    age_indicators_new.rename(columns=column_map, inplace=True)
+    age_indicators_new.drop(columns="RunID", inplace=True)
+    age_indicators_new.insert(
+        loc=0, column="AgeIndID", value=age_indicators_new.index+1)
+    return age_indicators_new
 
-    age_indicators = cbm3_output_files.load_age_indicators(
-        cbm_run_results_dir, chunksize)
-    dist_indicators = cbm3_output_files.load_dist_indicators(
-        cbm_run_results_dir, chunksize)
-    flux_indicators = cbm3_output_files.load_flux_indicators(
-        cbm_run_results_dir, chunksize)
-    pool_indicators = cbm3_output_files.load_pool_indicators(
-        cbm_run_results_dir, chunksize)
 
-    result = _process_output_tables(
-        loaded_csets, pool_indicators, flux_indicators, age_indicators,
-        dist_indicators)
+def _process_dist_indicator_table(loaded_csets, dist_indicators):
+    dist_indicators_new = _replace_with_classifier_set_id(
+        dist_indicators, loaded_csets)
+    mapping_data = pd.read_csv(
+        _get_local_file("dist_indicators_column_mapping.csv"))
+    column_map = {
+        row.CBM3_raw_column_name: row.RRDB_column_name
+        for _, row in mapping_data.dropna().iterrows()}
+    dist_indicators_new.rename(columns=column_map, inplace=True)
+    dist_indicators_new.drop(columns="RunID", inplace=True)
+    dist_indicators_new.insert(
+        loc=0, column="DistIndID", value=dist_indicators_new.index+1)
+    return dist_indicators_new
 
-    return result
+
+#def _load_results(loaded_csets, cbm_run_results_dir, chunksize=None):
+#    if chunksize:
+#        raise ValueError("not yet supported.")
+#
+#    age_indicators = cbm3_output_files.load_age_indicators(
+#        cbm_run_results_dir, chunksize)
+#    dist_indicators = cbm3_output_files.load_dist_indicators(
+#        cbm_run_results_dir, chunksize)
+#    flux_indicators = cbm3_output_files.load_flux_indicators(
+#        cbm_run_results_dir, chunksize)
+#    pool_indicators = cbm3_output_files.load_pool_indicators(
+#        cbm_run_results_dir, chunksize)
+#
+#    result = _process_output_tables(
+#        loaded_csets, pool_indicators, flux_indicators, age_indicators,
+#        dist_indicators)
+#
+#    return result
 
 
 def load_output_relational_tables(cbm_run_results_dir, project_db_path,
@@ -277,13 +300,16 @@ def load_output_relational_tables(cbm_run_results_dir, project_db_path,
         project_data.tblClassifierSetValues,
         cbm_run_results_dir, chunksize=chunksize)
     project_data.tblClassifierSetValues = _melt_loaded_csets(loaded_csets)
-    results = _load_results(
-        loaded_csets, cbm_run_results_dir, chunksize)
+
 
     for k, v in aidb_data.__dict__.items():
         out_func(k, v)
     for k, v in project_data.__dict__.items():
         out_func(k, v)
+
+    results = _load_results(
+        loaded_csets, cbm_run_results_dir, chunksize)
+
     for k, v in results.__dict__.items():
         out_func(k, v)
 
