@@ -1,8 +1,9 @@
 import os
-from types import SimpleNamespace
 import pandas as pd
-import pyodbc
+
 from cbm3_python.cbm3data import cbm3_output_files
+from cbm3_python.cbm3data import cbm3_output_descriptions
+from cbm3_python.cbm3data.cbm3_output_descriptions import ResultsDescriber
 
 
 def _make_iterable(func, *args, **kwargs):
@@ -11,124 +12,6 @@ def _make_iterable(func, *args, **kwargs):
         return result
     else:
         return [result]
-
-
-def _query_access_db(path, query):
-    """Return the result as a dataframe the specified query
-    on the access database located at the specified path."""
-    connection_string = \
-        "Driver={Microsoft Access Driver (*.mdb, *.accdb)};" \
-        f"User Id='admin';Dbq={path}"
-
-    with pyodbc.connect(connection_string) as connection:
-        return pd.read_sql(query, connection)
-
-
-def _load_archive_index_data(aidb_path):
-    # load default spu data from archive index
-    return SimpleNamespace(
-        tblSPUDefault=_query_access_db(
-            aidb_path, "SELECT * FROM tblSPUDefault"),
-        tblEcoBoundaryDefault=_query_access_db(
-            aidb_path, "SELECT * FROM tblEcoBoundaryDefault"),
-        tblAdminBoundaryDefault=_query_access_db(
-            aidb_path, "SELECT * FROM tblAdminBoundaryDefault"),
-        tblDisturbanceTypeDefault=_query_access_db(
-            aidb_path, "SELECT * FROM tblDisturbanceTypeDefault"),
-        tblUNFCCCLandClass=_query_access_db(
-            aidb_path, "SELECT * FROM tblUNFCCCLandClass"))
-
-
-def _create_default_data_views(aidb_data):
-    default_spu_view = aidb_data.tblSPUDefault[
-        ["SPUID", "AdminBoundaryID", "EcoBoundaryID"]].merge(
-        aidb_data.tblEcoBoundaryDefault[
-            ["EcoBoundaryID", "EcoBoundaryName"]]).merge(
-        aidb_data.tblAdminBoundaryDefault[
-            ["AdminBoundaryID", "AdminBoundaryName"]])
-    default_spu_view = default_spu_view.rename(columns={
-        "SPUID": "DefaultSPUID",
-        "AdminBoundaryID": "DefaultAdminBoundaryID",
-        "EcoBoundaryID": "DefaultEcoBoundaryID",
-        "EcoBoundaryName": "DefaultEcoBoundaryName",
-        "AdminBoundaryName": "DefaultAdminBoundaryName"})
-
-    unfccc_land_class_view = aidb_data.tblUNFCCCLandClass.rename(
-        columns={"Name": "UNFCCCLandClassName"})
-
-    default_disturbance_type_view = aidb_data.tblDisturbanceTypeDefault[
-        ["DistTypeID", "DistTypeName", "Description"]
-    ]
-
-    default_disturbance_type_view = default_disturbance_type_view.rename(
-        columns={
-            "DistTypeID": "DefaultDistTypeID",
-            "DistTypeName": "DefaultDistTypeName",
-            "Description": "DefaultDistTypeDescription"
-        })
-    return SimpleNamespace(
-        unfccc_land_class_view=unfccc_land_class_view,
-        default_disturbance_type_view=default_disturbance_type_view,
-        default_spu_view=default_spu_view)
-
-
-def _load_project_level_data(project_db_path):
-    # get project level info
-    return SimpleNamespace(
-        tblSPU=_query_access_db(
-            project_db_path, "SELECT * FROM tblSPU"),
-        tblEcoBoundary=_query_access_db(
-            project_db_path, "SELECT * FROM tblEcoBoundary"),
-        tblAdminBoundary=_query_access_db(
-            project_db_path, "SELECT * FROM tblAdminBoundary"),
-        tblDisturbanceType=_query_access_db(
-            project_db_path, "SELECT * FROM tblDisturbanceType"),
-        tblClassifiers=_query_access_db(
-            project_db_path, "SELECT * FROM tblClassifiers"),
-        tblClassifierValues=_query_access_db(
-            project_db_path, "SELECT * FROM tblClassifierValues"),
-        tblClassifierSetValues=_query_access_db(
-            project_db_path, "SELECT * FROM tblClassifierSetValues"))
-
-
-def _create_project_data_view(project_data, default_view):
-    project_spu_view = project_data.tblSPU[
-        ["SPUID", "AdminBoundaryID", "EcoBoundaryID", "DefaultSPUID"]
-    ].merge(
-        project_data.tblEcoBoundary[
-            ["EcoBoundaryID", "EcoBoundaryName"]]).merge(
-        project_data.tblAdminBoundary[
-            ["AdminBoundaryID", "AdminBoundaryName"]])
-
-    project_spu_view = project_spu_view.rename(
-        columns={
-            "SPUID": "ProjectSPUID",
-            "EcoBoundaryID": "ProjectEcoBoundaryID",
-            "EcoBoundaryName": "ProjectEcoBoundaryName",
-            "AdminBoundaryID": "ProjectAdminBoundaryID",
-            "AdminBoundaryName": "ProjectAdminBoundaryName"})
-
-    # re-order colums
-    project_spu_view = project_spu_view[[
-        "ProjectSPUID", "ProjectAdminBoundaryID",
-        "ProjectEcoBoundaryID", "ProjectEcoBoundaryName",
-        "ProjectAdminBoundaryName", "DefaultSPUID"]]
-
-    project_spu_view = project_spu_view.merge(
-        default_view.default_spu_view)
-
-    disturbance_type_view = project_data.tblDisturbanceType[
-        ["DistTypeID", "DistTypeName", "Description", "DefaultDistTypeID"]]
-    disturbance_type_view = disturbance_type_view.merge(
-        default_view.default_disturbance_type_view)
-    disturbance_type_view = disturbance_type_view.rename(columns={
-        "DistTypeID": "ProjectDistTypeID",
-        "DistTypeName": "ProjectDistTypeName",
-        "Description": "ProjectDistTypeDescription"
-    })
-    return SimpleNamespace(
-        project_spu_view=project_spu_view,
-        disturbance_type_view=disturbance_type_view)
 
 
 def _create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
@@ -267,9 +150,10 @@ def _process_dist_indicator_table(loaded_csets, dist_indicators):
 def load_output_relational_tables(cbm_run_results_dir, project_db_path,
                                   aidb_path, out_func, chunksize=None):
 
-    project_data = _load_project_level_data(project_db_path)
+    project_data = cbm3_output_descriptions.load_project_level_data(
+        project_db_path)
 
-    aidb_data = _load_archive_index_data(aidb_path)
+    aidb_data = cbm3_output_descriptions.load_archive_index_data(aidb_path)
 
     loaded_csets = _create_loaded_classifiers(
         project_data.tblClassifiers,
@@ -305,76 +189,41 @@ def load_output_relational_tables(cbm_run_results_dir, project_db_path,
                 result_item["process_function"](loaded_csets, chunk))
 
 
-def _map_classifier_descriptions(project_data, loaded_csets,
-                                 description_field="Name"):
-    cset_map = {}
-    for classifier in project_data.tblClassifierValues.ClassifierID.unique():
-        inner_map = {}
-        classifier_rows = project_data.tblClassifierValues[
-            project_data.tblClassifierValues.ClassifierID == classifier]
-        for _, row in classifier_rows.iterrows():
-            inner_map[int(row.ClassifierValueID)] = row[description_field]
-        cset_map[int(classifier)] = inner_map
-    mapped_csets = loaded_csets.copy()
-
-    for classifier_id, classifier_map in cset_map.items():
-        mapped_csets[f"c{classifier_id}"] = \
-            mapped_csets[f"c{classifier_id}"].map(classifier_map)
-    mapped_csets.columns = \
-        [mapped_csets.columns[0]] + \
-        list(project_data.tblClassifiers.sort_values(by="ClassifierID").Name)
-    return mapped_csets
-
-
 def load_output_descriptive_tables(cbm_run_results_dir, project_db_path,
                                    aidb_path, out_func,
                                    classifier_value_field="Name",
                                    chunksize=None):
-    project_data = _load_project_level_data(project_db_path)
-    aidb_data = _load_archive_index_data(aidb_path)
-    default_view = _create_default_data_views(aidb_data)
-    project_view = _create_project_data_view(project_data, default_view)
+    project_data = cbm3_output_descriptions.load_project_level_data(
+        project_db_path)
     loaded_csets = _create_loaded_classifiers(
         project_data.tblClassifiers,
         project_data.tblClassifierSetValues,
         cbm_run_results_dir, chunksize=chunksize)
+    d = ResultsDescriber(
+        project_db_path, aidb_path, loaded_csets, classifier_value_field)
+    results_list = [
+        {"table_name": "tblAgeIndicators",
+         "load_function": cbm3_output_files.load_age_indicators,
+         "process_function": _process_age_indicator_table,
+         "describe_function": d.merge_age_indicator_descriptions},
+        {"table_name": "tblDistIndicators",
+         "load_function": cbm3_output_files.load_dist_indicators,
+         "process_function": _process_dist_indicator_table,
+         "describe_function": d.merge_age_indicator_descriptions},
+        {"table_name": "tblPoolIndicators",
+         "load_function": cbm3_output_files.load_pool_indicators,
+         "process_function": _process_pool_indicator_table,
+         "describe_function": d.merge_age_indicator_descriptions},
+        {"table_name": "tblFluxIndicators",
+         "load_function": cbm3_output_files.load_flux_indicators,
+         "process_function": _process_flux_indicator_table,
+         "describe_function": d.merge_age_indicator_descriptions}]
 
-    mapped_csets = _map_classifier_descriptions(
-        project_data, loaded_csets, classifier_value_field)
-
-    results = _load_results(loaded_csets, cbm_run_results_dir, chunksize)
-
-    results.pool_indicators = project_view.project_spu_view.merge(
-        results.pool_indicators, left_on="ProjectSPUID", right_on="SPUID")
-    results.pool_indicators = mapped_csets.merge(
-        results.pool_indicators, left_on="ClassifierSetID",
-        right_on="UserDefdClassSetID")
-
-    results.flux_indicators = project_view.disturbance_type_view.merge(
-        results.flux_indicators, left_on="ProjectDistTypeID",
-        right_on="DistTypeID", how="right")
-    results.flux_indicators = project_view.project_spu_view.merge(
-        results.flux_indicators, left_on="ProjectSPUID", right_on="SPUID")
-    results.flux_indicators = mapped_csets.merge(
-        results.flux_indicators, left_on="ClassifierSetID",
-        right_on="UserDefdClassSetID")
-
-    results.age_indicators = project_view.project_spu_view.merge(
-        results.age_indicators, left_on="ProjectSPUID", right_on="SPUID")
-    results.age_indicators = mapped_csets.merge(
-        results.age_indicators, left_on="ClassifierSetID",
-        right_on="UserDefdClassSetID")
-
-    results.dist_indicators = project_view.disturbance_type_view.merge(
-        results.dist_indicators, left_on="ProjectDistTypeID",
-        right_on="DistTypeID", how="right")
-    results.dist_indicators = project_view.project_spu_view.merge(
-        results.dist_indicators, left_on="ProjectSPUID", right_on="SPUID")
-    results.dist_indicators = mapped_csets.merge(
-        results.dist_indicators, left_on="ClassifierSetID",
-        right_on="UserDefdClassSetID")
-
-    out_func("pool_indicators", results.pool_indicators)
-    out_func("flux_indicators", results.flux_indicators)
-    out_func("age_indicators", results.age_indicators)
-    out_func("dist_indicators", results.dist_indicators)
+    for result_item in results_list:
+        result_chunk_iterable = _make_iterable(
+            result_item["load_function"](cbm_run_results_dir, chunksize))
+        for chunk in result_chunk_iterable:
+            processed_chunk = result_item["process_function"](
+                loaded_csets, chunk)
+            described_chunk = result_item["describe_function"](processed_chunk)
+            out_func(result_item["table_name"], described_chunk)
