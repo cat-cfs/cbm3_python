@@ -272,15 +272,9 @@ class Simulator(object):
         logging.info("Command line: " + cmd)
         self.call_subprocess_cmd(cmd)
 
-    def CopyTempFiles(self, output_dir=None):
+    def CopyTempFiles(self, output_dir):
         logging.info("\n\n Copying Tempfiles to Project Directory...\n")
-        if output_dir is None:
-            tempfilepath = os.path.join(
-                self.getDefaultProjectResultsPath(), "Tempfiles")
-            if os.path.exists(tempfilepath):
-                shutil.rmtree(tempfilepath)
-        else:
-            tempfilepath = os.path.abspath(output_dir)
+        tempfilepath = os.path.abspath(output_dir)
         shutil.copytree(self.CBMTemp, tempfilepath, ignore=self._ignorethese)
 
     def DumpMakelistSVLs(self):
@@ -289,30 +283,3 @@ class Simulator(object):
             + '" "' + str(self.simID) + ' "'
         logging.info("Command line: " + cmd)
         self.call_subprocess_cmd(cmd)
-
-    def simulate(self, doLoad=True):
-
-        self.CleanupRunDirectory()
-
-        logging.info("Processing " + str(self.ProjectPath) + "...")
-
-        self.CreateMakelistFiles()
-
-        self.copyMakelist()
-
-        self.runMakelist()
-
-        self.loadMakelistSVLS()
-
-        self.copyMakelistOutput()
-
-        self.CreateCBMFiles()
-
-        self.CopyCBMExecutable()
-
-        self.RunCBM()
-
-        if doLoad:
-            self.LoadCBMResults()
-
-        self.CopyTempFiles()
