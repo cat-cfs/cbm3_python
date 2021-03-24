@@ -6,12 +6,11 @@ from cbm3_python.cbm3data import cbm3_output_descriptions
 from cbm3_python.cbm3data.cbm3_output_descriptions import ResultsDescriber
 
 
-def _make_iterable(func, *args, **kwargs):
-    result = func(*args, **kwargs)
-    if hasattr(result, "__iter__"):
+def _make_iterable(func, results_dir, chunksize=None):
+    result = func(results_dir, chunksize)
+    if chunksize:
         return result
-    else:
-        return [result]
+    return [result]
 
 
 def _create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
@@ -28,7 +27,7 @@ def _create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
     raw_classifier_data = pd.DataFrame()
 
     pool_indicators = _make_iterable(
-        cbm3_output_files.load_pool_indicators(cbm_results_dir, chunksize))
+        cbm3_output_files.load_pool_indicators, cbm_results_dir, chunksize)
     for chunk in pool_indicators:
         raw_classifier_data = raw_classifier_data.append(
             chunk[raw_cset_columns]).drop_duplicates()
@@ -49,7 +48,7 @@ def _replace_with_classifier_set_id(raw_table, cset_pivot):
     raw_cset_columns = [f"c{x+1}" for x in range(0, len(cset_pivot.columns)-1)]
     raw_table = cset_pivot.merge(
         raw_table, left_on=raw_cset_columns,
-        right_on=raw_cset_columns, copy=True)
+        right_on=raw_cset_columns, copy=True, validate="1:m")
     classifier_set_col = raw_table["ClassifierSetID"]
     raw_table = raw_table.drop(columns=[f"c{x}" for x in range(1, 11)])
     raw_table = raw_table[list(raw_table.columns)[1:]]
@@ -76,7 +75,7 @@ def _get_local_file(filename):
         os.path.dirname(os.path.realpath(__file__)), filename)
 
 
-def _process_pool_indicator_table(loaded_csets, pool_indicators):
+def _process_pool_indicator_table(loaded_csets, pool_indicators, index_offset):
     pool_indicators_new = _replace_with_classifier_set_id(
         pool_indicators, loaded_csets)
     mapping_data = pd.read_csv(
@@ -87,11 +86,12 @@ def _process_pool_indicator_table(loaded_csets, pool_indicators):
     pool_indicators_new.rename(columns=column_map, inplace=True)
     pool_indicators_new.drop(columns="RunID", inplace=True)
     pool_indicators_new.insert(
-        loc=0, column="PoolIndID", value=pool_indicators_new.index+1)
+        loc=0, column="PoolIndID",
+        value=pool_indicators_new.index + index_offset + 1)
     return pool_indicators_new
 
 
-def _process_flux_indicator_table(loaded_csets, flux_indicators):
+def _process_flux_indicator_table(loaded_csets, flux_indicators, index_offset):
     flux_indicators_new = _replace_with_classifier_set_id(
         flux_indicators, loaded_csets)
     mapping_data = pd.read_csv(
@@ -102,7 +102,8 @@ def _process_flux_indicator_table(loaded_csets, flux_indicators):
     flux_indicators_new.rename(columns=column_map, inplace=True)
     flux_indicators_new.drop(columns="RunID", inplace=True)
     flux_indicators_new.insert(
-        loc=0, column="FluxIndicatorID", value=flux_indicators_new.index+1)
+        loc=0, column="FluxIndicatorID",
+        value=flux_indicators_new.index + index_offset + 1)
     # gross growth AG and BG are composite flux indicators that are not
     # included in RAW CBM3 output, but are present in tblFluxIndicators
     flux_indicators_new["GrossGrowth_AG"] = flux_indicators_new[
@@ -115,9 +116,10 @@ def _process_flux_indicator_table(loaded_csets, flux_indicators):
     ].sum(axis=1)
     flux_indicators_new.loc[
         flux_indicators_new.DistTypeID != 0, "GrossGrowth_BG"] = 0.0
+    return flux_indicators_new
 
 
-def _process_age_indicator_table(loaded_csets, age_indicators):
+def _process_age_indicator_table(loaded_csets, age_indicators, index_offset):
     age_indicators_new = _replace_with_classifier_set_id(
         age_indicators, loaded_csets)
     mapping_data = pd.read_csv(
@@ -128,11 +130,12 @@ def _process_age_indicator_table(loaded_csets, age_indicators):
     age_indicators_new.rename(columns=column_map, inplace=True)
     age_indicators_new.drop(columns="RunID", inplace=True)
     age_indicators_new.insert(
-        loc=0, column="AgeIndID", value=age_indicators_new.index+1)
+        loc=0, column="AgeIndID",
+        value=age_indicators_new.index + index_offset + 1)
     return age_indicators_new
 
 
-def _process_dist_indicator_table(loaded_csets, dist_indicators):
+def _process_dist_indicator_table(loaded_csets, dist_indicators, index_offset):
     dist_indicators_new = _replace_with_classifier_set_id(
         dist_indicators, loaded_csets)
     mapping_data = pd.read_csv(
@@ -143,7 +146,8 @@ def _process_dist_indicator_table(loaded_csets, dist_indicators):
     dist_indicators_new.rename(columns=column_map, inplace=True)
     dist_indicators_new.drop(columns="RunID", inplace=True)
     dist_indicators_new.insert(
-        loc=0, column="DistIndID", value=dist_indicators_new.index+1)
+        loc=0, column="DistIndID",
+        value=dist_indicators_new.index + index_offset + 1)
     return dist_indicators_new
 
 
@@ -182,11 +186,15 @@ def load_output_relational_tables(cbm_run_results_dir, project_db_path,
 
     for result_item in results_list:
         result_chunk_iterable = _make_iterable(
-            result_item["load_function"](cbm_run_results_dir, chunksize))
+            result_item["load_function"], cbm_run_results_dir, chunksize)
+        index_offset = 0
         for chunk in result_chunk_iterable:
+            processed_chunk = result_item["process_function"](
+                loaded_csets, chunk, index_offset)
+            index_offset = index_offset + len(processed_chunk.index)
             out_func(
                 result_item["table_name"],
-                result_item["process_function"](loaded_csets, chunk))
+                processed_chunk)
 
 
 def load_output_descriptive_tables(cbm_run_results_dir, project_db_path,
@@ -202,28 +210,30 @@ def load_output_descriptive_tables(cbm_run_results_dir, project_db_path,
     d = ResultsDescriber(
         project_db_path, aidb_path, loaded_csets, classifier_value_field)
     results_list = [
-        {"table_name": "tblAgeIndicators",
+        {"table_name": "age_indicators",
          "load_function": cbm3_output_files.load_age_indicators,
          "process_function": _process_age_indicator_table,
          "describe_function": d.merge_age_indicator_descriptions},
-        {"table_name": "tblDistIndicators",
+        {"table_name": "dist_indicators",
          "load_function": cbm3_output_files.load_dist_indicators,
          "process_function": _process_dist_indicator_table,
-         "describe_function": d.merge_age_indicator_descriptions},
-        {"table_name": "tblPoolIndicators",
+         "describe_function": d.merge_dist_indicator_descriptions},
+        {"table_name": "pool_indicators",
          "load_function": cbm3_output_files.load_pool_indicators,
          "process_function": _process_pool_indicator_table,
-         "describe_function": d.merge_age_indicator_descriptions},
-        {"table_name": "tblFluxIndicators",
+         "describe_function": d.merge_pool_indicator_descriptions},
+        {"table_name": "flux_indicators",
          "load_function": cbm3_output_files.load_flux_indicators,
          "process_function": _process_flux_indicator_table,
-         "describe_function": d.merge_age_indicator_descriptions}]
+         "describe_function": d.merge_flux_indicator_descriptions}]
 
     for result_item in results_list:
         result_chunk_iterable = _make_iterable(
-            result_item["load_function"](cbm_run_results_dir, chunksize))
+            result_item["load_function"], cbm_run_results_dir, chunksize)
+        index_offset = 0
         for chunk in result_chunk_iterable:
             processed_chunk = result_item["process_function"](
-                loaded_csets, chunk)
+                loaded_csets, chunk, index_offset)
+            index_offset = index_offset + len(processed_chunk.index)
             described_chunk = result_item["describe_function"](processed_chunk)
             out_func(result_item["table_name"], described_chunk)
