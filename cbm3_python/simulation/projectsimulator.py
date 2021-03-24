@@ -36,13 +36,23 @@ def clear_old_results(project_db):
 def _delete_old_tempfiles(tempfiles_output_dir):
     # do a little validation before dropping a rmtree on the wrong dir
     # due to a typo etc.
+
+    if not os.path.exists(tempfiles_output_dir):
+        return
+
+    dir_list = set([x.lower() for x in os.listdir(tempfiles_output_dir)])
+    is_empty_or_has_only_cbmrun_makelist = \
+        dir_list == set(['cbmrun', 'makelist']) or \
+        not dir_list
+
     ok_to_delete = \
-        tempfiles_output_dir is not None and \
-        os.path.exists(tempfiles_output_dir) and \
-        os.path.isabs(tempfiles_output_dir) and \
-        os.path.exists(os.path.join(tempfiles_output_dir, "CBMRun"))
+        is_empty_or_has_only_cbmrun_makelist and \
+        os.path.isabs(tempfiles_output_dir)
     if ok_to_delete:
         shutil.rmtree(tempfiles_output_dir)
+    else:
+        raise ValueError(
+            f"Cannot remove tempfiles_output_dir: {tempfiles_output_dir}")
 
 
 def run(project_path, project_simulation_id=None, n_timesteps=None,
@@ -134,7 +144,9 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
             continue
         if not os.path.exists(path):
             raise ValueError(f"specified path does not exist '{path}'")
-    _delete_old_tempfiles(tempfiles_output_dir)
+
+    if tempfiles_output_dir:
+        _delete_old_tempfiles(tempfiles_output_dir)
 
     with AIDB(aidb_path, False) as aidb, \
             ProjectDB(project_path, False) as proj:
