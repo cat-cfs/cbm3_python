@@ -52,22 +52,24 @@ class ResultsDescriber():
 
     def __init__(self, project_db_path, aidb_path, loaded_csets,
                  classifier_value_field="Name"):
-        project_data = load_project_level_data(project_db_path)
-        aidb_data = load_archive_index_data(aidb_path)
-        self.default_view = self._create_default_data_views(aidb_data)
-        self.project_view = self._create_project_data_view(
-            project_data, self.default_view)
+
+        self.project_data = load_project_level_data(project_db_path)
+        self.aidb_data = load_archive_index_data(aidb_path)
+        self.default_view = self._create_default_data_views()
+        self.project_view = self._create_project_data_view()
 
         self.mapped_csets = self._map_classifier_descriptions(
-            project_data, loaded_csets, classifier_value_field)
+            loaded_csets, classifier_value_field)
 
     def _create_default_data_views(self):
         default_spu_view = self.aidb_data.tblSPUDefault[
             ["SPUID", "AdminBoundaryID", "EcoBoundaryID"]].merge(
-            self.aidb_data.tblEcoBoundaryDefault[
-                ["EcoBoundaryID", "EcoBoundaryName"]]).merge(
-            self.aidb_data.tblAdminBoundaryDefault[
-                ["AdminBoundaryID", "AdminBoundaryName"]])
+                self.aidb_data.tblEcoBoundaryDefault[
+                    ["EcoBoundaryID", "EcoBoundaryName"]],
+                validate="m:1").merge(
+                    self.aidb_data.tblAdminBoundaryDefault[
+                        ["AdminBoundaryID", "AdminBoundaryName"]],
+                    validate="m:1")
         default_spu_view = default_spu_view.rename(columns={
             "SPUID": "DefaultSPUID",
             "AdminBoundaryID": "DefaultAdminBoundaryID",
@@ -98,9 +100,11 @@ class ResultsDescriber():
             ["SPUID", "AdminBoundaryID", "EcoBoundaryID", "DefaultSPUID"]
         ].merge(
             self.project_data.tblEcoBoundary[
-                ["EcoBoundaryID", "EcoBoundaryName"]]).merge(
-            self.project_data.tblAdminBoundary[
-                ["AdminBoundaryID", "AdminBoundaryName"]])
+                ["EcoBoundaryID", "EcoBoundaryName"]],
+            validate="1:m").merge(
+                self.project_data.tblAdminBoundary[
+                    ["AdminBoundaryID", "AdminBoundaryName"]],
+                validate="1:m")
 
         project_spu_view = project_spu_view.rename(
             columns={
@@ -117,12 +121,13 @@ class ResultsDescriber():
             "ProjectAdminBoundaryName", "DefaultSPUID"]]
 
         project_spu_view = project_spu_view.merge(
-            self.default_view.default_spu_view)
+            self.default_view.default_spu_view, validate="m:1")
 
         disturbance_type_view = self.project_data.tblDisturbanceType[
             ["DistTypeID", "DistTypeName", "Description", "DefaultDistTypeID"]]
         disturbance_type_view = disturbance_type_view.merge(
-            self.default_view.default_disturbance_type_view)
+            self.default_view.default_disturbance_type_view,
+            validate="m:1")
         disturbance_type_view = disturbance_type_view.rename(columns={
             "DistTypeID": "ProjectDistTypeID",
             "DistTypeName": "ProjectDistTypeName",
@@ -132,7 +137,7 @@ class ResultsDescriber():
             project_spu_view=project_spu_view,
             disturbance_type_view=disturbance_type_view)
 
-    def _map_classifier_descriptions(self, description_field):
+    def _map_classifier_descriptions(self, loaded_csets, description_field):
         cset_map = {}
         unique_classifier_ids = \
             self.project_data.tblClassifierValues.ClassifierID.unique()
@@ -144,7 +149,7 @@ class ResultsDescriber():
             for _, row in classifier_rows.iterrows():
                 inner_map[int(row.ClassifierValueID)] = row[description_field]
             cset_map[int(classifier)] = inner_map
-        mapped_csets = self.loaded_csets.copy()
+        mapped_csets = loaded_csets.copy()
 
         for classifier_id, classifier_map in cset_map.items():
             mapped_csets[f"c{classifier_id}"] = \
@@ -161,35 +166,39 @@ class ResultsDescriber():
             pool_indicators, left_on="ProjectSPUID", right_on="SPUID")
         pool_indicators = self.mapped_csets.merge(
             pool_indicators, left_on="ClassifierSetID",
-            right_on="UserDefdClassSetID")
+            right_on="UserDefdClassSetID", validate="1:m")
         return pool_indicators
 
     def merge_flux_indicator_descriptions(self, flux_indicators):
         flux_indicators = self.project_view.disturbance_type_view.merge(
             flux_indicators, left_on="ProjectDistTypeID",
-            right_on="DistTypeID", how="right")
+            right_on="DistTypeID", how="right", validate="1:m")
         flux_indicators = self.project_view.project_spu_view.merge(
-            flux_indicators, left_on="ProjectSPUID", right_on="SPUID")
+            flux_indicators, left_on="ProjectSPUID", right_on="SPUID",
+            validate="1:m")
         flux_indicators = self.mapped_csets.merge(
             flux_indicators, left_on="ClassifierSetID",
-            right_on="UserDefdClassSetID")
+            right_on="UserDefdClassSetID", validate="1:m")
         return flux_indicators
 
     def merge_age_indicator_descriptions(self, age_indicators):
         age_indicators = self.project_view.project_spu_view.merge(
-            age_indicators, left_on="ProjectSPUID", right_on="SPUID")
+            age_indicators, left_on="ProjectSPUID", right_on="SPUID",
+            validate="1:m")
         age_indicators = self.mapped_csets.merge(
             age_indicators, left_on="ClassifierSetID",
-            right_on="UserDefdClassSetID")
+            right_on="UserDefdClassSetID",
+            validate="1:m")
         return age_indicators
 
     def merge_dist_indicator_descriptions(self, dist_indicators):
         dist_indicators = self.project_view.disturbance_type_view.merge(
             dist_indicators, left_on="ProjectDistTypeID",
-            right_on="DistTypeID", how="right")
+            right_on="DistTypeID", how="right", validate="1:m")
         dist_indicators = self.project_view.project_spu_view.merge(
-            dist_indicators, left_on="ProjectSPUID", right_on="SPUID")
+            dist_indicators, left_on="ProjectSPUID", right_on="SPUID",
+            validate="1:m")
         dist_indicators = self.mapped_csets.merge(
             dist_indicators, left_on="ClassifierSetID",
-            right_on="UserDefdClassSetID")
+            right_on="UserDefdClassSetID", validate="1:m")
         return dist_indicators
