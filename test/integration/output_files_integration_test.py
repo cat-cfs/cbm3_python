@@ -1,10 +1,14 @@
 import os
 import tempfile
+from types import SimpleNamespace
 import unittest
+import pandas as pd
+import numpy as np
 from cbm3_python import toolbox_defaults
 from cbm3_python.cbm3data import sit_helper
 from cbm3_python.simulation import projectsimulator
 from cbm3_python.cbm3data import cbm3_results
+from cbm3_python.cbm3data import cbm3_output_files_loader
 
 
 def get_db_table_names():
@@ -61,4 +65,51 @@ class OutputFilesIntegrationTests(unittest.TestCase):
                 )],
                 toolbox_path=toolbox_defaults.get_install_path(),
                 max_workers=1))
-            cbm3_results.load_stock_changes(results_path)
+
+            cbm_results_db_flux_ind = cbm3_results.load_flux_indicators(
+                results_path)
+
+            def create_out_func(output_table_name_pair):
+                def out_func(name, df):
+                    if name == output_table_name_pair.name:
+                        output_table_name_pair.df = \
+                            output_table_name_pair.df.append(df)
+                return out_func
+
+            descriptive_flux_indicators = SimpleNamespace(
+                name="flux_indicators",
+                df=pd.DataFrame())
+            cbm3_output_files_loader.load_output_descriptive_tables(
+                cbm_run_results_dir=os.path.join(
+                    tempfiles_dir, "CBMRun", "output"),
+                project_db_path=project_path,
+                aidb_path=toolbox_defaults.get_archive_index_path(),
+                out_func=create_out_func(descriptive_flux_indicators),
+                chunksize=10)
+
+            relational_flux_indicators = SimpleNamespace(
+                name="tblFluxIndicators",
+                df=pd.DataFrame())
+            cbm3_output_files_loader.load_output_relational_tables(
+                cbm_run_results_dir=os.path.join(
+                    tempfiles_dir, "CBMRun", "output"),
+                project_db_path=project_path,
+                aidb_path=toolbox_defaults.get_archive_index_path(),
+                out_func=create_out_func(relational_flux_indicators),
+                chunksize=12)
+
+            self.assertTrue(
+                np.allclose(
+                    descriptive_flux_indicators.df[
+                        cbm_results_db_flux_ind.columns
+                    ].groupby("TimeStep").sum().reset_index()
+                     .sort_values(by="TimeStep").to_numpy(),
+                    cbm_results_db_flux_ind.to_numpy()))
+
+            self.assertTrue(
+                np.allclose(
+                    relational_flux_indicators.df[
+                        cbm_results_db_flux_ind.columns
+                    ].groupby("TimeStep").sum().reset_index()
+                     .sort_values(by="TimeStep").to_numpy(),
+                    cbm_results_db_flux_ind.to_numpy()))
