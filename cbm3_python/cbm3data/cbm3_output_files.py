@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from cbm3_python.cbm3data import svl_file_parser
 
+
 def make_iterable(func, results_dir, chunksize=None):
     result = func(results_dir, chunksize)
     if chunksize:
