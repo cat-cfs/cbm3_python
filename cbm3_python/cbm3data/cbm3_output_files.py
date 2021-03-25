@@ -2,6 +2,13 @@ import os
 import pandas as pd
 
 
+def make_iterable(func, results_dir, chunksize=None):
+    result = func(results_dir, chunksize)
+    if chunksize:
+        return result
+    return [result]
+
+
 def get_classifier_column_names():
     return [f"c{x}" for x in range(1, 11)]
 
