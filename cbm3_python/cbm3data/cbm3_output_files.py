@@ -81,45 +81,8 @@ def load_dist_indicators(dir, chunksize=None):
         names=column_names, chunksize=chunksize)
 
 
-def parse_svl_files(dir, chunksize=None):
-    column_names = [
-        "SPUID", "Area", "SVOID", "LastDisturbanceTypeID",
-        "YearsSinceLastDisturbance", "YearsSinceLUC",
-
-        "SWForestType", "SWGrowthCurveID", "SWManagementType",
-        "SWMaturityState", "SWYearsInMaturityState", "SWAge",
-        "SWTotalBio_C_Density", "SWMerch_C_Density", "SWFoliage_C_Density",
-        "SWSubMerch_C_Density", "SWOther_C_density", "SWCoarseRoot_C_Density",
-        "SWFineRoot_C_Density",
-
-        "HWForestType", "HWGrowthCurveID", "HWManagementType",
-        "HWMaturityState", "HWYearsInMaturityState", "HWAge",
-        "HWTotalBio_C_Density", "HWMerch_C_Density", "HWFoliage_C_Density",
-        "HWSubMerch_C_Density", "HWOther_C_density", "HWCoarseRoot_C_Density",
-        "HWFineRoot_C_Density",
-
-        "TotalDOMC_Density", "VeryFastCAG_Density", "VeryFastCBG_Density",
-        "FastCAG_Density", "FastCBG_Density", "MediumC_Density",
-        "SlowCAG_Density", "SlowCBG_Density", "SWSSnagC_Density",
-        "SWBSnagC_Density", "HWSSnagC_Density", "HWBSnagC_Density",
-        "BlackC_Density", "PeatC_Density",
-
-        "c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9", "c10",
-        "landclass", "kf2", "kf3", "kf4", "kf5", "kf6", ]
-
-    lines = []
-    for file in svl_file_parser.iterate_svl_files(dir):
-        print(file)
-        svl_line_iterable = svl_file_parser.iterate_svl_lines(file)
-        if chunksize:
-            for line in svl_line_iterable:
-                lines.append(line)
-                if len(lines) == chunksize:
-                    yield pd.DataFrame(
-                        columns=column_names, data=lines)
-                    lines.clear()
-        else:
-            for line in svl_line_iterable:
-                lines.append(line)
-    yield pd.DataFrame(
-        columns=column_names, data=lines)
+def load_svl_files(dir, chunksize=None):
+    if chunksize:
+        return svl_file_parser.parse_svl_files(dir, chunksize)
+    else:
+        return next(svl_file_parser.parse_svl_files(dir))
