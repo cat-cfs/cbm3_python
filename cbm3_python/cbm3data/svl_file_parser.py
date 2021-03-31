@@ -72,13 +72,13 @@ def parse_svl_files(dir, chunksize=None):
         "SWForestType", "SWGrowthCurveID", "SWManagementType",
         "SWMaturityState", "SWYearsInMaturityState", "SWAge",
         "SWTotalBio_C_Density", "SWMerch_C_Density", "SWFoliage_C_Density",
-        "SWSubMerch_C_Density", "SWOther_C_density", "SWCoarseRoot_C_Density",
+        "SWSubMerch_C_Density", "SWOther_C_Density", "SWCoarseRoot_C_Density",
         "SWFineRoot_C_Density",
 
         "HWForestType", "HWGrowthCurveID", "HWManagementType",
         "HWMaturityState", "HWYearsInMaturityState", "HWAge",
         "HWTotalBio_C_Density", "HWMerch_C_Density", "HWFoliage_C_Density",
-        "HWSubMerch_C_Density", "HWOther_C_density", "HWCoarseRoot_C_Density",
+        "HWSubMerch_C_Density", "HWOther_C_Density", "HWCoarseRoot_C_Density",
         "HWFineRoot_C_Density",
 
         "TotalDOMC_Density", "VeryFastCAG_Density", "VeryFastCBG_Density",
