@@ -1,4 +1,5 @@
 import os
+import csv
 import pandas as pd
 from cbm3_python.cbm3data import svl_file_parser
 
@@ -27,7 +28,7 @@ def load_pool_indicators(dir, chunksize=None):
 
     return pd.read_csv(
         os.path.join(dir, "poolind.out"), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize)
+        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_flux_indicators(dir, chunksize=None):
@@ -53,7 +54,7 @@ def load_flux_indicators(dir, chunksize=None):
 
     return pd.read_csv(
         os.path.join(dir, "fluxind.out"), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize)
+        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_age_indicators(dir, chunksize=None):
@@ -66,7 +67,7 @@ def load_age_indicators(dir, chunksize=None):
 
     return pd.read_csv(
         os.path.join(dir, "ageind.out"), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize)
+        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_dist_indicators(dir, chunksize=None):
@@ -78,7 +79,7 @@ def load_dist_indicators(dir, chunksize=None):
 
     return pd.read_csv(
         os.path.join(dir, "distinds.out"), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize)
+        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_svl_files(dir, chunksize=None):
