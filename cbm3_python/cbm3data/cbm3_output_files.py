@@ -87,3 +87,35 @@ def load_svl_files(dir, chunksize=None):
         return svl_file_parser.parse_svl_files(dir, chunksize)
     else:
         return next(svl_file_parser.parse_svl_files(dir))
+
+
+def load_nir_output(dir, chunksize=None):
+    pass # NIROutput.txt
+
+
+def load_nodist(dir, chunksize=None):
+    pass
+
+
+def load_distseries(dir, chunksize=None):
+    pass
+
+
+def load_accdiagnostics(dir, chunksize=None):
+    pass
+
+
+def load_predistage(dir, chunksize=None):
+    pass
+
+
+def load_seed(dir, chunksize=None):
+    pass
+
+
+def load_spatial_flux(dir, chunksize=None):
+    pass
+
+
+def load_spatial_pools(dir, chunksize=None):
+    pass
