@@ -10,15 +10,23 @@ import numpy as np
 
 
 def parse_report_file(report_fil_path):
+    """
+    Returns a pandas dataframe of the "CBM3" disturbance
+    reconciliation output in the specified input file
+
+    Args:
+        report_fil_path (str): path to a CBM3 "report.fil" cbm
+            output file
+
+    Returns:
+        pandas.DataFrame: a dataframe with the disturbance information
+    """
     with open(report_fil_path, 'r') as fp:
         return _parse_report_fil(fp)
 
 
 def _parse_report_fil(inputFile):
-    """
-    Returns a pandas dataframe of the "CBM3" disturbance reconcilliation
-    output in the specified input file
-    """
+
     fileContents = inputFile.read()
     matches = re.findall(
         'Disturbance Reconciliation.+?Records Changed:[ \t0-9]+',
