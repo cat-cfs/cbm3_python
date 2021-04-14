@@ -92,6 +92,46 @@ def _process_dist_indicator_table(loaded_csets, dist_indicators, index_offset):
     return dist_indicators_new
 
 
+def _load_local_column_map(filename):
+    mapping_data = pd.read_csv(
+        _get_local_file(filename))
+    return {
+        row.CBM3_raw_column_name: row.RRDB_column_name
+        for _, row in mapping_data.dropna().iterrows()}
+
+
+def _get_replace_with_classifier_set_id_func(loaded_csets):
+    def func(df):
+        return cbm3_output_classifiers.replace_with_classifier_set_id(
+            df, loaded_csets)
+    return func
+
+
+def _get_drop_column_func(column_name):
+    def func(df):
+        df.drop(columns=column_name, inplace=True)
+        return df
+    return func
+
+
+def _get_column_rename_func(column_name_map):
+    def func(df):
+        df.rename(columns=column_name_map, inplace=True)
+        return df
+    return func
+
+
+def _get_add_id_column_func(id_column_name, index_offset):
+    def func(df):
+        df.insert(
+            loc=0, column=id_column_name,
+            value=df.index + index_offset + 1)
+    return func
+
+
+def _get_load_functions():
+
+
 def load_output_relational_tables(cbm_run_results_dir, project_db_path,
                                   aidb_path, out_func, chunksize=None):
 
@@ -115,16 +155,22 @@ def load_output_relational_tables(cbm_run_results_dir, project_db_path,
     results_list = [
         {"table_name": "tblAgeIndicators",
          "load_function": cbm3_output_files.load_age_indicators,
-         "process_function": _process_age_indicator_table},
+         "process_functions": [
+             _get_replace_with_classifier_set_id_func(loaded_csets),
+             _get_drop_column_func("RunID"),
+             _get_column_rename_func(
+                 _load_local_column_map("dist_indicators_column_mapping.csv")),
+             _get_add_id_column_func("AgeIndID", )
+         ]},
         {"table_name": "tblDistIndicators",
          "load_function": cbm3_output_files.load_dist_indicators,
-         "process_function": _process_dist_indicator_table},
+         "process_functions": _process_dist_indicator_table},
         {"table_name": "tblPoolIndicators",
          "load_function": cbm3_output_files.load_pool_indicators,
-         "process_function": _process_pool_indicator_table},
+         "process_functions": _process_pool_indicator_table},
         {"table_name": "tblFluxIndicators",
          "load_function": cbm3_output_files.load_flux_indicators,
-         "process_function": _process_flux_indicator_table}]
+         "process_functions": _process_flux_indicator_table}]
 
     for result_item in results_list:
         result_chunk_iterable = cbm3_output_files.make_iterable(
