@@ -16,7 +16,7 @@ def _query_access_db(path, query):
 
 def load_archive_index_data(aidb_path):
     # load default spu data from archive index
-    aidb_data =  SimpleNamespace(
+    aidb_data = SimpleNamespace(
         tblSPUDefault=_query_access_db(
             aidb_path, "SELECT * FROM tblSPUDefault"),
         tblEcoBoundaryDefault=_query_access_db(
@@ -26,13 +26,13 @@ def load_archive_index_data(aidb_path):
         tblDisturbanceTypeDefault=_query_access_db(
             aidb_path, "SELECT * FROM tblDisturbanceTypeDefault"),
         tblUNFCCCLandClass=_query_access_db(
-            aidb_path, "SELECT * FROM tblUNFCCCLandClass"))
+            aidb_path, "SELECT * FROM tblUNFCCCLandClass"),
+        tblKP3334Flags=_query_access_db(
+            aidb_path, "SELECT * FROM tblKP3334Flags"))
 
-    aidb_data.tblKP3334Flags = _query_access_db(
-        aidb_path, "SELECT * FROM tblKP3334Flags")
     # note in current build v1.2.7739.338 tblKP3334Flags is missing a row,
     # and the following lines compensate for that
-    if len(aidb_data.index) == 9:
+    if len(aidb_data.tblKP3334Flags.index) == 9:
         aidb_data.tblKP3334Flags = pd.DataFrame(
             columns=["KP3334ID", "Name", "Description"],
             data=[[0, "Undetermined", "Undetermined"]]
@@ -190,6 +190,26 @@ class ResultsDescriber():
             right_on="UserDefdClassSetID", validate="1:m")
 
     def merge_landclass_description(self, df):
+
+        land_class_name = self.aidb_data.tblUNFCCCLandClass.merge(
+            df[["LandClassID"]],
+            left_on="UNFCCCLandClassID",
+            right_on="LandClassID",
+            validate="1:m")[["Name"]].rename(
+                columns={"Name": "UNFCCCLandClassName"}).set_index(df.index)
+
+        kf3334_name_desc = self.aidb_data.tblKP3334Flags.merge(
+            df[["kf2"]],
+            left_on=["KP3334ID"],
+            right_on=["kf2"],
+            validate="1:m")[["Name", "Description"]].rename(
+                columns={
+                    "Name": "KP3334Name",
+                    "Description": "KP3334Description"}).set_index(df.index)
+
+        return land_class_name.merge(
+            kf3334_name_desc, left_index=True, right_index=True).merge(
+                df, left_index=True, right_index=True, validate="1:1")
 
     def merge_pool_indicator_descriptions(self, pool_indicators):
         pool_indicators = self.project_view.project_spu_view.merge(
