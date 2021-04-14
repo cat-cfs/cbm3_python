@@ -123,8 +123,8 @@ def load_distseries(dir, chunksize=None):
 def load_accdiagnostics(dir, chunksize=None):
     filename = "accdiagnostics.txt"
     column_names = [
-        "id", "rule_type", "target", "target_value", "timestep", "action",
-        "distTypeID", "area", "age"
+        "id", "rule_type", "target", "target_value", "TimeStep", "action",
+        "DistTypeID", "area", "age"
     ]
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
