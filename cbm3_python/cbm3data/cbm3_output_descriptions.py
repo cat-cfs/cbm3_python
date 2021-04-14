@@ -16,7 +16,7 @@ def _query_access_db(path, query):
 
 def load_archive_index_data(aidb_path):
     # load default spu data from archive index
-    return SimpleNamespace(
+    aidb_data =  SimpleNamespace(
         tblSPUDefault=_query_access_db(
             aidb_path, "SELECT * FROM tblSPUDefault"),
         tblEcoBoundaryDefault=_query_access_db(
@@ -27,6 +27,19 @@ def load_archive_index_data(aidb_path):
             aidb_path, "SELECT * FROM tblDisturbanceTypeDefault"),
         tblUNFCCCLandClass=_query_access_db(
             aidb_path, "SELECT * FROM tblUNFCCCLandClass"))
+
+    aidb_data.tblKP3334Flags = _query_access_db(
+        aidb_path, "SELECT * FROM tblKP3334Flags")
+    # note in current build v1.2.7739.338 tblKP3334Flags is missing a row,
+    # and the following lines compensate for that
+    if len(aidb_data.index) == 9:
+        aidb_data.tblKP3334Flags = pd.DataFrame(
+            columns=["KP3334ID", "Name", "Description"],
+            data=[[0, "Undetermined", "Undetermined"]]
+        ).append(
+            aidb_data.tblKP3334Flags)
+        aidb_data.tblKP3334Flags = list(range(0, 10))
+    return aidb_data
 
 
 def load_project_level_data(project_db_path):
@@ -160,6 +173,23 @@ class ResultsDescriber():
                 self.project_data.tblClassifiers.sort_values(
                     by="ClassifierID").Name)
         return mapped_csets
+
+    def merge_spatial_unit_description(self, df):
+        return self.project_view.project_spu_view.merge(
+            df, left_on="ProjectSPUID", right_on="SPUID",
+            validate="1:m")
+
+    def merge_disturbance_type_description(self, df):
+        return self.project_view.disturbance_type_view.merge(
+            df, left_on="ProjectDistTypeID",
+            right_on="DistTypeID", how="right", validate="1:m")
+
+    def merge_classifier_set_description(self, df):
+        return self.mapped_csets.merge(
+            df, left_on="ClassifierSetID",
+            right_on="UserDefdClassSetID", validate="1:m")
+
+    def merge_landclass_description(self, df):
 
     def merge_pool_indicator_descriptions(self, pool_indicators):
         pool_indicators = self.project_view.project_spu_view.merge(
