@@ -98,7 +98,9 @@ def load_nir_output(dir, chunksize=None):
         "HWCoarseRootC", "HWFineRootC", "VeryFastCAG", "VeryFastCBG",
         "FastCAG", "FastCBG", "MediumC", "SlowCAG", "SlowCBG", "SWSSnagC",
         "HWSSnagC", "SWBSnagC", "HWBSnagC", "BlackC", "PeatC"]
-    pass
+    return pd.read_csv(
+        os.path.join(dir, filename), header=None, delim_whitespace=True,
+        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_nodist(dir, chunksize=None):
@@ -106,15 +108,16 @@ def load_nodist(dir, chunksize=None):
     column_names = [
         "RunID", "TimeStep", "DistTypeID", "DistGroup", "UndisturbedArea"
     ]
-    pass
+    return pd.read_csv(
+        os.path.join(dir, filename), header=None, delim_whitespace=True,
+        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_distseries(dir, chunksize=None):
     filename = "distseries.csv"
     # column headers are present in this csv file
-    columns_names = [
-        "timestep", "previous_kf5", "current_kf5", "area_disturbed"]
-    pass
+    return pd.read_csv(
+        os.path.join(dir, filename), chunksize=chunksize)
 
 
 def load_accdiagnostics(dir, chunksize=None):
@@ -123,26 +126,27 @@ def load_accdiagnostics(dir, chunksize=None):
         "id", "rule_type", "target", "target_value", "timestep", "action",
         "distTypeID", "area", "age"
     ]
+    return pd.read_csv(
+        os.path.join(dir, filename), header=None, delim_whitespace=True,
+        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_predistage(dir, chunksize=None):
     filename = "predistage.csv"
     # column headers are present in this csv file
-    column_names = [
-        "spuid", "dist_type", "timestep",
-        "c0", "c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9",
-        "", "k0", "k1", "k2", "k3", "k4", "k5",
-        "pre_dist_age", "area_disturbed"]
-    pass
+    return pd.read_csv(
+        os.path.join(dir, filename), chunksize=chunksize)
 
 
 def load_seed(dir, chunksize=None):
     filename = "seed.txt"
     column_names = ["MonteCarloAssumptionID", "RunID", "RandomSeed"]
-    pass
+    return pd.read_csv(
+        os.path.join(dir, filename), header=None, delim_whitespace=True,
+        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
-def load_spatial_flux(dir, chunksize=None):
+def load_spatial_pools(dir, chunksize=None):
     filename = "spatialpool.out"
     column_names = ["RunID", "SVOID", "Age", "TimeStep", "SPUID"] + \
         get_classifier_column_names() + \
@@ -153,9 +157,12 @@ def load_spatial_flux(dir, chunksize=None):
          "HWFineRootC", "VeryFastCAG", "VeryFastCBG", "FastCAG", "FastCBG",
          "MediumC", "SlowCAG", "SlowCBG", "SWSSnagC", "SWBSnagC", "HWSSnagC",
          "HWBSnagC", "BlackC", "PeatC"]
+    return pd.read_csv(
+        os.path.join(dir, filename), header=None, delim_whitespace=True,
+        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
-def load_spatial_pools(dir, chunksize=None):
+def load_spatial_flux(dir, chunksize=None):
     filename = "SpatialFluxInd.out"
     column_names = ["RunID", "SVOID", "TimeStep", "SPUID", "DistTypeID"] + \
         get_classifier_column_names() + \
@@ -175,4 +182,6 @@ def load_spatial_pools(dir, chunksize=None):
          "BioToAir_MERCHANTABLE", "BioToAir_FOLIAGE", "BioToAir_OTHER",
          "BioToAir_SUBMERCHANTABLE", "BioToAir_COARSEROOT",
          "BioToAir_FINEROOT"]
-    pass
+    return pd.read_csv(
+        os.path.join(dir, filename), header=None, delim_whitespace=True,
+        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
