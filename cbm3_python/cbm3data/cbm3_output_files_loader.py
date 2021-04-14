@@ -1,5 +1,4 @@
 import os
-import copy
 import pandas as pd
 import functools
 from cbm3_python.cbm3data import cbm3_output_files
@@ -100,7 +99,7 @@ def _get_gross_growth_column_funcs():
         # included in RAW CBM3 output, but are present in tblFluxIndicators
         df["GrossGrowth_AG"] = df[
             ["DeltaBiomass_AG", "MerchLitterInput", "FolLitterInput",
-            "OthLitterInput", "SubMerchLitterInput"]].sum(axis=1)
+             "OthLitterInput", "SubMerchLitterInput"]].sum(axis=1)
         df.loc[df.DistTypeID != 0, "GrossGrowth_AG"] = 0.0
         df["GrossGrowth_BG"] = df[
             ["DeltaBiomass_BG", "CoarseLitterInput", "FineLitterInput"]
