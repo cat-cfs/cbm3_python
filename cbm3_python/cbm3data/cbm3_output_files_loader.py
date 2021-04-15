@@ -44,10 +44,22 @@ LOAD_FUNCTIONS = {
     }
 
 DESCRIBE_FUNCTIONS = {
-    "tblAgeIndicators": "",
-    "tblDistIndicators": "",
-    "tblPoolIndicators": "",
-    "tblFluxIndicators": "",
+    "tblAgeIndicators": lambda describer: _compose(
+        describer.merge_spatial_unit_description,
+        describer.merge_classifier_set_description,
+        describer.merge_disturbance_type_description),
+    "tblDistIndicators": lambda describer: _compose(
+        describer.merge_spatial_unit_description,
+        describer.merge_classifier_set_description,
+        describer.merge_disturbance_type_description),
+    "tblPoolIndicators": lambda describer: _compose(
+        describer.merge_spatial_unit_description,
+        describer.merge_classifier_set_description,
+        describer.merge_disturbance_type_description),
+    "tblFluxIndicators": lambda describer: _compose(
+        describer.merge_spatial_unit_description,
+        describer.merge_classifier_set_description,
+        describer.merge_disturbance_type_description)
 }
 
 
@@ -119,10 +131,6 @@ def _compose(*fs):
     return functools.reduce(compose2, fs)
 
 
-def _get_load_functions(table_name, descriptive=False):
-    return LOAD_FUNCTIONS[table_name]
-
-
 def load_output_relational_tables(cbm_run_results_dir, project_db_path,
                                   aidb_path, out_func, chunksize=None):
 
@@ -150,7 +158,7 @@ def load_output_relational_tables(cbm_run_results_dir, project_db_path,
         "tblFluxIndicators"
         ]
     for table_name in results_table_list:
-        load_functions = _get_load_functions(table_name)
+        load_functions = LOAD_FUNCTIONS[table_name]
         result_chunk_iterable = cbm3_output_files.make_iterable(
             load_functions["load_function"], cbm_run_results_dir, chunksize)
         index_offset = 0
@@ -172,33 +180,27 @@ def load_output_descriptive_tables(cbm_run_results_dir, project_db_path,
         project_data.tblClassifiers,
         project_data.tblClassifierSetValues,
         cbm_run_results_dir, chunksize=chunksize)
-    d = ResultsDescriber(
+    describer = ResultsDescriber(
         project_db_path, aidb_path, loaded_csets, classifier_value_field)
-    results_list = [
-        {"table_name": "age_indicators",
-         "load_function": cbm3_output_files.load_age_indicators,
-         "process_function": _process_age_indicator_table,
-         "describe_function": d.merge_age_indicator_descriptions},
-        {"table_name": "dist_indicators",
-         "load_function": cbm3_output_files.load_dist_indicators,
-         "process_function": _process_dist_indicator_table,
-         "describe_function": d.merge_dist_indicator_descriptions},
-        {"table_name": "pool_indicators",
-         "load_function": cbm3_output_files.load_pool_indicators,
-         "process_function": _process_pool_indicator_table,
-         "describe_function": d.merge_pool_indicator_descriptions},
-        {"table_name": "flux_indicators",
-         "load_function": cbm3_output_files.load_flux_indicators,
-         "process_function": _process_flux_indicator_table,
-         "describe_function": d.merge_flux_indicator_descriptions}]
 
-    for result_item in results_list:
+    results_table_list = [
+        "tblAgeIndicators",
+        "tblDistIndicators",
+        "tblPoolIndicators",
+        "tblFluxIndicators"
+        ]
+    for table_name in results_table_list:
+        load_functions = LOAD_FUNCTIONS[table_name]
+        describe_functions = DESCRIBE_FUNCTIONS[table_name]
+
         result_chunk_iterable = cbm3_output_files.make_iterable(
-            result_item["load_function"], cbm_run_results_dir, chunksize)
+            load_functions["load_function"], cbm_run_results_dir, chunksize)
         index_offset = 0
         for chunk in result_chunk_iterable:
-            processed_chunk = result_item["process_function"](
-                loaded_csets, chunk, index_offset)
+            process_function = load_functions["process_function"](
+                loaded_csets, index_offset)
+            processed_chunk = process_function(chunk)
             index_offset = index_offset + len(processed_chunk.index)
-            described_chunk = result_item["describe_function"](processed_chunk)
-            out_func(result_item["table_name"], described_chunk)
+            describe_func = describe_functions(describer)
+            described_chunk = describe_func(processed_chunk)
+            out_func(table_name, described_chunk)
