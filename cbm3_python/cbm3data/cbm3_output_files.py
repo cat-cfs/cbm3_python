@@ -1,6 +1,7 @@
 import os
 import csv
 import pandas as pd
+from cbm3_python.cbm3data import report_fil_parser
 from cbm3_python.cbm3data import svl_file_parser
 
 
@@ -144,6 +145,18 @@ def load_seed(dir, chunksize=None):
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
         names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+
+
+def load_disturbance_reconciliation(dir, chunksize=None):
+    def yield_result():
+        yield report_fil_parser.parse_report_file(
+            os.path.join(dir, "report.fil"))
+    # this file does not support chunk size currently, but still need to
+    # return the right values
+    if chunksize:
+        return yield_result()
+    else:
+        return next(yield_result())
 
 
 def load_spatial_pools(dir, chunksize=None):
