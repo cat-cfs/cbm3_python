@@ -38,7 +38,7 @@ def load_archive_index_data(aidb_path):
             data=[[0, "Undetermined", "Undetermined"]]
         ).append(
             aidb_data.tblKP3334Flags)
-        aidb_data.tblKP3334Flags = list(range(0, 10))
+        aidb_data.tblKP3334Flags.KP3334ID = list(range(0, 10))
     return aidb_data
 
 

@@ -200,6 +200,7 @@ def _get_add_id_column_func(id_column_name, index_offset):
         df.insert(
             loc=0, column=id_column_name,
             value=df.index + index_offset + 1)
+        return df
     return func
 
 
