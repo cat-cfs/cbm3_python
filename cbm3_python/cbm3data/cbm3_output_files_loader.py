@@ -226,7 +226,8 @@ def _compose(*fs):
     """
     def compose2(f, g):
         return lambda *a, **kw: f(g(*a, **kw))
-
+    fs = list(fs)
+    fs.reverse()
     return functools.reduce(compose2, fs)
 
 
