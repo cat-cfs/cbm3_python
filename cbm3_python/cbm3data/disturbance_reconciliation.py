@@ -13,7 +13,7 @@ from cbm3_python.cbm3data import accessdb
 from tempfile import TemporaryFile
 
 
-def read_disturb_list(path):
+def _read_disturb_list(path):
     column_names = [
         "DistTypeID", "DisturbanceGroup", "TimeStepStart", "TimeStepEnd",
         "Efficiency", "SortCondition", "DisturbanceTargetFormat", "TargetArea",
@@ -58,7 +58,7 @@ def read_disturb_list(path):
             names=column_names, quoting=csv.QUOTE_NONE)
 
 
-def get_project_events(project_path):
+def _get_project_events(project_path):
     events_sql = """
         SELECT
             tblDisturbanceEvents.DisturbanceEventID,
@@ -87,10 +87,13 @@ def get_project_events(project_path):
     return project_events
 
 
-def create_merged_disturbance_events(project_events, disturb_lst,
-                                     report_fil_data):
+def _create_merged_disturbance_events(project_events, disturb_lst,
+                                      report_fil_data):
 
     # check that Proportion Targets are not used
+    if project_events[project_events["PropOfRecordToDisturb"]] > 0:
+        # this function does not support proportion targets
+        return None
     project_events["cbm_disturbance_group"] = disturb_lst["DisturbanceGroup"]
 
     project_events_area_targets = project_events[
@@ -171,7 +174,7 @@ def create_merged_disturbance_events(project_events, disturb_lst,
         "Surplus Biomass C": "Simulation_SurplusCarbon"})
 
 
-def parse_report_file(report_fil_path):
+def _parse_report_file(report_fil_path):
     """
     Returns a pandas dataframe of the "CBM3" disturbance
     reconciliation output in the specified input file
@@ -236,3 +239,12 @@ def _parse_report_fil(inputFile):
             table[col].append(value)
 
     return pd.DataFrame(data=table)
+
+
+def create_disturbance_reconciliation(project_path, cbm_input_dir,
+                                      report_fil_path):
+
+    return _create_merged_disturbance_events(
+        project_events=_get_project_events(project_path),
+        disturb_lst=_read_disturb_list(cbm_input_dir),
+        report_fil_data=_parse_report_file(report_fil_path))
