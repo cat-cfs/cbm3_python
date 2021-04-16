@@ -1,34 +1,23 @@
 from types import SimpleNamespace
-import pyodbc
+from cbm3_python.cbm3data import accessdb
 import pandas as pd
-
-
-def _query_access_db(path, query):
-    """Return the result as a dataframe the specified query
-    on the access database located at the specified path."""
-    connection_string = \
-        "Driver={Microsoft Access Driver (*.mdb, *.accdb)};" \
-        f"User Id='admin';Dbq={path}"
-
-    with pyodbc.connect(connection_string) as connection:
-        return pd.read_sql(query, connection)
 
 
 def load_archive_index_data(aidb_path):
     # load default spu data from archive index
     aidb_data = SimpleNamespace(
-        tblSPUDefault=_query_access_db(
-            aidb_path, "SELECT * FROM tblSPUDefault"),
-        tblEcoBoundaryDefault=_query_access_db(
-            aidb_path, "SELECT * FROM tblEcoBoundaryDefault"),
-        tblAdminBoundaryDefault=_query_access_db(
-            aidb_path, "SELECT * FROM tblAdminBoundaryDefault"),
-        tblDisturbanceTypeDefault=_query_access_db(
-            aidb_path, "SELECT * FROM tblDisturbanceTypeDefault"),
-        tblUNFCCCLandClass=_query_access_db(
-            aidb_path, "SELECT * FROM tblUNFCCCLandClass"),
-        tblKP3334Flags=_query_access_db(
-            aidb_path, "SELECT * FROM tblKP3334Flags"))
+        tblSPUDefault=accessdb.as_data_frame(
+            "SELECT * FROM tblSPUDefault", aidb_path),
+        tblEcoBoundaryDefault=accessdb.as_data_frame(
+            "SELECT * FROM tblEcoBoundaryDefault", aidb_path),
+        tblAdminBoundaryDefault=accessdb.as_data_frame(
+            "SELECT * FROM tblAdminBoundaryDefault", aidb_path),
+        tblDisturbanceTypeDefault=accessdb.as_data_frame(
+            "SELECT * FROM tblDisturbanceTypeDefault", aidb_path),
+        tblUNFCCCLandClass=accessdb.as_data_frame(
+            "SELECT * FROM tblUNFCCCLandClass", aidb_path),
+        tblKP3334Flags=accessdb.as_data_frame(
+            "SELECT * FROM tblKP3334Flags", aidb_path))
 
     # note in current build v1.2.7739.338 tblKP3334Flags is missing a row,
     # and the following lines compensate for that
@@ -45,20 +34,20 @@ def load_archive_index_data(aidb_path):
 def load_project_level_data(project_db_path):
     # get project level info
     return SimpleNamespace(
-        tblSPU=_query_access_db(
-            project_db_path, "SELECT * FROM tblSPU"),
-        tblEcoBoundary=_query_access_db(
-            project_db_path, "SELECT * FROM tblEcoBoundary"),
-        tblAdminBoundary=_query_access_db(
-            project_db_path, "SELECT * FROM tblAdminBoundary"),
-        tblDisturbanceType=_query_access_db(
-            project_db_path, "SELECT * FROM tblDisturbanceType"),
-        tblClassifiers=_query_access_db(
-            project_db_path, "SELECT * FROM tblClassifiers"),
-        tblClassifierValues=_query_access_db(
-            project_db_path, "SELECT * FROM tblClassifierValues"),
-        tblClassifierSetValues=_query_access_db(
-            project_db_path, "SELECT * FROM tblClassifierSetValues"))
+        tblSPU=accessdb.as_data_frame(
+            "SELECT * FROM tblSPU", project_db_path),
+        tblEcoBoundary=accessdb.as_data_frame(
+            "SELECT * FROM tblEcoBoundary", project_db_path),
+        tblAdminBoundary=accessdb.as_data_frame(
+            "SELECT * FROM tblAdminBoundary", project_db_path),
+        tblDisturbanceType=accessdb.as_data_frame(
+            "SELECT * FROM tblDisturbanceType", project_db_path),
+        tblClassifiers=accessdb.as_data_frame(
+            "SELECT * FROM tblClassifiers", project_db_path),
+        tblClassifierValues=accessdb.as_data_frame(
+            "SELECT * FROM tblClassifierValues", project_db_path),
+        tblClassifierSetValues=accessdb.as_data_frame(
+            "SELECT * FROM tblClassifierSetValues", project_db_path))
 
 
 class ResultsDescriber():
