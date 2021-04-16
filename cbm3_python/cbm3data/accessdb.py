@@ -1,6 +1,7 @@
 # Copyright (C) Her Majesty the Queen in Right of Canada,
 #  as represented by the Minister of Natural Resources Canada
 
+import pandas as pd
 import pyodbc
 import logging
 import os
@@ -13,6 +14,22 @@ except ImportError:
 # Scott - Nov 2013
 # wrapper for ms access object allowing queries
 # and some other basic operations
+
+
+def as_data_frame(query, access_db_path):
+    """Return the result of the specified query on the access database located
+    at access_db_path as a pandas DataFrame.
+
+    Args:
+        query (str): access database SQL query
+        results_db_path (str): path to access database
+
+    Returns:
+        pandas.DataFrame: the query result
+    """
+    with AccessDB(access_db_path) as results_db:
+        df = pd.read_sql(query, results_db.connection)
+    return df
 
 
 class AccessDB(object):
