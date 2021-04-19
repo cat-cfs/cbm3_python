@@ -1,4 +1,5 @@
 import os
+import json
 import shutil
 import traceback
 from concurrent.futures import ProcessPoolExecutor
@@ -80,14 +81,17 @@ class ConcurrentRunner:
         Returns:
             dict: the input run_args
         """
+        
         try:
-            return self._run_func(run_args)
+            output = {"Exception": None}
+            output.update(self._run_func(run_args))
+            return output        
         except:
             output = {"Exception": traceback.format_exc()}
             output.update(run_args)
             return output
 
-    def run(self, run_args, max_workers=None):
+    def run(self, run_args, max_workers=None, raise_exceptions=True):
         """Runs CBM3 simulations as separate processes.
 
         ** Important Note ** this method must be called from a "main script"
@@ -101,13 +105,34 @@ class ConcurrentRunner:
             max_workers (int, optional): Passed to the max_workers arg of:
                 py:class:`concurrent.futures.ProcessPoolExecutor
                 Defaults to None.
+            raise_exceptions (bool, optional): If set to true information on
+                any exceptions encountered in the list of run args will be 
+                raised in a RuntimeError.  If false, no exception will be
+                raised, but the same error information is returned in the 
+                resulting task dictionaries in the "Exception" entry. Defaults
+                to True.
 
+        Raises:
+            RuntimeError: raised if "raise_exceptions" is set to true, and at 
+                least one of the simulations specified in run_args encountered
+                an exception.
         Yields:
             dict: a dictionary describing the finished task yielded as each
                 task is finished.
         """
-
+        exceptions = []
         with ProcessPoolExecutor(
                 max_workers=max_workers) as executor:
             for item in executor.map(self.run_func, run_args):
+                if raise_exceptions and item["Exception"]:
+                    exceptions.append(item)
                 yield item
+
+        if exceptions:
+            message = os.linesep.join([
+                   os.linesep.join([
+                       "",
+                       f"Project path: {x['project_path']}",
+                       f"Exception: {x['Exception']}"])
+               for x in exceptions])
+            raise RuntimeError(message)
