@@ -1,5 +1,6 @@
 import os
 import shutil
+import traceback
 from concurrent.futures import ProcessPoolExecutor
 import tempfile
 
@@ -13,29 +14,8 @@ class ConcurrentRunner:
     def __init__(self, toolbox_path):
         self.toolbox_path = toolbox_path
 
-    def run_func(self, run_args):
-        """Calls :py:func:`cbm3_python.simulation.projectsimulator.run`
-        using the specified args. This function also sets up a toolbox
-        environment for safely running CBM3 as multiple processes.
+    def _run_func(self, run_args):
 
-        Args:
-            run_args (dict): arguments to
-                :py:func:`cbm3_python.simulation.projectsimulator.run`
-                in dictionary form.
-
-        Raises:
-            ValueError: raised if particular required arguments have been
-                omitted from run args.
-
-                The required arguments are:
-
-                    * aidb_path
-                    * cbm_exe_path
-                    * results_database_path
-
-        Returns:
-            dict: the input run_args
-        """
         # the following args that are optional in the
         # non-concurrent run function are required here
         required_kwargs = [
@@ -76,6 +56,36 @@ class ConcurrentRunner:
             projectsimulator.run(*args, **kwargs)
             run_args["log_path"] = log_path
             return run_args
+
+    def run_func(self, run_args):
+        """Calls :py:func:`cbm3_python.simulation.projectsimulator.run`
+        using the specified args. This function also sets up a toolbox
+        environment for safely running CBM3 as multiple processes.
+
+        Args:
+            run_args (dict): arguments to
+                :py:func:`cbm3_python.simulation.projectsimulator.run`
+                in dictionary form.
+
+        Raises:
+            ValueError: raised if particular required arguments have been
+                omitted from run args.
+
+                The required arguments are:
+
+                    * aidb_path
+                    * cbm_exe_path
+                    * results_database_path
+
+        Returns:
+            dict: the input run_args
+        """
+        try:
+            return self._run_func(run_args)
+        except:
+            output = {"Exception": traceback.format_exc()}
+            output.update(run_args)
+            return output
 
     def run(self, run_args, max_workers=None):
         """Runs CBM3 simulations as separate processes.
