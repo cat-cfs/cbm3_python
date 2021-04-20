@@ -1,9 +1,6 @@
 # Copyright (C) Her Majesty the Queen in Right of Canada,
 #  as represented by the Minister of Natural Resources Canada
 
-# This script's purpose is to mine the CBM-CFS3 report.fil for its
-# "Disturbance Reconciliation" output
-
 import re
 import csv
 import pandas as pd
