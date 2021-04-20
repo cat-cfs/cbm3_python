@@ -1,5 +1,7 @@
 import os
+import json
 import shutil
+import traceback
 from concurrent.futures import ProcessPoolExecutor
 import tempfile
 
@@ -13,29 +15,8 @@ class ConcurrentRunner:
     def __init__(self, toolbox_path):
         self.toolbox_path = toolbox_path
 
-    def run_func(self, run_args):
-        """Calls :py:func:`cbm3_python.simulation.projectsimulator.run`
-        using the specified args. This function also sets up a toolbox
-        environment for safely running CBM3 as multiple processes.
+    def _run_func(self, run_args):
 
-        Args:
-            run_args (dict): arguments to
-                :py:func:`cbm3_python.simulation.projectsimulator.run`
-                in dictionary form.
-
-        Raises:
-            ValueError: raised if particular required arguments have been
-                omitted from run args.
-
-                The required arguments are:
-
-                    * aidb_path
-                    * cbm_exe_path
-                    * results_database_path
-
-        Returns:
-            dict: the input run_args
-        """
         # the following args that are optional in the
         # non-concurrent run function are required here
         required_kwargs = [
@@ -77,7 +58,40 @@ class ConcurrentRunner:
             run_args["log_path"] = log_path
             return run_args
 
-    def run(self, run_args, max_workers=None):
+    def run_func(self, run_args):
+        """Calls :py:func:`cbm3_python.simulation.projectsimulator.run`
+        using the specified args. This function also sets up a toolbox
+        environment for safely running CBM3 as multiple processes.
+
+        Args:
+            run_args (dict): arguments to
+                :py:func:`cbm3_python.simulation.projectsimulator.run`
+                in dictionary form.
+
+        Raises:
+            ValueError: raised if particular required arguments have been
+                omitted from run args.
+
+                The required arguments are:
+
+                    * aidb_path
+                    * cbm_exe_path
+                    * results_database_path
+
+        Returns:
+            dict: the input run_args
+        """
+        
+        try:
+            output = {"Exception": None}
+            output.update(self._run_func(run_args))
+            return output        
+        except:
+            output = {"Exception": traceback.format_exc()}
+            output.update(run_args)
+            return output
+
+    def run(self, run_args, max_workers=None, raise_exceptions=True):
         """Runs CBM3 simulations as separate processes.
 
         ** Important Note ** this method must be called from a "main script"
@@ -91,13 +105,34 @@ class ConcurrentRunner:
             max_workers (int, optional): Passed to the max_workers arg of:
                 py:class:`concurrent.futures.ProcessPoolExecutor
                 Defaults to None.
+            raise_exceptions (bool, optional): If set to true information on
+                any exceptions encountered in the list of run args will be 
+                raised in a RuntimeError.  If false, no exception will be
+                raised, but the same error information is returned in the 
+                resulting task dictionaries in the "Exception" entry. Defaults
+                to True.
 
+        Raises:
+            RuntimeError: raised if "raise_exceptions" is set to true, and at 
+                least one of the simulations specified in run_args encountered
+                an exception.
         Yields:
             dict: a dictionary describing the finished task yielded as each
                 task is finished.
         """
-
+        exceptions = []
         with ProcessPoolExecutor(
                 max_workers=max_workers) as executor:
             for item in executor.map(self.run_func, run_args):
+                if raise_exceptions and item["Exception"]:
+                    exceptions.append(item)
                 yield item
+
+        if exceptions:
+            message = os.linesep.join([
+                   os.linesep.join([
+                       "",
+                       f"Project path: {x['project_path']}",
+                       f"Exception: {x['Exception']}"])
+               for x in exceptions])
+            raise RuntimeError(message)
