@@ -3,10 +3,9 @@ import shutil
 import tempfile
 import unittest
 from cbm3_python.cbm3data import sit_helper
-import pandas as pd
 import numpy as np
 from cbm3_python import toolbox_defaults
-from cbm3_python.cbm3data.accessdb import AccessDB
+from cbm3_python.cbm3data import accessdb
 from cbm3_python.simulation import projectsimulator
 from cbm3_python.cbm3data import cbm3_results
 
@@ -60,12 +59,6 @@ def import_mdb_xls(working_dir, sit_mdb_path, mapping_file_path, xls=False):
     return imported_project_path
 
 
-def as_data_frame(query, access_db_path):
-    with AccessDB(access_db_path) as access_db:
-        df = pd.read_sql(query, access_db.connection)
-    return df
-
-
 def mdb_to_delimited(sit_mdb_path, ext, output_dir):
     if ext == ".tab":
         sep = "\t"
@@ -74,7 +67,7 @@ def mdb_to_delimited(sit_mdb_path, ext, output_dir):
     else:
         raise ValueError()
     for k, v in get_db_table_names().items():
-        df = as_data_frame(f"SELECT * FROM {v}", sit_mdb_path)
+        df = accessdb.as_data_frame(f"SELECT * FROM {v}", sit_mdb_path)
         df.to_csv(os.path.join(output_dir, f"{v}{ext}"), sep=sep, index=False)
 
 

@@ -171,7 +171,7 @@ def _create_merged_disturbance_events(project_events, disturb_lst,
         "Surplus Biomass C": "Simulation_SurplusCarbon"})
 
 
-def _parse_report_file(report_fil_path):
+def parse_report_file(report_fil_path):
     """
     Returns a pandas dataframe of the "CBM3" disturbance
     reconciliation output in the specified input file
@@ -239,9 +239,9 @@ def _parse_report_fil(inputFile):
 
 
 def create_disturbance_reconciliation(project_path, cbm_input_dir,
-                                      report_fil_path):
+                                      report_file_data):
 
     return _create_merged_disturbance_events(
         project_events=_get_project_events(project_path),
         disturb_lst=_read_disturb_list(cbm_input_dir),
-        report_fil_data=_parse_report_file(report_fil_path))
+        report_fil_data=report_file_data)

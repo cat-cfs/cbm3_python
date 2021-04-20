@@ -149,10 +149,10 @@ def load_seed(dir, chunksize=None):
 
 def load_disturbance_reconciliation(dir, chunksize=None):
     def yield_result():
-        yield disturbance_reconciliation.create_disturbance_reconciliation()
+        yield disturbance_reconciliation.parse_report_file(
             os.path.join(dir, "report.fil"))
-    # this file does not support chunk size currently, but still need to
-    # return the right values
+    #  this file does not support chunk size currently, but still need to
+    #  return the right values
     if chunksize:
         return yield_result()
     else:
