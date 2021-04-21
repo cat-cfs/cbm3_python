@@ -77,7 +77,7 @@ class OutputFilesIntegrationTests(unittest.TestCase):
                 return out_func
 
             descriptive_flux_indicators = SimpleNamespace(
-                name="flux_indicators",
+                name="tblFluxIndicators",
                 df=pd.DataFrame())
             cbm3_output_files_loader.load_output_descriptive_tables(
                 cbm_run_results_dir=os.path.join(
