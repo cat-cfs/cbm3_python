@@ -103,10 +103,10 @@ class ResultsDescriber():
         ].merge(
             self.project_data.tblEcoBoundary[
                 ["EcoBoundaryID", "EcoBoundaryName"]],
-            validate="1:m").merge(
+            validate="m:1").merge(
                 self.project_data.tblAdminBoundary[
                     ["AdminBoundaryID", "AdminBoundaryName"]],
-                validate="1:m")
+                validate="m:1")
 
         project_spu_view = project_spu_view.rename(
             columns={
