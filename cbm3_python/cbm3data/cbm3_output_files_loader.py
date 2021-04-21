@@ -251,13 +251,7 @@ def load_output_relational_tables(cbm_run_results_dir, project_db_path,
     for k, v in project_data.__dict__.items():
         out_func(k, v)
 
-    results_table_list = [
-        "tblAgeIndicators",
-        "tblDistIndicators",
-        "tblPoolIndicators",
-        "tblFluxIndicators"
-        ]
-    for table_name in results_table_list:
+    for table_name in LOAD_FUNCTIONS.keys():
         load_functions = LOAD_FUNCTIONS[table_name]
         result_chunk_iterable = cbm3_output_files.make_iterable(
             load_functions["load_function"], cbm_run_results_dir, chunksize)
@@ -283,13 +277,7 @@ def load_output_descriptive_tables(cbm_run_results_dir, project_db_path,
     describer = ResultsDescriber(
         project_db_path, aidb_path, loaded_csets, classifier_value_field)
 
-    results_table_list = [
-        "tblAgeIndicators",
-        "tblDistIndicators",
-        "tblPoolIndicators",
-        "tblFluxIndicators"
-        ]
-    for table_name in results_table_list:
+    for table_name in LOAD_FUNCTIONS.keys():
         load_functions = LOAD_FUNCTIONS[table_name]
 
         result_chunk_iterable = cbm3_output_files.make_iterable(
