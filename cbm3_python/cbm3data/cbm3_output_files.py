@@ -135,8 +135,17 @@ def load_accdiagnostics(dir, chunksize=None):
 def load_predistage(dir, chunksize=None):
     filename = "predistage.csv"
     # column headers are present in this csv file
-    return pd.read_csv(
-        os.path.join(dir, filename), chunksize=chunksize)
+    df = pd.read_csv(
+        os.path.join(dir, filename),
+        chunksize=chunksize,
+        index_col=False)
+    #  index_col=False here solves an issue where pandas
+    #  doesn't parse columns well when there is an extra
+    #  trailing column in the data
+
+    # drop an empty column
+    df = df.drop(df.columns[13], axis=1)
+    return df
 
 
 def load_seed(dir, chunksize=None):
