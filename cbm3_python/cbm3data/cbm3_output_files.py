@@ -128,8 +128,8 @@ def load_accdiagnostics(dir, chunksize=None):
         "DistTypeID", "area", "age"
     ]
     return pd.read_csv(
-        os.path.join(dir, filename), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+        os.path.join(dir, filename), header=None, names=column_names,
+        chunksize=chunksize, quotechar="'")
 
 
 def load_predistage(dir, chunksize=None):
@@ -143,8 +143,6 @@ def load_predistage(dir, chunksize=None):
     #  doesn't parse columns well when there is an extra
     #  trailing column in the data
 
-    # drop an empty column
-    df = df.drop(df.columns[13], axis=1)
     return df
 
 
@@ -205,6 +203,13 @@ def load_spatial_flux(dir, chunksize=None):
          "BioToAir_MERCHANTABLE", "BioToAir_FOLIAGE", "BioToAir_OTHER",
          "BioToAir_SUBMERCHANTABLE", "BioToAir_COARSEROOT",
          "BioToAir_FINEROOT"]
+    file_path = os.path.join(dir, filename)
+    if not os.path.exists(file_path):
+        return_value = pd.DataFrame(columns=column_names)
+        if chunksize:
+            return [return_value]
+        else:
+            return return_value
     return pd.read_csv(
-        os.path.join(dir, filename), header=None, delim_whitespace=True,
+        file_path, header=None, delim_whitespace=True,
         names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
