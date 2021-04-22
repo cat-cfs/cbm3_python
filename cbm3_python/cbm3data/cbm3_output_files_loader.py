@@ -7,8 +7,9 @@ from cbm3_python.cbm3data import cbm3_output_classifiers
 from cbm3_python.cbm3data.cbm3_output_descriptions import ResultsDescriber
 
 
-def _update_dict(d1, d2):
-    d1.update(d2)
+def _update_dict(d1, *d):
+    for _d in d:
+        d1.update(_d)
     return d1
 
 
@@ -102,14 +103,17 @@ LOAD_FUNCTIONS = {
         "describe_function": lambda describer: lambda df: df
     },
     "tblPreDisturbanceAge": {
-        "load_function": cbm3_output_files.load_svl_files,
+        "load_function": cbm3_output_files.load_predistage,
         "process_function": lambda loaded_csets, index_offset: _compose(
-            _get_replace_with_classifier_set_id_func(loaded_csets),
-            _get_column_rename_func({
-                "spuid": "SPUID", "dist_type": "DistTypeID",
-                "timestep": "TimeStep", "k0": "LandClassID",
-                "k1": "kf2", "k2": "kf3", "k3": "kf4", "k4": "kf5",
-                "k5": "kf6"}),
+            # drop an empty column
+            lambda df: df.drop(df.columns[13], axis=1),
+            _get_column_rename_func(
+                _update_dict(
+                    {"spuid": "SPUID", "dist_type": "DistTypeID",
+                     "timestep": "TimeStep", "k0": "LandClassID"},
+                    {f"k{x}": f"k{x+1}" for x in range(1, 6)},
+                    {f"c{x}": f"c{x+1}" for x in range(0, 10)})),
+            _get_replace_with_classifier_set_id_func(loaded_csets)
         ),
         "describe_function": lambda describer: _compose(
             describer.merge_landclass_description,
@@ -119,8 +123,6 @@ LOAD_FUNCTIONS = {
     },
     "tblDisturbanceReconciliation": {
         "load_function": cbm3_output_files.load_disturbance_reconciliation,
-        # TODO: need to review the values in this output and also figure out
-        # disturbance groups
         "process_function": lambda loaded_csets, index_offset: lambda df: df,
         "describe_function": lambda describer: lambda df: df,
     },
@@ -141,7 +143,7 @@ LOAD_FUNCTIONS = {
             describer.merge_classifier_set_description)
     },
     "tblFluxSpatial": {
-        "load_function": cbm3_output_files.load_flux_indicators,
+        "load_function": cbm3_output_files.load_spatial_flux,
         "process_function": lambda loaded_csets, index_offset: _compose(
             _get_replace_with_classifier_set_id_func(loaded_csets),
             _get_drop_column_func("RunID"),
