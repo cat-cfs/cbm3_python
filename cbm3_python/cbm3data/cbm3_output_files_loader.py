@@ -111,7 +111,7 @@ LOAD_FUNCTIONS = {
                 _update_dict(
                     {"spuid": "SPUID", "dist_type": "DistTypeID",
                      "timestep": "TimeStep", "k0": "LandClassID"},
-                    {f"k{x}": f"k{x+1}" for x in range(1, 6)},
+                    {f"k{x}": f"kf{x+1}" for x in range(1, 6)},
                     {f"c{x}": f"c{x+1}" for x in range(0, 10)})),
             _get_replace_with_classifier_set_id_func(loaded_csets)
         ),
