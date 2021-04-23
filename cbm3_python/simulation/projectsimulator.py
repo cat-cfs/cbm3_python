@@ -3,7 +3,7 @@ import shutil
 from cbm3_python.cbm3data.aidb import AIDB
 from cbm3_python.cbm3data.projectdb import ProjectDB
 from cbm3_python.cbm3data.accessdb import AccessDB
-from cbm3_python.cbm3data.resultsloader import ResultsLoader
+from cbm3_python.cbm3data import cbm3_output_loader
 from cbm3_python.simulation.simulator import Simulator
 from cbm3_python.simulation.tools.createaccountingrules \
     import CreateAccountingRules
@@ -220,15 +220,11 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
                 s.LoadCBMResults(output_path=results_database_path)
             elif loader_settings == {} or loader_settings["type"] is None:
                 return None
-            elif loader_settings["type"] == "python_loader":
-                r = ResultsLoader()
-                r.loadResults(
-                    outputDBPath=results_database_path,
-                    aidbPath=aidb_path,
-                    projectDBPath=project_path,
-                    projectSimulationDirectory=cbm_wd)
             else:
-                raise ValueError("unknown loader settings")
+                cbm3_output_loader.load(
+                    loader_settings,
+                    os.path.join(tempfiles_output_dir, "CBMRun"),
+                    project_path, aidb_path)
         finally:
             # cleanup
             if original_run_length:
