@@ -1,6 +1,7 @@
 # Copyright (C) Her Majesty the Queen in Right of Canada,
 #  as represented by the Minister of Natural Resources Canada
 
+import os
 import re
 import csv
 import pandas as pd
@@ -243,5 +244,6 @@ def create_disturbance_reconciliation(project_path, cbm_input_dir,
 
     return _create_merged_disturbance_events(
         project_events=_get_project_events(project_path),
-        disturb_lst=_read_disturb_list(cbm_input_dir),
+        disturb_lst=_read_disturb_list(os.path.join(
+            cbm_input_dir, "disturb.lst")),
         report_fil_data=report_file_data)
