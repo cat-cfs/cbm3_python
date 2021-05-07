@@ -42,17 +42,21 @@ class CBM3ResultsFileWriter:
             kwargs = dict(
                 mode='a', index=False,
                 header=not os.path.exists(out_path))
-            kwargs.update(self.writer_kwargs)
+            if self.writer_kwargs:
+                kwargs.update(self.writer_kwargs)
             df.to_csv(*args, **kwargs)
         elif self.format == "hdf":
             kwargs = dict(key=name, mode="a")
-            kwargs.update(self.writer_kwargs)
+            if self.writer_kwargs:
+                kwargs.update(self.writer_kwargs)
             df.to_hdf(*args, **kwargs)
         elif self.format == "excel":
             kwargs = dict(sheet_name=name, index=False)
-            kwargs.update(*args, **kwargs)
-            df.to_excel(out_path, )
+            if self.writer_kwargs:
+                kwargs.update(self.writer_kwargs)
+            df.to_excel(out_path, **kwargs)
         elif self.format == "feather":
             kwargs = dict()
-            kwargs.update(self.writer_kwargs)
+            if self.writer_kwargs:
+                kwargs.update(self.writer_kwargs)
             df.to_feather(*args, **kwargs)

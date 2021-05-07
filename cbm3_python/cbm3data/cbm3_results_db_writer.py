@@ -19,7 +19,7 @@ class CBMResultsDBWriter:
             engine = create_engine("sqlite:///test.db")
             with SQLAlchemyWriter(engine, foreign_key_defs) as writer:
                 cbm3_output_files_loader.load_output_relational_tables(
-                    cbm_run_results_dir=cbm_run_results_dir,
+                    cbm_output_dir=cbm_output_dir,
                     project_db_path=project_db_path,
                     aidb_path=aidb_path,
                     out_func=writer.sqlalchemy_write,

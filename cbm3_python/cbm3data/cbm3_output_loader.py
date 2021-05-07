@@ -6,19 +6,19 @@ from cbm3_python.cbm3data.cbm3_results_db_schema import \
 from cbm3_python.cbm3data import cbm3_output_files_loader
 
 
-def load(loader_config, cbm_run_results_dir, project_db_path, aidb_path):
+def load(loader_config, cbm_output_dir, project_db_path, aidb_path):
     if loader_config["type"] in cbm3_results_file_writer.FORMATS:
         load_file(
-            loader_config, cbm_run_results_dir, project_db_path, aidb_path)
+            loader_config, cbm_output_dir, project_db_path, aidb_path)
     elif loader_config["type"] == "db":
         load_db(
-            loader_config, cbm_run_results_dir, project_db_path, aidb_path)
+            loader_config, cbm_output_dir, project_db_path, aidb_path)
     else:
         raise ValueError(
             f"unsupported loader_config type {loader_config['type']}")
 
 
-def load_db(loader_config, cbm_run_results_dir, project_db_path, aidb_path):
+def load_db(loader_config, cbm_output_dir, project_db_path, aidb_path):
     chunksize = \
         loader_config["chunksize"] \
         if "chunksize" in loader_config else None
@@ -32,14 +32,14 @@ def load_db(loader_config, cbm_run_results_dir, project_db_path, aidb_path):
 
     with writer:
         cbm3_output_files_loader.load_output_relational_tables(
-            cbm_run_results_dir=cbm_run_results_dir,
+            cbm_output_dir=cbm_output_dir,
             project_db_path=project_db_path,
             aidb_path=aidb_path,
             out_func=writer.write,
             chunksize=chunksize)
 
 
-def load_file(loader_config, cbm_run_results_dir, project_db_path, aidb_path):
+def load_file(loader_config, cbm_output_dir, project_db_path, aidb_path):
     chunksize = \
         loader_config["chunksize"] \
         if "chunksize" in loader_config else None
@@ -49,7 +49,7 @@ def load_file(loader_config, cbm_run_results_dir, project_db_path, aidb_path):
         loader_config["type"], loader_config["output_path"],
         writer_kwargs)
     cbm3_output_files_loader.load_output_descriptive_tables(
-        cbm_run_results_dir=cbm_run_results_dir,
+        cbm_output_dir=cbm_output_dir,
         project_db_path=project_db_path,
         aidb_path=aidb_path,
         out_func=writer.write,

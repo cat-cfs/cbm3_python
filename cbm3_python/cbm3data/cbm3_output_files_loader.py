@@ -81,7 +81,7 @@ class LoadFunctionFactory():
                         _load_local_column_map(
                             "pool_indicators_column_mapping.csv")),
                     _get_add_id_column_func("PoolIndID", index_offset)),
-                "describe_function": lambda describer: _compose(
+                "describe_function": _compose(
                     self.describer.merge_landclass_description,
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_classifier_set_description)},
@@ -361,6 +361,6 @@ def load_output_descriptive_tables(cbm_output_dir, project_db_path,
                 index_offset)
             processed_chunk = process_function(chunk)
             index_offset = index_offset + len(processed_chunk.index)
-            describe_func = load_functions["describe_function"]()
+            describe_func = load_functions["describe_function"]
             described_chunk = describe_func(processed_chunk)
             out_func(table_name, described_chunk)

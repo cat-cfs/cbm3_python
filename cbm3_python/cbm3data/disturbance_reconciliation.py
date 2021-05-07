@@ -89,7 +89,7 @@ def _create_merged_disturbance_events(project_events, disturb_lst,
                                       report_fil_data):
 
     # check that Proportion Targets are not used
-    if project_events[project_events["PropOfRecordToDisturb"]] > 0:
+    if (project_events["PropOfRecordToDisturb"] > 0).any():
         # this function does not support proportion targets
         return None
     project_events["cbm_disturbance_group"] = disturb_lst["DisturbanceGroup"]
