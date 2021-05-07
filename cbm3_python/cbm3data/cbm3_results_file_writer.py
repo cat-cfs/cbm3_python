@@ -1,7 +1,7 @@
 import os
 
 FORMATS = [
-    "csv", "hdf", "excel", "feather"
+    "csv", "hdf"
 ]
 
 
@@ -20,9 +20,16 @@ class CBM3ResultsFileWriter:
         self.out_path = out_path
         if not os.path.exists(self.out_dir):
             os.makedirs(self.out_dir)
-
         self.created_files = set()
         self.writer_kwargs = writer_kwargs
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.excel_writer:
+            for item in self.disposals:
+                item.dispose()
 
     def _def_get_file_path(self, name):
         if self.format == "csv":
@@ -50,13 +57,3 @@ class CBM3ResultsFileWriter:
             if self.writer_kwargs:
                 kwargs.update(self.writer_kwargs)
             df.to_hdf(*args, **kwargs)
-        elif self.format == "excel":
-            kwargs = dict(sheet_name=name, index=False)
-            if self.writer_kwargs:
-                kwargs.update(self.writer_kwargs)
-            df.to_excel(out_path, **kwargs)
-        elif self.format == "feather":
-            kwargs = dict()
-            if self.writer_kwargs:
-                kwargs.update(self.writer_kwargs)
-            df.to_feather(*args, **kwargs)
