@@ -13,154 +13,174 @@ def _update_dict(d1, *d):
     return d1
 
 
-LOAD_FUNCTIONS = {
-    "tblAgeIndicators": {
-        "load_function": cbm3_output_files.load_age_indicators,
-        "process_function": lambda loaded_csets, index_offset: _compose(
-            _get_replace_with_classifier_set_id_func(loaded_csets),
-            _get_drop_column_func("RunID"),
-            _get_column_rename_func(
-                _load_local_column_map("age_indicators_column_mapping.csv")),
-            _get_add_id_column_func("AgeIndID", index_offset)),
-        "describe_function": lambda describer: _compose(
-            describer.merge_landclass_description,
-            describer.merge_spatial_unit_description,
-            describer.merge_classifier_set_description)},
-    "tblDistIndicators": {
-        "load_function": cbm3_output_files.load_dist_indicators,
-        "process_function": lambda loaded_csets, index_offset: _compose(
-            _get_replace_with_classifier_set_id_func(loaded_csets),
-            _get_drop_column_func("RunID"),
-            _get_column_rename_func(
-                _load_local_column_map("dist_indicators_column_mapping.csv")),
-            _get_add_id_column_func("DistIndID", index_offset)),
-        "describe_function": lambda describer: _compose(
-            describer.merge_landclass_description,
-            describer.merge_spatial_unit_description,
-            describer.merge_disturbance_type_description,
-            describer.merge_classifier_set_description)},
-    "tblPoolIndicators": {
-        "load_function": cbm3_output_files.load_pool_indicators,
-        "process_function": lambda loaded_csets, index_offset: _compose(
-            _get_replace_with_classifier_set_id_func(loaded_csets),
-            _get_drop_column_func("RunID"),
-            _get_column_rename_func(
-                _load_local_column_map("pool_indicators_column_mapping.csv")),
-            _get_add_id_column_func("PoolIndID", index_offset)),
-        "describe_function": lambda describer: _compose(
-            describer.merge_landclass_description,
-            describer.merge_spatial_unit_description,
-            describer.merge_classifier_set_description)},
-    "tblFluxIndicators": {
-        "load_function": cbm3_output_files.load_flux_indicators,
-        "process_function": lambda loaded_csets, index_offset: _compose(
-            _get_replace_with_classifier_set_id_func(loaded_csets),
-            _get_drop_column_func("RunID"),
-            _get_column_rename_func(
-                _load_local_column_map("flux_indicators_column_mapping.csv")),
-            _get_add_id_column_func("FluxIndicatorID", index_offset),
-            _get_gross_growth_column_funcs()),
-        "describe_function": lambda describer: _compose(
-            describer.merge_landclass_description,
-            describer.merge_spatial_unit_description,
-            describer.merge_disturbance_type_description,
-            describer.merge_classifier_set_description)},
-    "tblNIRSpecialOutput": {
-        "load_function": cbm3_output_files.load_nir_output,
-        "process_function": lambda loaded_csets, index_offset: lambda df: df,
-        "describe_function": lambda describer: _compose(
-            describer.merge_spatial_unit_description,
-            describer.merge_disturbance_type_description)
-    },
-    "tblDistNotRealized": {
-        "load_function": cbm3_output_files.load_nodist,
-        "process_function": lambda loaded_csets, index_offset: _compose(
-            _get_drop_column_func("RunID")
-        ),
-        "describe_function": lambda describer: _compose(
-            describer.merge_disturbance_type_description)
-    },
-    "tblSVL": {
-        "load_function": cbm3_output_files.load_svl_files,
-        "process_function": lambda loaded_csets, index_offset: _compose(
-            _get_column_rename_func({"LastDisturbanceTypeID": "DistTypeID"}),
-            _get_replace_with_classifier_set_id_func(loaded_csets)
-        ),
-        "describe_function": lambda describer: _compose(
-            describer.merge_disturbance_type_description
-        )
-    },
-    "tblDisturbanceSeries": {
-        "load_function": cbm3_output_files.load_distseries,
-        "process_function": lambda loaded_csets, index_offset: _compose(
-            _get_column_rename_func({"timestep": "TimeStep"}),
-        ),
-        "describe_function": lambda describer: lambda df: df
-    },
-    "tblAccountingRuleDiagnostics": {
-        "load_function": cbm3_output_files.load_accdiagnostics,
-        "process_function": lambda loaded_csets, index_offset: lambda df: df,
-        "describe_function": lambda describer: lambda df: df
-    },
-    "tblPreDisturbanceAge": {
-        "load_function": cbm3_output_files.load_predistage,
-        "process_function": lambda loaded_csets, index_offset: _compose(
-            # drop an empty column
-            lambda df: df.drop(df.columns[13], axis=1),
-            _get_column_rename_func(
-                _update_dict(
-                    {"spuid": "SPUID", "dist_type": "DistTypeID",
-                     "timestep": "TimeStep", "k0": "LandClassID"},
-                    {f"k{x}": f"kf{x+1}" for x in range(1, 6)},
-                    {f"c{x}": f"c{x+1}" for x in range(0, 10)})),
-            _get_replace_with_classifier_set_id_func(loaded_csets)
-        ),
-        "describe_function": lambda describer: _compose(
-            describer.merge_landclass_description,
-            describer.merge_spatial_unit_description,
-            describer.merge_disturbance_type_description,
-            describer.merge_classifier_set_description)
-    },
-    "tblDisturbanceReconciliation": {
-        "load_function": cbm3_output_files.load_disturbance_reconciliation,
-        "process_function": lambda loaded_csets, index_offset: lambda df: df,
-        "describe_function": lambda describer: lambda df: df,
-    },
-    "tblPoolsSpatial": {
-        "load_function": cbm3_output_files.load_spatial_pools,
-        "process_function": lambda loaded_csets, index_offset: _compose(
-            _get_replace_with_classifier_set_id_func(loaded_csets),
-            _get_drop_column_func("RunID"),
-            _get_column_rename_func(
-                _update_dict(
-                    _load_local_column_map(
-                        "pool_indicators_column_mapping.csv"),
-                    {"SVOID": "SVOID", "Age": "Age"}))
-        ),
-        "describe_function": lambda describer: _compose(
-            describer.merge_landclass_description,
-            describer.merge_spatial_unit_description,
-            describer.merge_classifier_set_description)
-    },
-    "tblFluxSpatial": {
-        "load_function": cbm3_output_files.load_spatial_flux,
-        "process_function": lambda loaded_csets, index_offset: _compose(
-            _get_replace_with_classifier_set_id_func(loaded_csets),
-            _get_drop_column_func("RunID"),
-            _get_column_rename_func(
-                _update_dict(
-                    _load_local_column_map(
-                        "flux_indicators_column_mapping.csv"),
-                    {"SVOID": "SVOID"}
-                )),
-        ),
-        "describe_function": lambda describer: _compose(
-            describer.merge_landclass_description,
-            describer.merge_spatial_unit_description,
-            describer.merge_disturbance_type_description,
-            describer.merge_classifier_set_description)
-    }
-}
+class LoadFunctions():
+
+    def __init__(self, loaded_csets, describer):
+        self.describer = describer
+        self.loaded_csets = loaded_csets
+        self.
+
+    def get_all(self):
+        return {
+            "tblAgeIndicators": {
+                "load_function": cbm3_output_files.load_age_indicators,
+                "process_function": lambda index_offset: _compose(
+                    _get_replace_with_classifier_set_id_func(
+                        self.loaded_csets),
+                    _get_drop_column_func("RunID"),
+                    _get_column_rename_func(
+                        _load_local_column_map(
+                            "age_indicators_column_mapping.csv")),
+                    _get_add_id_column_func("AgeIndID", index_offset)),
+                "describe_function": _compose(
+                    self.describer.merge_landclass_description,
+                    self.describer.merge_spatial_unit_description,
+                    self.describer.merge_classifier_set_description)},
+            "tblDistIndicators": {
+                "load_function": cbm3_output_files.load_dist_indicators,
+                "process_function": lambda index_offset: _compose(
+                    _get_replace_with_classifier_set_id_func(
+                        self.loaded_csets),
+                    _get_drop_column_func("RunID"),
+                    _get_column_rename_func(
+                        _load_local_column_map(
+                            "dist_indicators_column_mapping.csv")),
+                    _get_add_id_column_func("DistIndID", index_offset)),
+                "describe_function": _compose(
+                    self.describer.merge_landclass_description,
+                    self.describer.merge_spatial_unit_description,
+                    self.describer.merge_disturbance_type_description,
+                    self.describer.merge_classifier_set_description)},
+            "tblPoolIndicators": {
+                "load_function": cbm3_output_files.load_pool_indicators,
+                "process_function": lambda index_offset: _compose(
+                    _get_replace_with_classifier_set_id_func(
+                        self.loaded_csets),
+                    _get_drop_column_func("RunID"),
+                    _get_column_rename_func(
+                        _load_local_column_map(
+                            "pool_indicators_column_mapping.csv")),
+                    _get_add_id_column_func("PoolIndID", index_offset)),
+                "describe_function": lambda describer: _compose(
+                    self.describer.merge_landclass_description,
+                    self.describer.merge_spatial_unit_description,
+                    self.describer.merge_classifier_set_description)},
+            "tblFluxIndicators": {
+                "load_function": cbm3_output_files.load_flux_indicators,
+                "process_function": lambda index_offset: _compose(
+                    _get_replace_with_classifier_set_id_func(
+                        self.loaded_csets),
+                    _get_drop_column_func("RunID"),
+                    _get_column_rename_func(
+                        _load_local_column_map(
+                            "flux_indicators_column_mapping.csv")),
+                    _get_add_id_column_func("FluxIndicatorID", index_offset),
+                    _get_gross_growth_column_funcs()),
+                "describe_function": _compose(
+                    self.describer.merge_landclass_description,
+                    self.describer.merge_spatial_unit_description,
+                    self.describer.merge_disturbance_type_description,
+                    self.describer.merge_classifier_set_description)},
+            "tblNIRSpecialOutput": {
+                "load_function": cbm3_output_files.load_nir_output,
+                "process_function": lambda index_offset: lambda df: df,
+                "describe_function": _compose(
+                    self.describer.merge_spatial_unit_description,
+                    self.describer.merge_disturbance_type_description)
+            },
+            "tblDistNotRealized": {
+                "load_function": cbm3_output_files.load_nodist,
+                "process_function": lambda index_offset: _compose(
+                    _get_drop_column_func("RunID")
+                ),
+                "describe_function": _compose(
+                    self.describer.merge_disturbance_type_description)
+            },
+            "tblSVL": {
+                "load_function": cbm3_output_files.load_svl_files,
+                "process_function": lambda index_offset: _compose(
+                    _get_column_rename_func(
+                        {"LastDisturbanceTypeID": "DistTypeID"}),
+                    _get_replace_with_classifier_set_id_func(
+                        self.loaded_csets)
+                ),
+                "describe_function": _compose(
+                    self.describer.merge_disturbance_type_description
+                )
+            },
+            "tblDisturbanceSeries": {
+                "load_function": cbm3_output_files.load_distseries,
+                "process_function": lambda index_offset: _compose(
+                    _get_column_rename_func({"timestep": "TimeStep"}),
+                ),
+                "describe_function": lambda df: df
+            },
+            "tblAccountingRuleDiagnostics": {
+                "load_function": cbm3_output_files.load_accdiagnostics,
+                "process_function": lambda index_offset: lambda df: df,
+                "describe_function": lambda df: df
+            },
+            "tblPreDisturbanceAge": {
+                "load_function": cbm3_output_files.load_predistage,
+                "process_function": lambda index_offset: _compose(
+                    # drop an empty column
+                    lambda df: df.drop(df.columns[13], axis=1),
+                    _get_column_rename_func(
+                        _update_dict(
+                            {"spuid": "SPUID", "dist_type": "DistTypeID",
+                             "timestep": "TimeStep", "k0": "LandClassID"},
+                            {f"k{x}": f"kf{x+1}" for x in range(1, 6)},
+                            {f"c{x}": f"c{x+1}" for x in range(0, 10)})),
+                    _get_replace_with_classifier_set_id_func(self.loaded_csets)
+                ),
+                "describe_function": _compose(
+                    self.describer.merge_landclass_description,
+                    self.describer.merge_spatial_unit_description,
+                    self.describer.merge_disturbance_type_description,
+                    self.describer.merge_classifier_set_description)
+            },
+            "tblDisturbanceReconciliation": {
+                "load_function": cbm3_output_files.load_disturbance_reconciliation,
+                "process_function": lambda index_offset: lambda df: df,
+                "describe_function": lambda df: df,
+            },
+            "tblPoolsSpatial": {
+                "load_function": cbm3_output_files.load_spatial_pools,
+                "process_function": lambda index_offset: _compose(
+                    _get_replace_with_classifier_set_id_func(
+                        self.loaded_csets),
+                    _get_drop_column_func("RunID"),
+                    _get_column_rename_func(
+                        _update_dict(
+                            _load_local_column_map(
+                                "pool_indicators_column_mapping.csv"),
+                            {"SVOID": "SVOID", "Age": "Age"}))
+                ),
+                "describe_function": _compose(
+                    self.describer.merge_landclass_description,
+                    self.describer.merge_spatial_unit_description,
+                    self.describer.merge_classifier_set_description)
+            },
+            "tblFluxSpatial": {
+                "load_function": cbm3_output_files.load_spatial_flux,
+                "process_function": lambda index_offset: _compose(
+                    _get_replace_with_classifier_set_id_func(
+                        self.loaded_csets),
+                    _get_drop_column_func("RunID"),
+                    _get_column_rename_func(
+                        _update_dict(
+                            _load_local_column_map(
+                                "flux_indicators_column_mapping.csv"),
+                            {"SVOID": "SVOID"}
+                        )),
+                ),
+                "describe_function": _compose(
+                    self.describer.merge_landclass_description,
+                    self.describer.merge_spatial_unit_description,
+                    self.describer.merge_disturbance_type_description,
+                    self.describer.merge_classifier_set_description)
+            }
+        }
 
 
 def _get_local_file(filename):
@@ -252,9 +272,10 @@ def load_output_relational_tables(cbm_run_results_dir, project_db_path,
         out_func(k, v)
     for k, v in project_data.__dict__.items():
         out_func(k, v)
-
-    for table_name in LOAD_FUNCTIONS.keys():
-        load_functions = LOAD_FUNCTIONS[table_name]
+    load_funcs = LoadFunctions(
+        loaded_csets, describer=None).load_funcs.get_all()
+    for table_name in load_funcs.keys():
+        load_functions = load_funcs[table_name]
         result_chunk_iterable = cbm3_output_files.make_iterable(
             load_functions["load_function"], cbm_run_results_dir, chunksize)
         index_offset = 0
@@ -278,18 +299,19 @@ def load_output_descriptive_tables(cbm_run_results_dir, project_db_path,
         cbm_run_results_dir, chunksize=chunksize)
     describer = ResultsDescriber(
         project_db_path, aidb_path, loaded_csets, classifier_value_field)
-
-    for table_name in LOAD_FUNCTIONS.keys():
-        load_functions = LOAD_FUNCTIONS[table_name]
+    load_funcs = LoadFunctions(
+        loaded_csets, describer=describer).load_funcs.get_all()
+    for table_name in load_funcs.keys():
+        load_functions = load_funcs[table_name]
 
         result_chunk_iterable = cbm3_output_files.make_iterable(
             load_functions["load_function"], cbm_run_results_dir, chunksize)
         index_offset = 0
         for chunk in result_chunk_iterable:
             process_function = load_functions["process_function"](
-                loaded_csets, index_offset)
+                index_offset)
             processed_chunk = process_function(chunk)
             index_offset = index_offset + len(processed_chunk.index)
-            describe_func = load_functions["describe_function"](describer)
+            describe_func = load_functions["describe_function"]()
             described_chunk = describe_func(processed_chunk)
             out_func(table_name, described_chunk)
