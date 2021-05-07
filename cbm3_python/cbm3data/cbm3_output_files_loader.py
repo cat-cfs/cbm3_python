@@ -12,6 +12,7 @@ class LoadFunctionFactory():
 
     def __init__(self, loaded_csets, describer, cbm_project_db_path,
                  cbm_output_dir, cbm_input_dir, chunksize):
+
         self.describer = describer
         self.cbm_project_db_path = cbm_project_db_path
         self.loaded_csets = loaded_csets
@@ -53,7 +54,8 @@ class LoadFunctionFactory():
                 "describe_function": _compose(
                     self.describer.merge_landclass_description,
                     self.describer.merge_spatial_unit_description,
-                    self.describer.merge_classifier_set_description)},
+                    self.describer.merge_classifier_set_description)
+                if self.describer else None},
             "tblDistIndicators": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_dist_indicators),
@@ -69,7 +71,8 @@ class LoadFunctionFactory():
                     self.describer.merge_landclass_description,
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_disturbance_type_description,
-                    self.describer.merge_classifier_set_description)},
+                    self.describer.merge_classifier_set_description)
+                if self.describer else None},
             "tblPoolIndicators": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_pool_indicators),
@@ -84,7 +87,8 @@ class LoadFunctionFactory():
                 "describe_function": _compose(
                     self.describer.merge_landclass_description,
                     self.describer.merge_spatial_unit_description,
-                    self.describer.merge_classifier_set_description)},
+                    self.describer.merge_classifier_set_description)
+                if self.describer else None},
             "tblFluxIndicators": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_flux_indicators),
@@ -101,7 +105,8 @@ class LoadFunctionFactory():
                     self.describer.merge_landclass_description,
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_disturbance_type_description,
-                    self.describer.merge_classifier_set_description)},
+                    self.describer.merge_classifier_set_description)
+                if self.describer else None},
             "tblNIRSpecialOutput": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_nir_output),
@@ -109,7 +114,7 @@ class LoadFunctionFactory():
                 "describe_function": _compose(
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_disturbance_type_description)
-            },
+                if self.describer else None},
             "tblDistNotRealized": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_nodist),
@@ -118,7 +123,7 @@ class LoadFunctionFactory():
                 ),
                 "describe_function": _compose(
                     self.describer.merge_disturbance_type_description)
-            },
+                if self.describer else None},
             "tblSVL": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_svl_files),
@@ -129,9 +134,8 @@ class LoadFunctionFactory():
                         self.loaded_csets)
                 ),
                 "describe_function": _compose(
-                    self.describer.merge_disturbance_type_description
-                )
-            },
+                    self.describer.merge_disturbance_type_description)
+                if self.describer else None},
             "tblDisturbanceSeries": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_distseries),
@@ -139,13 +143,13 @@ class LoadFunctionFactory():
                     _get_column_rename_func({"timestep": "TimeStep"}),
                 ),
                 "describe_function": lambda df: df
-            },
+                if self.describer else None},
             "tblAccountingRuleDiagnostics": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_accdiagnostics),
                 "process_function": lambda index_offset: lambda df: df,
                 "describe_function": lambda df: df
-            },
+                if self.describer else None},
             "tblPreDisturbanceAge": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_predistage),
@@ -165,15 +169,15 @@ class LoadFunctionFactory():
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_disturbance_type_description,
                     self.describer.merge_classifier_set_description)
-            },
+                if self.describer else None},
             "tblDisturbanceReconciliation": {
                 "load_function": self._wrap_unchunkable(
                     disturbance_reconciliation.create,
                     self.cbm_project_db_path, self.cbm_input_dir,
                     self.cbm_output_dir),
                 "process_function": lambda index_offset: lambda df: df,
-                "describe_function": lambda df: df,
-            },
+                "describe_function": lambda df: df
+                if self.describer else None},
             "tblPoolsSpatial": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_spatial_pools),
@@ -191,7 +195,7 @@ class LoadFunctionFactory():
                     self.describer.merge_landclass_description,
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_classifier_set_description)
-            },
+                if self.describer else None},
             "tblFluxSpatial": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_spatial_flux),
@@ -211,7 +215,7 @@ class LoadFunctionFactory():
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_disturbance_type_description,
                     self.describer.merge_classifier_set_description)
-            }
+                if self.describer else None},
         }
 
 
