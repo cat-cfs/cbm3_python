@@ -8,27 +8,16 @@ from cbm3_python.cbm3data import cbm3_output_classifiers
 from cbm3_python.cbm3data.cbm3_output_descriptions import ResultsDescriber
 
 
-def _update_dict(d1, *d):
-    for _d in d:
-        d1.update(_d)
-    return d1
+class LoadFunctionFactory():
 
-
-def make_iterable(func, results_dir, chunksize=None):
-    result = func(results_dir, chunksize)
-    if chunksize:
-        return result
-    return [result]
-
-
-class LoadFunctions():
-
-    def __init__(self, loaded_csets, describer):
+    def __init__(self, loaded_csets, describer, cbm_project_db_path,
+                 cbm_output_dir, cbm_input_dir, chunksize):
         self.describer = describer
+        self.cbm_project_db_path = cbm_project_db_path
         self.loaded_csets = loaded_csets
-        self.cbm_output_dir
-        self.cbm_input_dir
-        self.chunksize
+        self.cbm_output_dir = cbm_output_dir
+        self.cbm_input_dir = cbm_input_dir
+        self.chunksize = chunksize
 
     def _wrap_unchunkable(self, func, *args, **kwargs):
         def f():
@@ -36,6 +25,7 @@ class LoadFunctions():
         return f
 
     def _wrap_chunkable(self, func, *args, **kwargs):
+
         def f():
             result = func(*args, **kwargs)
             if self.chunksize:
@@ -152,7 +142,7 @@ class LoadFunctions():
             },
             "tblAccountingRuleDiagnostics": {
                 "load_function": self._wrap_load_func(
-                    cbm3_output_files.load_accdiagnostic),
+                    cbm3_output_files.load_accdiagnostics),
                 "process_function": lambda index_offset: lambda df: df,
                 "describe_function": lambda df: df
             },
@@ -179,7 +169,7 @@ class LoadFunctions():
             "tblDisturbanceReconciliation": {
                 "load_function": self._wrap_unchunkable(
                     disturbance_reconciliation.create,
-                    self.project_db_path, self.cbm_input_dir,
+                    self.cbm_project_db_path, self.cbm_input_dir,
                     self.cbm_output_dir),
                 "process_function": lambda index_offset: lambda df: df,
                 "describe_function": lambda df: df,
@@ -223,6 +213,12 @@ class LoadFunctions():
                     self.describer.merge_classifier_set_description)
             }
         }
+
+
+def _update_dict(d1, *d):
+    for _d in d:
+        d1.update(_d)
+    return d1
 
 
 def _get_local_file(filename):
@@ -295,8 +291,13 @@ def _compose(*fs):
     return functools.reduce(compose2, fs)
 
 
-def load_output_relational_tables(cbm_run_results_dir, project_db_path,
-                                  aidb_path, out_func, chunksize=None):
+def _get_cbm_input_dir(cbm_output_dir):
+    return os.path.realpath(os.path.join(cbm_output_dir, "..", "input"))
+
+
+def load_output_relational_tables(cbm_output_dir, project_db_path,
+                                  aidb_path, out_func, chunksize=None,
+                                  include_spatial=False):
 
     project_data = cbm3_output_descriptions.load_project_level_data(
         project_db_path)
@@ -306,7 +307,7 @@ def load_output_relational_tables(cbm_run_results_dir, project_db_path,
     loaded_csets = cbm3_output_classifiers.create_loaded_classifiers(
         project_data.tblClassifiers,
         project_data.tblClassifierSetValues,
-        cbm_run_results_dir, chunksize=chunksize)
+        cbm_output_dir, chunksize=chunksize)
     project_data.tblClassifierSetValues = \
         cbm3_output_classifiers.melt_loaded_csets(loaded_csets)
 
@@ -314,22 +315,26 @@ def load_output_relational_tables(cbm_run_results_dir, project_db_path,
         out_func(k, v)
     for k, v in project_data.__dict__.items():
         out_func(k, v)
-    load_funcs = LoadFunctions(
-        loaded_csets, describer=None).load_funcs.get_all()
+    load_func_factory = LoadFunctionFactory(
+        loaded_csets, describer=None, cbm_project_db_path=project_db_path,
+        cbm_output_dir=cbm_output_dir,
+        cbm_input_dir=_get_cbm_input_dir(cbm_output_dir), chunksize=chunksize)
+    load_funcs = load_func_factory.get_all()
     for table_name in load_funcs.keys():
         load_functions = load_funcs[table_name]
-        result_chunk_iterable = cbm3_output_files.make_iterable(
-            load_functions["load_function"], cbm_run_results_dir, chunksize)
+        if table_name in ["tblPoolsSpatial", "tblFluxSpatial"] \
+           and not include_spatial:
+            continue
+        result_chunk_iterable = load_functions["load_function"]()
         index_offset = 0
         for chunk in result_chunk_iterable:
-            process_function = load_functions["process_function"](
-                loaded_csets, index_offset)
+            process_function = load_functions["process_function"](index_offset)
             processed_chunk = process_function(chunk)
             index_offset = index_offset + len(processed_chunk.index)
             out_func(table_name, processed_chunk)
 
 
-def load_output_descriptive_tables(cbm_run_results_dir, project_db_path,
+def load_output_descriptive_tables(cbm_output_dir, project_db_path,
                                    aidb_path, out_func,
                                    classifier_value_field="Name",
                                    chunksize=None):
@@ -338,16 +343,18 @@ def load_output_descriptive_tables(cbm_run_results_dir, project_db_path,
     loaded_csets = cbm3_output_classifiers.create_loaded_classifiers(
         project_data.tblClassifiers,
         project_data.tblClassifierSetValues,
-        cbm_run_results_dir, chunksize=chunksize)
+        cbm_output_dir, chunksize=chunksize)
     describer = ResultsDescriber(
         project_db_path, aidb_path, loaded_csets, classifier_value_field)
-    load_funcs = LoadFunctions(
-        loaded_csets, describer=describer).load_funcs.get_all()
+    load_func_factory = LoadFunctionFactory(
+        loaded_csets, describer=describer, cbm_project_db_path=project_db_path,
+        cbm_output_dir=cbm_output_dir,
+        cbm_input_dir=_get_cbm_input_dir(cbm_output_dir), chunksize=chunksize)
+    load_funcs = load_func_factory.get_all()
     for table_name in load_funcs.keys():
         load_functions = load_funcs[table_name]
 
-        result_chunk_iterable = cbm3_output_files.make_iterable(
-            load_functions["load_function"], cbm_run_results_dir, chunksize)
+        result_chunk_iterable = load_functions["load_function"]()
         index_offset = 0
         for chunk in result_chunk_iterable:
             process_function = load_functions["process_function"](
