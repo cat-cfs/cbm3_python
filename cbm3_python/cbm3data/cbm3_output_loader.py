@@ -20,7 +20,7 @@ def load(loader_config, cbm_output_dir, project_db_path, aidb_path):
 
 def load_db(loader_config, cbm_output_dir, project_db_path, aidb_path):
     chunksize = \
-        loader_config["chunksize"] \
+        int(loader_config["chunksize"]) \
         if "chunksize" in loader_config else None
     writer = CBMResultsDBWriter(
         loader_config["url"],
@@ -41,7 +41,7 @@ def load_db(loader_config, cbm_output_dir, project_db_path, aidb_path):
 
 def load_file(loader_config, cbm_output_dir, project_db_path, aidb_path):
     chunksize = \
-        loader_config["chunksize"] \
+        int(loader_config["chunksize"]) \
         if "chunksize" in loader_config else None
     writer_kwargs = loader_config["writer_kwargs"] \
         if "writer_kwargs" in loader_config else None
