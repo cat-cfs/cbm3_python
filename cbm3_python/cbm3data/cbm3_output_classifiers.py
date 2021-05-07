@@ -15,8 +15,10 @@ def create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
 
     raw_classifier_data = pd.DataFrame()
 
-    pool_indicators = cbm3_output_files.make_iterable(
-        cbm3_output_files.load_pool_indicators, cbm_results_dir, chunksize)
+    pool_indicators = cbm3_output_files.load_pool_indicators(
+        cbm_results_dir, chunksize)
+    if not chunksize:
+        pool_indicators = [pool_indicators]
     for chunk in pool_indicators:
         raw_classifier_data = raw_classifier_data.append(
             chunk[raw_cset_columns]).drop_duplicates()
