@@ -172,22 +172,6 @@ def _create_merged_disturbance_events(project_events, disturb_lst,
         "Surplus Biomass C": "Simulation_SurplusCarbon"})
 
 
-def parse_report_file(report_fil_path):
-    """
-    Returns a pandas dataframe of the "CBM3" disturbance
-    reconciliation output in the specified input file
-
-    Args:
-        report_fil_path (str): path to a CBM3 "report.fil" cbm
-            output file
-
-    Returns:
-        pandas.DataFrame: a dataframe with the disturbance information
-    """
-    with open(report_fil_path, 'r') as fp:
-        return _parse_report_fil(fp)
-
-
 def _parse_report_fil(inputFile):
 
     fileContents = inputFile.read()
@@ -239,11 +223,27 @@ def _parse_report_fil(inputFile):
     return pd.DataFrame(data=table)
 
 
-def create_disturbance_reconciliation(project_path, cbm_input_dir,
-                                      report_file_data):
+def parse_report_file(report_fil_path):
+    """
+    Returns a pandas dataframe of the "CBM3" disturbance
+    reconciliation output in the specified input file
+
+    Args:
+        report_fil_path (str): path to a CBM3 "report.fil" cbm
+            output file
+
+    Returns:
+        pandas.DataFrame: a dataframe with the disturbance information
+    """
+    with open(report_fil_path, 'r') as fp:
+        return _parse_report_fil(fp)
+
+
+def create(project_path, cbm_input_dir, cbm_output_dir):
 
     return _create_merged_disturbance_events(
         project_events=_get_project_events(project_path),
         disturb_lst=_read_disturb_list(os.path.join(
             cbm_input_dir, "disturb.lst")),
-        report_fil_data=report_file_data)
+        report_fil_data=parse_report_file(os.path.join(
+            cbm_output_dir, "report.fil")))
