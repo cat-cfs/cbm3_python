@@ -43,9 +43,11 @@ def load_file(loader_config, cbm_run_results_dir, project_db_path, aidb_path):
     chunksize = \
         loader_config["chunksize"] \
         if "chunksize" in loader_config else None
+    writer_kwargs = loader_config["writer_kwargs"] \
+        if "writer_kwargs" in loader_config else None
     writer = CBM3ResultsFileWriter(
         loader_config["type"], loader_config["output_path"],
-        loader_config["writer_kwargs"])
+        writer_kwargs)
     cbm3_output_files_loader.load_output_descriptive_tables(
         cbm_run_results_dir=cbm_run_results_dir,
         project_db_path=project_db_path,
