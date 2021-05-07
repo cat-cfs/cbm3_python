@@ -80,7 +80,7 @@ class OutputFilesIntegrationTests(unittest.TestCase):
                 name="tblFluxIndicators",
                 df=pd.DataFrame())
             cbm3_output_files_loader.load_output_descriptive_tables(
-                cbm_run_results_dir=os.path.join(
+                cbm_output_dir=os.path.join(
                     tempfiles_dir, "CBMRun", "output"),
                 project_db_path=project_path,
                 aidb_path=toolbox_defaults.get_archive_index_path(),
@@ -91,7 +91,7 @@ class OutputFilesIntegrationTests(unittest.TestCase):
                 name="tblFluxIndicators",
                 df=pd.DataFrame())
             cbm3_output_files_loader.load_output_relational_tables(
-                cbm_run_results_dir=os.path.join(
+                cbm_output_dir=os.path.join(
                     tempfiles_dir, "CBMRun", "output"),
                 project_db_path=project_path,
                 aidb_path=toolbox_defaults.get_archive_index_path(),
