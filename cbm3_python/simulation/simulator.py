@@ -172,7 +172,10 @@ class Simulator(object):
         logging.info("Command line: " + cmd)
         self.call_subprocess_cmd(cmd)
 
-    def copyMakelistOutput(self):
+    def copyMakelistOutput(self, source_path=None):
+        if source_path and not os.path.exists(source_path):
+            raise ValueError(
+                f"specified makelist output dir does not exist: {source_path}")
         logging.info("\n\n Copying makelist outputs...\n")
         CBMinpath = os.path.join(self.CBMTemp, r'CBMRun\input')
         if os.path.exists(CBMinpath):
@@ -180,7 +183,10 @@ class Simulator(object):
                 os.remove(f)
         else:
             os.makedirs(CBMinpath)
-        ini_glob = os.path.join(self.CBMTemp, r'Makelist\output\*.ini')
+        if source_path:
+            ini_glob = os.path.join(source_path, "*.ini")
+        else:
+            ini_glob = os.path.join(self.CBMTemp, r'Makelist\output\*.ini')
         for f in glob.iglob(ini_glob):
             shutil.copy2(f, CBMinpath)
 
