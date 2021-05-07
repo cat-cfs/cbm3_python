@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import functools
 from cbm3_python.cbm3data import cbm3_output_files
+from cbm3_python.cbm3data import disturbance_reconciliation
 from cbm3_python.cbm3data import cbm3_output_descriptions
 from cbm3_python.cbm3data import cbm3_output_classifiers
 from cbm3_python.cbm3data.cbm3_output_descriptions import ResultsDescriber
@@ -13,17 +14,44 @@ def _update_dict(d1, *d):
     return d1
 
 
+def make_iterable(func, results_dir, chunksize=None):
+    result = func(results_dir, chunksize)
+    if chunksize:
+        return result
+    return [result]
+
+
 class LoadFunctions():
 
     def __init__(self, loaded_csets, describer):
         self.describer = describer
         self.loaded_csets = loaded_csets
-        self.
+        self.cbm_output_dir
+        self.cbm_input_dir
+        self.chunksize
+
+    def _wrap_unchunkable(self, func, *args, **kwargs):
+        def f():
+            return [func(*args, **kwargs)]
+        return f
+
+    def _wrap_chunkable(self, func, *args, **kwargs):
+        def f():
+            result = func(*args, **kwargs)
+            if self.chunksize:
+                return result
+            else:
+                return [result]
+        return f
+
+    def _wrap_load_func(self, func):
+        return self._wrap_chunkable(func, self.cbm_output_dir, self.chunksize)
 
     def get_all(self):
         return {
             "tblAgeIndicators": {
-                "load_function": cbm3_output_files.load_age_indicators,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_age_indicators),
                 "process_function": lambda index_offset: _compose(
                     _get_replace_with_classifier_set_id_func(
                         self.loaded_csets),
@@ -37,7 +65,8 @@ class LoadFunctions():
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_classifier_set_description)},
             "tblDistIndicators": {
-                "load_function": cbm3_output_files.load_dist_indicators,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_dist_indicators),
                 "process_function": lambda index_offset: _compose(
                     _get_replace_with_classifier_set_id_func(
                         self.loaded_csets),
@@ -52,7 +81,8 @@ class LoadFunctions():
                     self.describer.merge_disturbance_type_description,
                     self.describer.merge_classifier_set_description)},
             "tblPoolIndicators": {
-                "load_function": cbm3_output_files.load_pool_indicators,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_pool_indicators),
                 "process_function": lambda index_offset: _compose(
                     _get_replace_with_classifier_set_id_func(
                         self.loaded_csets),
@@ -66,7 +96,8 @@ class LoadFunctions():
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_classifier_set_description)},
             "tblFluxIndicators": {
-                "load_function": cbm3_output_files.load_flux_indicators,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_flux_indicators),
                 "process_function": lambda index_offset: _compose(
                     _get_replace_with_classifier_set_id_func(
                         self.loaded_csets),
@@ -82,14 +113,16 @@ class LoadFunctions():
                     self.describer.merge_disturbance_type_description,
                     self.describer.merge_classifier_set_description)},
             "tblNIRSpecialOutput": {
-                "load_function": cbm3_output_files.load_nir_output,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_nir_output),
                 "process_function": lambda index_offset: lambda df: df,
                 "describe_function": _compose(
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_disturbance_type_description)
             },
             "tblDistNotRealized": {
-                "load_function": cbm3_output_files.load_nodist,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_nodist),
                 "process_function": lambda index_offset: _compose(
                     _get_drop_column_func("RunID")
                 ),
@@ -97,7 +130,8 @@ class LoadFunctions():
                     self.describer.merge_disturbance_type_description)
             },
             "tblSVL": {
-                "load_function": cbm3_output_files.load_svl_files,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_svl_files),
                 "process_function": lambda index_offset: _compose(
                     _get_column_rename_func(
                         {"LastDisturbanceTypeID": "DistTypeID"}),
@@ -109,19 +143,22 @@ class LoadFunctions():
                 )
             },
             "tblDisturbanceSeries": {
-                "load_function": cbm3_output_files.load_distseries,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_distseries),
                 "process_function": lambda index_offset: _compose(
                     _get_column_rename_func({"timestep": "TimeStep"}),
                 ),
                 "describe_function": lambda df: df
             },
             "tblAccountingRuleDiagnostics": {
-                "load_function": cbm3_output_files.load_accdiagnostics,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_accdiagnostic),
                 "process_function": lambda index_offset: lambda df: df,
                 "describe_function": lambda df: df
             },
             "tblPreDisturbanceAge": {
-                "load_function": cbm3_output_files.load_predistage,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_predistage),
                 "process_function": lambda index_offset: _compose(
                     # drop an empty column
                     lambda df: df.drop(df.columns[13], axis=1),
@@ -140,12 +177,16 @@ class LoadFunctions():
                     self.describer.merge_classifier_set_description)
             },
             "tblDisturbanceReconciliation": {
-                "load_function": cbm3_output_files.load_disturbance_reconciliation,
+                "load_function": self._wrap_unchunkable(
+                    disturbance_reconciliation.create,
+                    self.project_db_path, self.cbm_input_dir,
+                    self.cbm_output_dir),
                 "process_function": lambda index_offset: lambda df: df,
                 "describe_function": lambda df: df,
             },
             "tblPoolsSpatial": {
-                "load_function": cbm3_output_files.load_spatial_pools,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_spatial_pools),
                 "process_function": lambda index_offset: _compose(
                     _get_replace_with_classifier_set_id_func(
                         self.loaded_csets),
@@ -162,7 +203,8 @@ class LoadFunctions():
                     self.describer.merge_classifier_set_description)
             },
             "tblFluxSpatial": {
-                "load_function": cbm3_output_files.load_spatial_flux,
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_spatial_flux),
                 "process_function": lambda index_offset: _compose(
                     _get_replace_with_classifier_set_id_func(
                         self.loaded_csets),
