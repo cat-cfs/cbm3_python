@@ -105,3 +105,37 @@ def parse_svl_files(dir, chunksize=None):
                 lines.append(line)
     yield pd.DataFrame(
         columns=column_names, data=lines)
+
+
+def _get_n_timesteps(output_dir):
+    path = os.path.join(output_dir, "model.inf")
+    with open(path) as model_inf_fp:
+        token_count = 0
+        for line in model_inf_fp:
+            if line.startswith("#"):
+                continue
+            if token_count == 2:
+                return int(line)
+            token_count += 1
+
+
+def _parse_all_chunked(input_dir, output_dir, chunksize):
+    n_timesteps = _get_n_timesteps(output_dir)
+    for df in parse_svl_files(input_dir, chunksize):
+        df.insert(0, "TimeStep", 0)
+        yield df
+    for df in parse_svl_files(output_dir, chunksize):
+        df.insert(0, "TimeStep", n_timesteps)
+        yield df
+
+
+def parse_all(input_dir, output_dir, chunksize=None):
+
+    if chunksize:
+        for chunk in _parse_all_chunked(input_dir, output_dir, chunksize):
+            yield chunk
+    else:
+        chunks = _parse_all_chunked(input_dir, output_dir, None)
+        df1 = next(chunks)
+        df2 = next(chunks)
+        yield df1.append(df2)

@@ -75,11 +75,12 @@ def load_dist_indicators(dir, chunksize=None):
         names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
-def load_svl_files(dir, chunksize=None):
+def load_svl_files(input_dir, output_dir, chunksize=None):
+    result = svl_file_parser.parse_all(input_dir, output_dir, chunksize)
     if chunksize:
-        return svl_file_parser.parse_svl_files(dir, chunksize)
+        return result
     else:
-        return next(svl_file_parser.parse_svl_files(dir))
+        return next(result)
 
 
 def load_nir_output(dir, chunksize=None):
