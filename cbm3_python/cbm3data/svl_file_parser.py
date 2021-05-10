@@ -107,8 +107,8 @@ def parse_svl_files(dir, chunksize=None):
         columns=column_names, data=lines)
 
 
-def _get_n_timesteps(output_dir):
-    path = os.path.join(output_dir, "model.inf")
+def _get_n_timesteps(input_dir):
+    path = os.path.join(input_dir, "model.inf")
     with open(path) as model_inf_fp:
         token_count = 0
         for line in model_inf_fp:
@@ -120,7 +120,7 @@ def _get_n_timesteps(output_dir):
 
 
 def _parse_all_chunked(input_dir, output_dir, chunksize):
-    n_timesteps = _get_n_timesteps(output_dir)
+    n_timesteps = _get_n_timesteps(input_dir)
     for df in parse_svl_files(input_dir, chunksize):
         df.insert(0, "TimeStep", 0)
         yield df

@@ -125,8 +125,9 @@ class LoadFunctionFactory():
                     self.describer.merge_disturbance_type_description)
                 if self.describer else None},
             "tblSVL": {
-                "load_function": self._wrap_load_func(
-                    cbm3_output_files.load_svl_files),
+                "load_function": self._wrap_chunkable(
+                    cbm3_output_files.load_svl_files, self.cbm_input_dir,
+                    self.cbm_output_dir, self.chunksize),
                 "process_function": lambda index_offset: _compose(
                     _get_column_rename_func(
                         {"LastDisturbanceTypeID": "DistTypeID"}),
