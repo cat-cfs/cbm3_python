@@ -59,4 +59,9 @@ def melt_loaded_csets(csets):
         "variable": "ClassifierID",
         "value": "ClassifierValueID"
     }).sort_values(by=["ClassifierSetID", "ClassifierID"])
+
+    csets_melt[
+        (csets_melt.ClassifierValueID < 0) |
+        pd.isna(csets_melt.ClassifierValueID)] = 1
+    csets_melt = csets_melt.astype("int64")
     return csets_melt
