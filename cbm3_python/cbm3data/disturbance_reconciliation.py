@@ -236,7 +236,27 @@ def parse_report_file(report_fil_path):
         pandas.DataFrame: a dataframe with the disturbance information
     """
     with open(report_fil_path, 'r') as fp:
-        return _parse_report_fil(fp)
+        df = _parse_report_fil(fp)
+
+    # since the columns can vary from run to run, set them consistently here
+    columns = [
+        'Timestep', 'Year', 'Disturbance Type', 'Default Disturbance Type',
+        'Disturbance Group', 'Sort Type', 'Target Type', 'Target Area',
+        'Eligible Area', 'Efficiency', 'Surplus Area', "Area Prop'n",
+        'Records Eligible', 'Records Changed', 'Records Sorted',
+        'Target Biomass C', 'Surplus Biomass C', "Biomass C Prop'n"]
+
+    df = pd.DataFrame(
+        index=df.index,
+        data={col: df[col] if col in df.columns
+              else np.nan for col in columns})
+
+    # convert integer values
+    integer_cols = ["Records Changed", "Records Eligible", "Records Sorted"]
+    for integer_col in integer_cols:
+        df[integer_col] = df[integer_col].fillna(0).astype("int64")
+
+    return df
 
 
 def create(project_path, cbm_input_dir, cbm_output_dir):
