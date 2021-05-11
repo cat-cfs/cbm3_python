@@ -1,7 +1,21 @@
 import os
 import csv
 import pandas as pd
+from types import SimpleNamespace
 from cbm3_python.cbm3data import svl_file_parser
+
+
+def _build_col_def(*args):
+    column_def = SimpleNamespace(
+        column_names=[],
+        column_types={}
+    )
+    for arg in args:
+        column_def.column_names.extend(
+            arg["column_names"])
+        column_def.column_types.update(
+            {name: arg["column_type"] for name in arg["column_names"]})
+    return column_def
 
 
 def get_classifier_column_names():
@@ -9,19 +23,27 @@ def get_classifier_column_names():
 
 
 def load_pool_indicators(dir, chunksize=None):
-    column_names = ["RunID", "TimeStep", "SPUID"] + \
-        get_classifier_column_names() + \
-        ["UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-         "KFProjectType", "KFProjectID", "SWMerchC", "SWFoliageC", "SWOtherC",
-         "SWSubmerchC", "SWCoarseRootC", "SWFineRootC", "HWMerchC",
-         "HWFoliageC", "HWOtherC", "HWSubmerchC", "HWCoarseRootC",
-         "HWFineRootC", "VeryFastCAG", "VeryFastCBG", "FastCAG", "FastCBG",
-         "MediumC", "SlowCAG", "SlowCBG", "SWSSnagC", "SWBSnagC", "HWSSnagC",
-         "HWBSnagC", "BlackC", "PeatC"]
+    col_def = _build_col_def(
+        dict(column_names=["RunID", "TimeStep", "SPUID"],
+             column_type="Int64"),
+        dict(column_names=get_classifier_column_names(),
+             column_type="Int64"),
+        dict(column_names=[
+            "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
+            "KFProjectType", "KFProjectID"], column_type="Int64"),
+        dict(column_names=[
+            "SWMerchC", "SWFoliageC", "SWOtherC",
+            "SWSubmerchC", "SWCoarseRootC", "SWFineRootC", "HWMerchC",
+            "HWFoliageC", "HWOtherC", "HWSubmerchC", "HWCoarseRootC",
+            "HWFineRootC", "VeryFastCAG", "VeryFastCBG", "FastCAG", "FastCBG",
+            "MediumC", "SlowCAG", "SlowCBG", "SWSSnagC", "SWBSnagC",
+            "HWSSnagC", "HWBSnagC", "BlackC", "PeatC"],
+             column_type="Float64"))
 
     return pd.read_csv(
         os.path.join(dir, "poolind.out"), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+        names=col_def.column_names, dtype=col_def.column_types,
+        chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_flux_indicators(dir, chunksize=None):
