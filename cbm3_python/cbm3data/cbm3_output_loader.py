@@ -18,10 +18,14 @@ def load(loader_config, cbm_output_dir, project_db_path, aidb_path):
             f"unsupported loader_config type {loader_config['type']}")
 
 
+def _parse_chunksize(loader_config):
+    if "chunksize" in loader_config and loader_config["chunksize"] is not None:
+        return loader_config["chunksize"]
+    return None
+
+
 def load_db(loader_config, cbm_output_dir, project_db_path, aidb_path):
-    chunksize = \
-        int(loader_config["chunksize"]) \
-        if "chunksize" in loader_config else None
+
     writer = CBMResultsDBWriter(
         loader_config["url"],
         CBM_RESULTS_CONSTRAINT_DEFS,
@@ -36,13 +40,10 @@ def load_db(loader_config, cbm_output_dir, project_db_path, aidb_path):
             project_db_path=project_db_path,
             aidb_path=aidb_path,
             out_func=writer.write,
-            chunksize=chunksize)
+            chunksize=_parse_chunksize(loader_config))
 
 
 def load_file(loader_config, cbm_output_dir, project_db_path, aidb_path):
-    chunksize = \
-        int(loader_config["chunksize"]) \
-        if "chunksize" in loader_config else None
     writer_kwargs = loader_config["writer_kwargs"] \
         if "writer_kwargs" in loader_config else None
     writer = CBM3ResultsFileWriter(
@@ -53,4 +54,4 @@ def load_file(loader_config, cbm_output_dir, project_db_path, aidb_path):
         project_db_path=project_db_path,
         aidb_path=aidb_path,
         out_func=writer.write,
-        chunksize=chunksize)
+        chunksize=_parse_chunksize(loader_config))
