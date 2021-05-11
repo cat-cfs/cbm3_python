@@ -18,13 +18,14 @@ CBM_RESULTS_CONSTRAINT_DEFS = {
 
 
 def _map_pandas_dtype(dtype):
-    if dtype == "int64":
+    _dtype_str = str(dtype).lower()
+    if _dtype_str == "int64":
         return sqlalchemy.Integer
-    elif dtype == "float64":
+    elif _dtype_str == "float64":
         return sqlalchemy.Float
-    elif dtype == "object":
+    elif _dtype_str == "object":
         return sqlalchemy.String
-    elif dtype == "bool":
+    elif _dtype_str == "bool":
         return sqlalchemy.Boolean
     else:
         raise ValueError(f"unmapped type {dtype}")
