@@ -30,7 +30,9 @@ class CBMResultsDBWriter:
             constraint_defs ([type]): [description]
         """
 
-        self.engine = create_engine(url)
+        self.engine = \
+            create_engine(url, **create_engine_kwargs) \
+            if create_engine_kwargs else create_engine(url)
         self.constraint_defs = constraint_defs
         self.variable_limit = multi_update_variable_limit
         self.meta = MetaData()
