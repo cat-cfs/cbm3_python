@@ -130,7 +130,8 @@ class LoadFunctionFactory():
                     self.cbm_output_dir, self.chunksize),
                 "process_function": lambda index_offset: _compose(
                     _get_column_rename_func(
-                        {"LastDisturbanceTypeID": "DistTypeID"}),
+                        {"LastDisturbanceTypeID": "DistTypeID",
+                         "landclass": "LandClassID"}),
                     _get_replace_with_classifier_set_id_func(
                         self.loaded_csets)
                 ),
