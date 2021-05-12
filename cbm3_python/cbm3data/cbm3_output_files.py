@@ -1,5 +1,6 @@
 import os
 import csv
+from tempfile import NamedTemporaryFile
 import pandas as pd
 from types import SimpleNamespace
 from cbm3_python.cbm3data import svl_file_parser
@@ -123,53 +124,80 @@ def load_svl_files(input_dir, output_dir, chunksize=None):
 
 def load_nir_output(dir, chunksize=None):
     filename = "NIROutput.txt"
-    column_names = [
-        "TimeStep", "Year", "SPUID", "DistTypeID", "LandClass_From",
-        "LandClass_To", "DisturbedArea", "SWMerchC", "SWFoliageC", "SWOtherC",
-        "SWCoarseRootC", "SWFineRootC", "HWMerchC", "HWFoliageC", "HWOtherC",
-        "HWCoarseRootC", "HWFineRootC", "VeryFastCAG", "VeryFastCBG",
-        "FastCAG", "FastCBG", "MediumC", "SlowCAG", "SlowCBG", "SWSSnagC",
-        "HWSSnagC", "SWBSnagC", "HWBSnagC", "BlackC", "PeatC"]
+    col_def = _build_col_def(
+        dict(column_names=[
+            "TimeStep", "Year", "SPUID", "DistTypeID", "LandClass_From",
+            "LandClass_To"], column_type="Int64"),
+        dict(column_names=[
+            "DisturbedArea", "SWMerchC", "SWFoliageC",
+            "SWOtherC", "SWCoarseRootC", "SWFineRootC", "HWMerchC",
+            "HWFoliageC", "HWOtherC", "HWCoarseRootC", "HWFineRootC",
+            "VeryFastCAG", "VeryFastCBG", "FastCAG", "FastCBG", "MediumC",
+            "SlowCAG", "SlowCBG", "SWSSnagC", "HWSSnagC", "SWBSnagC",
+            "HWBSnagC", "BlackC", "PeatC"], column_types="Float64"))
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+        names=col_def.column_names, dtype=col_def.column_types,
+        chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_nodist(dir, chunksize=None):
     filename = "nodist.fil"
-    column_names = [
-        "RunID", "TimeStep", "DistTypeID", "DistGroup", "UndisturbedArea"
-    ]
+    col_def = _build_col_def(
+        dict(column_names=["RunID", "TimeStep", "DistTypeID", "DistGroup"],
+             column_type="Int64"),
+        dict(column_names=["UndisturbedArea"], column_type="Float64"))
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+        names=col_def.column_names, dtype=col_def.column_types,
+        chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_distseries(dir, chunksize=None):
     filename = "distseries.csv"
     # column headers are present in this csv file
+    col_def = _build_col_def(
+        dict(column_names=["timestep", "previous_kf5", "current_kf5"],
+             column_type="Int64"),
+        dict(column_names=["area_disturbed"], column_type="Float64"))
     return pd.read_csv(
-        os.path.join(dir, filename), chunksize=chunksize)
+        os.path.join(dir, filename), header=0,
+        names=col_def.column_names, dtype=col_def.column_types,
+        chunksize=chunksize)
 
 
 def load_accdiagnostics(dir, chunksize=None):
     filename = "accdiagnostics.txt"
-    column_names = [
-        "id", "rule_type", "target", "target_value", "TimeStep", "action",
-        "DistTypeID", "area", "age"
-    ]
+    col_def = _build_col_def(
+        dict(column_names=["id"], column_type="Int64"),
+        dict(column_names=["rule_type"], column_type="string"),
+        dict(column_names=["target", "target_value"], column_type="Float64"),
+        dict(column_names=["TimeStep"], column_type="Int64"),
+        dict(column_names=["action"], column_type="string"),
+        dict(column_names=["DistTypeID"], column_type="Int64"),
+        dict(column_names=["area"], column_type="Float64"),
+        dict(column_names=["age"], column_type="Int64")
+    )
     return pd.read_csv(
-        os.path.join(dir, filename), header=None, names=column_names,
-        chunksize=chunksize, quotechar="'")
+        os.path.join(dir, filename), header=None, names=col_def.column_names,
+        dtype=col_def.column_types, chunksize=chunksize, quotechar="'")
 
 
 def load_predistage(dir, chunksize=None):
     filename = "predistage.csv"
     # column headers are present in this csv file
+    col_def = _build_col_def(
+        dict(column_names=[
+            "spuid", "dist_type", "timestep", "c0", "c1", "c2", "c3", "c4",
+            "c5", "c6", "c7", "c8", "c9"], column_type="Int64"),
+        dict(column_names=["empty"], column_type="Float64"),
+        dict(column_names=["k0", "k1", "k2", "k3", "k4", "k5", "pre_dist_age"],
+             column_type="Int64"),
+        dict(column_names=["area_disturbed"], column_type="Float64"))
     df = pd.read_csv(
-        os.path.join(dir, filename),
-        chunksize=chunksize,
-        index_col=False)
+        os.path.join(dir, filename), header=0,
+        names=col_def.column_names, dtype=col_def.column_types,
+        chunksize=chunksize, index_col=False)
     #  index_col=False here solves an issue where pandas
     #  doesn't parse columns well when there is an extra
     #  trailing column in the data
@@ -179,35 +207,52 @@ def load_predistage(dir, chunksize=None):
 
 def load_seed(dir, chunksize=None):
     filename = "seed.txt"
-    column_names = ["MonteCarloAssumptionID", "RunID", "RandomSeed"]
+    col_def = _build_col_def(
+        dict(column_names=["MonteCarloAssumptionID", "RunID", "RandomSeed"],
+             column_type="Int64"))
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+        names=col_def.column_names, dtype=col_def.column_types,
+        chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_spatial_pools(dir, chunksize=None):
     filename = "spatialpool.out"
-    column_names = ["RunID", "SVOID", "Age", "TimeStep", "SPUID"] + \
-        get_classifier_column_names() + \
-        ["UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-         "KFProjectType", "KFProjectID", "SWMerchC", "SWFoliageC", "SWOtherC",
+    col_def = _build_col_def(
+        dict(column_names=["RunID", "SVOID", "Age", "TimeStep", "SPUID"],
+             column_type="Int64"),
+        dict(column_names=get_classifier_column_names(), column_type="Int64"),
+        dict(column_names=[
+            "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
+            "KFProjectType", "KFProjectID"], column_type="Int64"),
+        dict(column_names=[
+         "SWMerchC", "SWFoliageC", "SWOtherC",
          "SWSubmerchC", "SWCoarseRootC", "SWFineRootC", "HWMerchC",
          "HWFoliageC", "HWOtherC", "HWSubmerchC", "HWCoarseRootC",
          "HWFineRootC", "VeryFastCAG", "VeryFastCBG", "FastCAG", "FastCBG",
          "MediumC", "SlowCAG", "SlowCBG", "SWSSnagC", "SWBSnagC", "HWSSnagC",
-         "HWBSnagC", "BlackC", "PeatC"]
+         "HWBSnagC", "BlackC", "PeatC"], column_type="Float64"))
 
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+        names=col_def.column_names, dtype=col_def.column_types,
+        chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_spatial_flux(dir, chunksize=None):
     filename = "SpatialFluxInd.out"
-    column_names = ["RunID", "SVOID", "TimeStep", "SPUID", "DistTypeID"] + \
-        get_classifier_column_names() + \
-        ["UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-         "KFProjectType", "KFProjectID", "CO2Production", "CH4Production",
+    col_def = _build_col_def(
+        dict(column_names=[
+            "RunID", "SVOID", "TimeStep", "SPUID", "DistTypeID"],
+            column_type="Int64"),
+        dict(column_names=get_classifier_column_names(),
+             column_type="Int64"),
+        dict(column_names=[
+             "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year",
+             "KF33_Year", "KFProjectType", "KFProjectID"],
+             column_type="Int64"),
+        dict(column_names=[
+         "CO2Production", "CH4Production",
          "COProduction", "BioCO2Emission", "BioCH4Emission", "BioCOEmission",
          "DOMCO2Emission", "DOMCH4Emission", "DOMCOEmission", "SoftProduction",
          "HardProduction", "DOMProduction", "DeltaBiomass_AG",
@@ -221,14 +266,17 @@ def load_spatial_flux(dir, chunksize=None):
          "SoilToAir_HBRANCHSNAG", "SoilToAir_BLACKCARBON", "SoilToAir_PEAT",
          "BioToAir_MERCHANTABLE", "BioToAir_FOLIAGE", "BioToAir_OTHER",
          "BioToAir_SUBMERCHANTABLE", "BioToAir_COARSEROOT",
-         "BioToAir_FINEROOT"]
+         "BioToAir_FINEROOT"], column_type="Float64"))
     file_path = os.path.join(dir, filename)
+
+    def read_func(path):
+        return pd.read_csv(
+            path, header=None, delim_whitespace=True,
+            names=col_def.column_names, dtype=col_def.column_types,
+            chunksize=chunksize, quoting=csv.QUOTE_NONE)
+
     if not os.path.exists(file_path):
-        return_value = pd.DataFrame(columns=column_names)
-        if chunksize:
-            return [return_value]
-        else:
-            return return_value
-    return pd.read_csv(
-        file_path, header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+        with NamedTemporaryFile() as tempfile:
+            return read_func(tempfile.name)
+    else:
+        return read_func(file_path)
