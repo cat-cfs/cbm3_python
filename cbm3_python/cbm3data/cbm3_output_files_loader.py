@@ -183,7 +183,9 @@ class LoadFunctionFactory():
             "tblRandomSeed": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_seed),
-                "process_function": lambda index_offset: lambda df: df,
+                "process_function": lambda index_offset: _compose(
+                    _get_drop_column_func(["MonteCarloAssumptionID", "RunID"])
+                ),
                 "describe_function": lambda df: df
             },
             "tblPoolsSpatial": {
