@@ -110,7 +110,9 @@ class LoadFunctionFactory():
             "tblNIRSpecialOutput": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_nir_output),
-                "process_function": lambda index_offset: lambda df: df,
+                "process_function": lambda index_offset: _compose(
+                    _get_add_id_column_func(
+                        "NIRSpecialOutputID", index_offset)),
                 "describe_function": _compose(
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_disturbance_type_description)
@@ -129,6 +131,7 @@ class LoadFunctionFactory():
                     cbm3_output_files.load_svl_files, self.cbm_input_dir,
                     self.cbm_output_dir, self.chunksize),
                 "process_function": lambda index_offset: _compose(
+                    _get_add_id_column_func("SVLID", index_offset),
                     _get_column_rename_func(
                         {"LastDisturbanceTypeID": "DistTypeID",
                          "landclass": "LandClassID"}),
@@ -158,6 +161,7 @@ class LoadFunctionFactory():
                 "process_function": lambda index_offset: _compose(
                     # drop an empty column
                     lambda df: df.drop(df.columns[13], axis=1),
+                    _get_add_id_column_func("PreDistAgeID", index_offset),
                     _get_column_rename_func(
                         _update_dict(
                             {"spuid": "SPUID", "dist_type": "DistTypeID",
