@@ -7,13 +7,18 @@ def load_archive_index_data(aidb_path):
     # load default spu data from archive index
     aidb_data = SimpleNamespace(
         tblSPUDefault=accessdb.as_data_frame(
-            "SELECT * FROM tblSPUDefault", aidb_path),
+            "SELECT SPUID, AdminBoundaryID, EcoBoundaryID "
+            "FROM tblSPUDefault", aidb_path),
         tblEcoBoundaryDefault=accessdb.as_data_frame(
-            "SELECT * FROM tblEcoBoundaryDefault", aidb_path),
+            "SELECT EcoBoundaryID, EcoBoundaryName "
+            "FROM tblEcoBoundaryDefault", aidb_path),
         tblAdminBoundaryDefault=accessdb.as_data_frame(
-            "SELECT * FROM tblAdminBoundaryDefault", aidb_path),
+            "SELECT AdminBoundaryID, AdminBoundaryName "
+            "FROM tblAdminBoundaryDefault",
+            aidb_path),
         tblDisturbanceTypeDefault=accessdb.as_data_frame(
-            "SELECT * FROM tblDisturbanceTypeDefault", aidb_path),
+            "SELECT DistTypeID, DistTypeName, Description "
+            "FROM tblDisturbanceTypeDefault", aidb_path),
         tblUNFCCCLandClass=accessdb.as_data_frame(
             "SELECT * FROM tblUNFCCCLandClass", aidb_path),
         tblKP3334Flags=accessdb.as_data_frame(
@@ -43,7 +48,7 @@ def load_project_level_data(project_db_path):
         tblDisturbanceType=accessdb.as_data_frame(
             "SELECT * FROM tblDisturbanceType", project_db_path),
         tblClassifiers=accessdb.as_data_frame(
-            "SELECT * FROM tblClassifiers", project_db_path),
+            "SELECT ClassifierID, Name FROM tblClassifiers", project_db_path),
         tblClassifierValues=accessdb.as_data_frame(
             "SELECT * FROM tblClassifierValues", project_db_path),
         tblClassifierSetValues=accessdb.as_data_frame(
