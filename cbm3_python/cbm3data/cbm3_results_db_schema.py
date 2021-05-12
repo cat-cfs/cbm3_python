@@ -25,6 +25,8 @@ def _map_pandas_dtype(dtype):
         return sqlalchemy.Float
     elif _dtype_str == "object":
         return sqlalchemy.String
+    elif _dtype_str == "string":
+        return sqlalchemy.String
     elif _dtype_str == "bool":
         return sqlalchemy.Boolean
     else:
