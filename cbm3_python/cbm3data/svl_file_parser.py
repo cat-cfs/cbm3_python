@@ -91,10 +91,14 @@ def parse_svl_files(dir, chunksize=None):
         dict(column_names=["SPUID"], column_type="Int64"),
         dict(column_names=["Area"], column_type="Float64"),
         dict(column_names=[
-            "SVOID", "LastDisturbanceTypeID", "YearsSinceLastDisturbance",
-            "YearsSinceLUC", "SWForestType", "SWGrowthCurveID",
-            "SWManagementType", "SWMaturityState", "SWYearsInMaturityState",
-            "SWAge"], column_type="Int64"),
+            "SVOID", "LastDisturbanceTypeID", "YearsSinceLastDisturbance"],
+             column_type="Int64"),
+        # YearsSinceLUC this can be null
+        dict(column_names=["YearsSinceLUC"], column_type="string"),
+        dict(column_names=[
+            "SWForestType", "SWGrowthCurveID", "SWManagementType",
+            "SWMaturityState", "SWYearsInMaturityState", "SWAge"],
+             column_type="Int64"),
         dict(column_names=[
             "SWTotalBio_C_Density", "SWMerch_C_Density",
             "SWFoliage_C_Density", "SWSubMerch_C_Density",
