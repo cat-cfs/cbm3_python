@@ -1,17 +1,28 @@
 import pandas as pd
 from cbm3_python.cbm3data import cbm3_output_files
+from warnings import warn
 
 
 def create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
                               cbm_results_dir, chunksize=None):
 
-    raw_cset_columns = [f"c{x+1}" for x in range(0, len(tblClassifiers.index))]
+    raw_cset_columns = [
+        f"c{x+1}" for x in range(0, len(tblClassifiers.index))]
     cset_pivot = tblClassifierSetValues.pivot(
         index="ClassifierSetID", columns="ClassifierID")
     cset_pivot = cset_pivot.rename_axis(None)
     cset_pivot.columns = raw_cset_columns
     cset_pivot = cset_pivot.reset_index()
     cset_pivot = cset_pivot.rename(columns={"index": "ClassifierSetID"})
+    if cset_pivot.isna().any().any():
+        nan_csets = cset_pivot[cset_pivot.isna().any(axis=1)]
+        num_nans = len(nan_csets.index)
+        error = "ClassifierSetID with missing ClassifierValueID " \
+                f"values: {list(nan_csets.head(5).ClassifierSetID)}"
+        if num_nans > 5:
+            error = error + f" ... {num_nans - 5} More"
+        warn(error)
+        cset_pivot = cset_pivot.dropna().astype("int64")
 
     raw_classifier_data = pd.DataFrame()
 
