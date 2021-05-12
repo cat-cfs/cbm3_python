@@ -47,54 +47,70 @@ def load_pool_indicators(dir, chunksize=None):
 
 
 def load_flux_indicators(dir, chunksize=None):
-    column_names = \
-        ["RunID", "TimeStep", "DistTypeID", "SPUID"] + \
-        get_classifier_column_names() + \
-        ["UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-         "KFProjectType", "KFProjectID", "CO2Production", "CH4Production",
-         "COProduction", "BioCO2Emission", "BioCH4Emission", "BioCOEmission",
-         "DOMCO2Emission", "DOMCH4Emission", "DOMCOEmission", "SoftProduction",
-         "HardProduction", "DOMProduction", "DeltaBiomass_AG",
-         "DeltaBiomass_BG", "DeltaDOM", "BiomassToSoil",
-         "LitterFlux_MERCHANTABLE", "LitterFlux_FOLIAGE", "LitterFlux_OTHER",
-         "LitterFlux_SUBMERCHANTABLE", "LitterFlux_COARSEROOT",
-         "LitterFlux_FINEROOT", "SoilToAir_VERYFASTAG", "SoilToAir_VERYFASTBG",
-         "SoilToAir_FASTAG", "SoilToAir_FASTBG", "SoilToAir_MEDIUM",
-         "SoilToAir_SLOWAG", "SoilToAir_SLOWBG", "SoilToAir_SSTEMSNAG",
-         "SoilToAir_SBRANCHSNAG", "SoilToAir_HSTEMSNAG",
-         "SoilToAir_HBRANCHSNAG", "SoilToAir_BLACKCARBON", "SoilToAir_PEAT",
-         "BioToAir_MERCHANTABLE",
-         "BioToAir_FOLIAGE", "BioToAir_OTHER", "BioToAir_SUBMERCHANTABLE",
-         "BioToAir_COARSEROOT", "BioToAir_FINEROOT"]
+    col_def = _build_col_def(
+        dict(column_names=["RunID", "TimeStep", "DistTypeID", "SPUID"],
+             column_type="Int64"),
+        dict(column_names=get_classifier_column_names(), column_type="Int64"),
+        dict(column_names=[
+            "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
+            "KFProjectType", "KFProjectID"], column_type="Int64"),
+        dict(column_names=[
+            "CO2Production", "CH4Production", "COProduction",
+            "BioCO2Emission", "BioCH4Emission", "BioCOEmission",
+            "DOMCO2Emission", "DOMCH4Emission", "DOMCOEmission",
+            "SoftProduction", "HardProduction", "DOMProduction",
+            "DeltaBiomass_AG", "DeltaBiomass_BG", "DeltaDOM", "BiomassToSoil",
+            "LitterFlux_MERCHANTABLE", "LitterFlux_FOLIAGE",
+            "LitterFlux_OTHER", "LitterFlux_SUBMERCHANTABLE",
+            "LitterFlux_COARSEROOT", "LitterFlux_FINEROOT",
+            "SoilToAir_VERYFASTAG", "SoilToAir_VERYFASTBG",
+            "SoilToAir_FASTAG", "SoilToAir_FASTBG", "SoilToAir_MEDIUM",
+            "SoilToAir_SLOWAG", "SoilToAir_SLOWBG", "SoilToAir_SSTEMSNAG",
+            "SoilToAir_SBRANCHSNAG", "SoilToAir_HSTEMSNAG",
+            "SoilToAir_HBRANCHSNAG", "SoilToAir_BLACKCARBON",
+            "SoilToAir_PEAT", "BioToAir_MERCHANTABLE", "BioToAir_FOLIAGE",
+            "BioToAir_OTHER", "BioToAir_SUBMERCHANTABLE",
+            "BioToAir_COARSEROOT", "BioToAir_FINEROOT"],
+            column_type="Float64"))
 
     return pd.read_csv(
         os.path.join(dir, "fluxind.out"), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+        names=col_def.column_names, dtype=col_def.column_types,
+        chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_age_indicators(dir, chunksize=None):
-    column_names = \
-        ["RunID", "TimeStep", "SPUID", "AgeClass"] + \
-        get_classifier_column_names() + \
-        ["UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-         "KFProjectType", "KFProjectID", "Area", "Biomass_C", "DOM_C",
-         "Avg_Age"]
+    col_def = _build_col_def(
+        dict(column_names=["RunID", "TimeStep", "SPUID", "AgeClass"],
+             column_type="Int64"),
+        dict(column_names=get_classifier_column_names(), column_type="Int64"),
+        dict(column_names=[
+            "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
+            "KFProjectType", "KFProjectID"], column_types="Int64"),
+        dict(column_names=["Area", "Biomass_C", "DOM_C", "Avg_Age"],
+             column_types="Float64"))
 
     return pd.read_csv(
         os.path.join(dir, "ageind.out"), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+        names=col_def.column_names, dtype=col_def.column_types,
+        chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_dist_indicators(dir, chunksize=None):
-    column_names = \
-        ["RunID", "TimeStep", "DistTypeID", "SPUID"] + \
-        get_classifier_column_names() + \
-        ["UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-         "KFProjectType", "KFProjectID", "DistArea", "DistProduct"]
+    col_def = _build_col_def(
+        dict(columns_names=["RunID", "TimeStep", "DistTypeID", "SPUID"],
+             column_type="Int64"),
+        dict(columns_names=get_classifier_column_names(),
+             column_type="Int64"),
+        dict(column_names=[
+            "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
+            "KFProjectType", "KFProjectID"], column_types="Int64"),
+        dict(column_names=["DistArea", "DistProduct"], column_types="Float64"))
 
     return pd.read_csv(
         os.path.join(dir, "distinds.out"), header=None, delim_whitespace=True,
-        names=column_names, chunksize=chunksize, quoting=csv.QUOTE_NONE)
+        names=col_def.column_names, dtype=col_def.column_types,
+        chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_svl_files(input_dir, output_dir, chunksize=None):
