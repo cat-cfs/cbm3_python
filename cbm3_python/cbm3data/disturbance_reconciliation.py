@@ -109,10 +109,6 @@ def _create_merged_disturbance_events(project_events, disturb_lst,
         left_on="DistArea", right_on="Target Area",
         direction='nearest')
 
-    np.allclose(
-        merged_area_target_events["DistArea"],
-        merged_area_target_events["Target Area"])
-
     project_events_merch_targets = project_events[
         project_events["MerchCarbonToDisturb"] > 0].sort_values(
             by=["MerchCarbonToDisturb", "TimeStepFinish",
@@ -255,6 +251,14 @@ def parse_report_file(report_fil_path):
     integer_cols = ["Records Changed", "Records Eligible", "Records Sorted"]
     for integer_col in integer_cols:
         df[integer_col] = df[integer_col].fillna(0).astype("int64")
+
+    # covert columns which are sometimes incorrectly inferred to be integers
+    # (if no floating point data is in the column)
+    float_cols = [
+        'Eligible Area', 'Efficiency', 'Surplus Area', "Area Prop'n",
+        'Target Biomass C', 'Surplus Biomass C', "Biomass C Prop'n"]
+    for float_col in float_cols:
+        df[float_col] = df[float_col].astype("float64")
 
     return df
 
