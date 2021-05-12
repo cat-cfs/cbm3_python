@@ -145,7 +145,7 @@ def _create_merged_disturbance_events(project_events, disturb_lst,
     # select and rename_columns
     return merged_events[[
         "DisturbanceEventID", "DisturbanceGroupScenarioID", "SPUGroupID",
-        "DistTypeID", "DefaultDistTypeID", "TimeStepFinish", "Efficiency_x",
+        "DistTypeID", "TimeStepFinish", "Efficiency_x",
         "DistArea", "MerchCarbonToDisturb", "PropOfRecordToDisturb",
         "cbm_disturbance_group", "Sort Type", "Target Type", "Target Area",
         "Eligible Area", "Surplus Area", "Area Prop'n", "Records Eligible",
@@ -164,8 +164,9 @@ def _create_merged_disturbance_events(project_events, disturb_lst,
         "Records Eligible": "Simulation_RecordsEligible",
         "Records Changed": "Simulation_RecordsChanged",
         "Records Sorted": "Simulation_RecordsSorted",
-        "Target Biomass C": "Simulation_TargetCarbon",
-        "Surplus Biomass C": "Simulation_SurplusCarbon"})
+        "Target Biomass C": "Simulation_TargetBiomassC",
+        "Surplus Biomass C": "Simulation_SurplusBiomassC",
+        "Biomass C Prop'n": "Simulation_BiomassCProportion"})
 
 
 def _parse_report_fil(inputFile):
