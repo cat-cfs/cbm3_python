@@ -255,8 +255,9 @@ def parse_report_file(report_fil_path):
     # covert columns which are sometimes incorrectly inferred to be integers
     # (if no floating point data is in the column)
     float_cols = [
-        'Eligible Area', 'Efficiency', 'Surplus Area', "Area Prop'n",
-        'Target Biomass C', 'Surplus Biomass C', "Biomass C Prop'n"]
+        'Target Area', 'Eligible Area', 'Efficiency', 'Surplus Area',
+        "Area Prop'n", 'Target Biomass C', 'Surplus Biomass C',
+        "Biomass C Prop'n"]
     for float_col in float_cols:
         df[float_col] = df[float_col].astype("float64")
 
