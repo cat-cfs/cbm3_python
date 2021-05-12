@@ -40,13 +40,15 @@ def load_project_level_data(project_db_path):
     # get project level info
     return SimpleNamespace(
         tblSPU=accessdb.as_data_frame(
-            "SELECT * FROM tblSPU", project_db_path),
+            "SELECT SPUID, AdminBoundaryID, EcoBoundaryID, DefaultSPUID "
+            "FROM tblSPU", project_db_path),
         tblEcoBoundary=accessdb.as_data_frame(
             "SELECT * FROM tblEcoBoundary", project_db_path),
         tblAdminBoundary=accessdb.as_data_frame(
             "SELECT * FROM tblAdminBoundary", project_db_path),
         tblDisturbanceType=accessdb.as_data_frame(
-            "SELECT * FROM tblDisturbanceType", project_db_path),
+            "SELECT DistTypeID, DistTypeName, Description, DefaultDistTypeID "
+            "FROM tblDisturbanceType", project_db_path),
         tblClassifiers=accessdb.as_data_frame(
             "SELECT ClassifierID, Name FROM tblClassifiers", project_db_path),
         tblClassifierValues=accessdb.as_data_frame(
