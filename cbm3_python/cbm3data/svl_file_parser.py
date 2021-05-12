@@ -1,5 +1,6 @@
 import os
 import glob
+from types import SimpleNamespace
 import pandas as pd
 
 
@@ -64,31 +65,59 @@ def iterate_svl_lines(svl_file_path):
                 yield _process_token_types(line_tokens)
 
 
+def _build_col_def(*args):
+    column_def = SimpleNamespace(
+        column_names=[],
+        column_types={}
+    )
+    for arg in args:
+        column_def.column_names.extend(
+            arg["column_names"])
+        column_def.column_types.update(
+            {name: arg["column_type"] for name in arg["column_names"]})
+    return column_def
+
+
+def _typed_dataframe(col_def, data):
+    df = pd.DataFrame(columns=col_def.column_names, data=data)
+
+    for col_name in col_def.column_names:
+        df[col_name] = df[col_name].astype(col_def.column_types[col_name])
+    return df
+
+
 def parse_svl_files(dir, chunksize=None):
-    column_names = [
-        "SPUID", "Area", "SVOID", "LastDisturbanceTypeID",
-        "YearsSinceLastDisturbance", "YearsSinceLUC",
-
-        "SWForestType", "SWGrowthCurveID", "SWManagementType",
-        "SWMaturityState", "SWYearsInMaturityState", "SWAge",
-        "SWTotalBio_C_Density", "SWMerch_C_Density", "SWFoliage_C_Density",
-        "SWSubMerch_C_Density", "SWOther_C_Density", "SWCoarseRoot_C_Density",
-        "SWFineRoot_C_Density",
-
-        "HWForestType", "HWGrowthCurveID", "HWManagementType",
-        "HWMaturityState", "HWYearsInMaturityState", "HWAge",
-        "HWTotalBio_C_Density", "HWMerch_C_Density", "HWFoliage_C_Density",
-        "HWSubMerch_C_Density", "HWOther_C_Density", "HWCoarseRoot_C_Density",
-        "HWFineRoot_C_Density",
-
-        "TotalDOMC_Density", "VeryFastCAG_Density", "VeryFastCBG_Density",
-        "FastCAG_Density", "FastCBG_Density", "MediumC_Density",
-        "SlowCAG_Density", "SlowCBG_Density", "SWSSnagC_Density",
-        "SWBSnagC_Density", "HWSSnagC_Density", "HWBSnagC_Density",
-        "BlackC_Density", "PeatC_Density",
-
-        "c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9", "c10",
-        "landclass", "kf2", "kf3", "kf4", "kf5", "kf6", ]
+    col_def = _build_col_def(
+        dict(column_names=["SPUID"], column_type="Int64"),
+        dict(column_names=["Area"], column_type="Float64"),
+        dict(column_names=[
+            "SVOID", "LastDisturbanceTypeID", "YearsSinceLastDisturbance",
+            "YearsSinceLUC", "SWForestType", "SWGrowthCurveID",
+            "SWManagementType", "SWMaturityState", "SWYearsInMaturityState",
+            "SWAge"], column_type="Int64"),
+        dict(column_names=[
+            "SWTotalBio_C_Density", "SWMerch_C_Density",
+            "SWFoliage_C_Density", "SWSubMerch_C_Density",
+            "SWOther_C_Density", "SWCoarseRoot_C_Density",
+            "SWFineRoot_C_Density"], column_type="Float64"),
+        dict(column_names=[
+            "HWForestType", "HWGrowthCurveID", "HWManagementType",
+            "HWMaturityState", "HWYearsInMaturityState", "HWAge"],
+            column_type="Int64"),
+        dict(column_names=[
+            "HWTotalBio_C_Density", "HWMerch_C_Density",
+            "HWFoliage_C_Density", "HWSubMerch_C_Density",
+            "HWOther_C_Density", "HWCoarseRoot_C_Density",
+            "HWFineRoot_C_Density", "TotalDOMC_Density",
+            "VeryFastCAG_Density", "VeryFastCBG_Density",
+            "FastCAG_Density", "FastCBG_Density", "MediumC_Density",
+            "SlowCAG_Density", "SlowCBG_Density", "SWSSnagC_Density",
+            "SWBSnagC_Density", "HWSSnagC_Density", "HWBSnagC_Density",
+            "BlackC_Density", "PeatC_Density"], column_type="Float64"),
+        dict(column_names=[
+            "c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9", "c10",
+            "landclass", "kf2", "kf3", "kf4", "kf5", "kf6"],
+            column_type="Int64"))
 
     lines = []
     for file in iterate_svl_files(dir):
@@ -97,14 +126,12 @@ def parse_svl_files(dir, chunksize=None):
             for line in svl_line_iterable:
                 lines.append(line)
                 if len(lines) == chunksize:
-                    yield pd.DataFrame(
-                        columns=column_names, data=lines)
+                    yield _typed_dataframe(col_def, lines)
                     lines.clear()
         else:
             for line in svl_line_iterable:
                 lines.append(line)
-    yield pd.DataFrame(
-        columns=column_names, data=lines)
+    yield _typed_dataframe(col_def, lines)
 
 
 def _get_n_timesteps(input_dir):
