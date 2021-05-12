@@ -1,9 +1,24 @@
 import os
 import csv
-from tempfile import NamedTemporaryFile
 import pandas as pd
 from types import SimpleNamespace
 from cbm3_python.cbm3data import svl_file_parser
+
+
+def _typed_dataframe(col_def, data):
+    df = pd.DataFrame(columns=col_def.column_names, data=data)
+
+    for col_name in col_def.column_names:
+        df[col_name] = df[col_name].astype(col_def.column_types[col_name])
+    return df
+
+
+def _yield_empty_dataframe(col_def, chunksize=None):
+    df = _typed_dataframe(col_def, None)
+    if chunksize:
+        return [df]
+    else:
+        return df
 
 
 def _build_col_def(*args):
@@ -87,9 +102,9 @@ def load_age_indicators(dir, chunksize=None):
         dict(column_names=get_classifier_column_names(), column_type="Int64"),
         dict(column_names=[
             "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-            "KFProjectType", "KFProjectID"], column_types="Int64"),
+            "KFProjectType", "KFProjectID"], column_type="Int64"),
         dict(column_names=["Area", "Biomass_C", "DOM_C", "Avg_Age"],
-             column_types="Float64"))
+             column_type="Float64"))
 
     return pd.read_csv(
         os.path.join(dir, "ageind.out"), header=None, delim_whitespace=True,
@@ -99,14 +114,14 @@ def load_age_indicators(dir, chunksize=None):
 
 def load_dist_indicators(dir, chunksize=None):
     col_def = _build_col_def(
-        dict(columns_names=["RunID", "TimeStep", "DistTypeID", "SPUID"],
+        dict(column_names=["RunID", "TimeStep", "DistTypeID", "SPUID"],
              column_type="Int64"),
-        dict(columns_names=get_classifier_column_names(),
+        dict(column_names=get_classifier_column_names(),
              column_type="Int64"),
         dict(column_names=[
             "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-            "KFProjectType", "KFProjectID"], column_types="Int64"),
-        dict(column_names=["DistArea", "DistProduct"], column_types="Float64"))
+            "KFProjectType", "KFProjectID"], column_type="Int64"),
+        dict(column_names=["DistArea", "DistProduct"], column_type="Float64"))
 
     return pd.read_csv(
         os.path.join(dir, "distinds.out"), header=None, delim_whitespace=True,
@@ -134,7 +149,7 @@ def load_nir_output(dir, chunksize=None):
             "HWFoliageC", "HWOtherC", "HWCoarseRootC", "HWFineRootC",
             "VeryFastCAG", "VeryFastCBG", "FastCAG", "FastCBG", "MediumC",
             "SlowCAG", "SlowCBG", "SWSSnagC", "HWSSnagC", "SWBSnagC",
-            "HWBSnagC", "BlackC", "PeatC"], column_types="Float64"))
+            "HWBSnagC", "BlackC", "PeatC"], column_type="Float64"))
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
         names=col_def.column_names, dtype=col_def.column_types,
@@ -207,13 +222,18 @@ def load_predistage(dir, chunksize=None):
 
 def load_seed(dir, chunksize=None):
     filename = "seed.txt"
+    path = os.path.join(dir, filename)
     col_def = _build_col_def(
         dict(column_names=["MonteCarloAssumptionID", "RunID", "RandomSeed"],
              column_type="Int64"))
-    return pd.read_csv(
-        os.path.join(dir, filename), header=None, delim_whitespace=True,
-        names=col_def.column_names, dtype=col_def.column_types,
-        chunksize=chunksize, quoting=csv.QUOTE_NONE)
+
+    if not os.path.exists(path):
+        return _yield_empty_dataframe(col_def, chunksize)
+    else:
+        return pd.read_csv(
+            path, header=None, delim_whitespace=True,
+            names=col_def.column_names, dtype=col_def.column_types,
+            chunksize=chunksize, quoting=csv.QUOTE_NONE)
 
 
 def load_spatial_pools(dir, chunksize=None):
@@ -269,14 +289,10 @@ def load_spatial_flux(dir, chunksize=None):
          "BioToAir_FINEROOT"], column_type="Float64"))
     file_path = os.path.join(dir, filename)
 
-    def read_func(path):
+    if not os.path.exists(file_path):
+        return _yield_empty_dataframe(col_def, chunksize)
+    else:
         return pd.read_csv(
-            path, header=None, delim_whitespace=True,
+            file_path, header=None, delim_whitespace=True,
             names=col_def.column_names, dtype=col_def.column_types,
             chunksize=chunksize, quoting=csv.QUOTE_NONE)
-
-    if not os.path.exists(file_path):
-        with NamedTemporaryFile() as tempfile:
-            return read_func(tempfile.name)
-    else:
-        return read_func(file_path)
