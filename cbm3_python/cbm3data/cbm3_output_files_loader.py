@@ -179,6 +179,12 @@ class LoadFunctionFactory():
                 "process_function": lambda index_offset: lambda df: df,
                 "describe_function": lambda df: df
                 if self.describer else None},
+            "tblRandomSeed": {
+                "load_function": self._wrap_load_func(
+                    cbm3_output_files.load_seed),
+                "process_function": lambda index_offset: lambda df: df,
+                "describe_function": lambda df: df
+            },
             "tblPoolsSpatial": {
                 "load_function": self._wrap_load_func(
                     cbm3_output_files.load_spatial_pools),
