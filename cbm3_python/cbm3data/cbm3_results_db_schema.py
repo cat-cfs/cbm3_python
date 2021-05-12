@@ -4,6 +4,30 @@ from sqlalchemy import Column
 
 
 CBM_RESULTS_CONSTRAINT_DEFS = {
+    "tblAccountingRuleDiagnostics": {
+        "DistTypeID": {
+            "args": [ForeignKey("tblDisturbanceType.DistTypeID")]}
+    },
+    "tblAdminBoundary": {
+        "AdminBoundaryID": {
+            "kwargs": {"primary_key": True}
+        },
+        "AdminBoundaryName": {
+            "kwargs": {"unique": True}
+        },
+        "DefaultAdminBoundaryID": {
+            "args": [ForeignKey("tblAdminBoundaryDefault.AdminBoundaryID")]
+        }
+    },
+    "tblAdminBoundaryDefault": {
+        "AdminBoundaryID": {
+            "kwargs": {"primary_key": True}
+        },
+        "AdminBoundaryName": {
+            "kwargs": {"unique": True}
+        }
+    },
+
     "tblFluxIndicators": {
         "DistTypeID": {
             "args": [ForeignKey("tblDisturbanceType.DistTypeID")],
@@ -40,10 +64,10 @@ def _unpack_constraint_schema(constraint_defs, name, column):
         defs = constraint_defs[name]
         if column in defs:
             column_defs = defs[column]
-            if "column_args" in column_defs:
-                args = column_defs["column_args"]
-            if "column_kwargs" in column_defs:
-                kwargs = column_defs["column_kwargs"]
+            if "args" in column_defs:
+                args = column_defs["args"]
+            if "kwargs" in column_defs:
+                kwargs = column_defs["kwargs"]
     return args, kwargs
 
 
