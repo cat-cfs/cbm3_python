@@ -309,7 +309,7 @@ def _get_cbm_input_dir(cbm_output_dir):
 
 def load_output_relational_tables(cbm_output_dir, project_db_path,
                                   aidb_path, out_func, chunksize=None,
-                                  include_spatial=False):
+                                  include_spatial=False, include_diagnostics=False):
 
     project_data = cbm3_output_descriptions.load_project_level_data(
         project_db_path)
@@ -336,6 +336,10 @@ def load_output_relational_tables(cbm_output_dir, project_db_path,
         load_functions = load_funcs[table_name]
         if table_name in ["tblPoolsSpatial", "tblFluxSpatial"] \
            and not include_spatial:
+            continue
+        if table_name in ["tblAccountingRuleDiagnostics",
+                          "tblDisturbanceSeries"] \
+           and not include_diagnostics:
             continue
         result_chunk_iterable = load_functions["load_function"]()
         index_offset = 0
