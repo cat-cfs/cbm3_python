@@ -1,8 +1,7 @@
 from cbm3_python.cbm3data import cbm3_results_file_writer
 from cbm3_python.cbm3data.cbm3_results_file_writer import CBM3ResultsFileWriter
 from cbm3_python.cbm3data.cbm3_results_db_writer import CBMResultsDBWriter
-from cbm3_python.cbm3data.cbm3_results_db_schema import \
-    CBM_RESULTS_CONSTRAINT_DEFS
+from cbm3_python.cbm3data import cbm3_results_db_schema
 from cbm3_python.cbm3data import cbm3_output_files_loader
 
 
@@ -28,7 +27,7 @@ def load_db(loader_config, cbm_output_dir, project_db_path, aidb_path):
 
     writer = CBMResultsDBWriter(
         loader_config["url"],
-        CBM_RESULTS_CONSTRAINT_DEFS,
+        cbm3_results_db_schema.get_constraints(),
         loader_config["create_engine_kwargs"]
         if "create_engine_kwargs" in loader_config else None,
         loader_config["multi_update_variable_limit"]
