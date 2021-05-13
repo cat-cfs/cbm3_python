@@ -6,9 +6,6 @@ import pandas as pd
 def load_archive_index_data(aidb_path):
     # load default spu data from archive index
     aidb_data = SimpleNamespace(
-        tblSPUDefault=accessdb.as_data_frame(
-            "SELECT SPUID, AdminBoundaryID, EcoBoundaryID "
-            "FROM tblSPUDefault", aidb_path),
         tblEcoBoundaryDefault=accessdb.as_data_frame(
             "SELECT EcoBoundaryID, EcoBoundaryName "
             "FROM tblEcoBoundaryDefault", aidb_path),
@@ -16,6 +13,9 @@ def load_archive_index_data(aidb_path):
             "SELECT AdminBoundaryID, AdminBoundaryName "
             "FROM tblAdminBoundaryDefault",
             aidb_path),
+        tblSPUDefault=accessdb.as_data_frame(
+            "SELECT SPUID, AdminBoundaryID, EcoBoundaryID "
+            "FROM tblSPUDefault", aidb_path),
         tblDisturbanceTypeDefault=accessdb.as_data_frame(
             "SELECT DistTypeID, DistTypeName, Description "
             "FROM tblDisturbanceTypeDefault", aidb_path),
@@ -39,13 +39,13 @@ def load_archive_index_data(aidb_path):
 def load_project_level_data(project_db_path):
     # get project level info
     return SimpleNamespace(
-        tblSPU=accessdb.as_data_frame(
-            "SELECT SPUID, AdminBoundaryID, EcoBoundaryID, DefaultSPUID "
-            "FROM tblSPU", project_db_path),
         tblEcoBoundary=accessdb.as_data_frame(
             "SELECT * FROM tblEcoBoundary", project_db_path),
         tblAdminBoundary=accessdb.as_data_frame(
             "SELECT * FROM tblAdminBoundary", project_db_path),
+        tblSPU=accessdb.as_data_frame(
+            "SELECT SPUID, AdminBoundaryID, EcoBoundaryID, DefaultSPUID "
+            "FROM tblSPU", project_db_path),
         tblDisturbanceType=accessdb.as_data_frame(
             "SELECT DistTypeID, DistTypeName, Description, DefaultDistTypeID "
             "FROM tblDisturbanceType", project_db_path),
