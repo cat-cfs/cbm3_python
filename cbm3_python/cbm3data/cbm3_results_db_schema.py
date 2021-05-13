@@ -26,7 +26,8 @@ def get_constraints():
      },
      "tblAdminBoundary": {
          "AdminBoundaryID": _get_constraints(primary_key=True),
-         "AdminBoundaryName": _get_constraints(unique=True),
+         # some projects have duplicate names!
+         # "AdminBoundaryName": _get_constraints(unique=True),
          "DefaultAdminBoundaryID": _get_constraints(
              foreign_key="tblAdminBoundaryDefault.AdminBoundaryID")
      },
