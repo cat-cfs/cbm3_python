@@ -48,7 +48,8 @@ def create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
 def replace_with_classifier_set_id(raw_table, cset_pivot):
     classifier_set_insertion_index = raw_table.columns.get_loc("c1")
     raw_cset_columns = [f"c{x+1}" for x in range(0, len(cset_pivot.columns)-1)]
-    raw_table = cset_pivot.merge(
+    raw_table = cset_pivot.drop_duplicates(
+        subset=raw_cset_columns, ignore_index=True).merge(
         raw_table, left_on=raw_cset_columns,
         right_on=raw_cset_columns, copy=True, validate="1:m")
     classifier_set_col = raw_table["ClassifierSetID"]
