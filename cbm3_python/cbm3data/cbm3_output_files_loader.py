@@ -54,6 +54,7 @@ class LoadFunctionFactory():
                 "describe_function": _compose(
                     self.describer.merge_landclass_description,
                     self.describer.merge_spatial_unit_description,
+                    self.describer.merge_age_class_descriptions,
                     self.describer.merge_classifier_set_description)
                 if self.describer else None},
             "tblDistIndicators": {
@@ -342,6 +343,7 @@ def load_output_relational_tables(cbm_output_dir, project_db_path,
         out_func(k, v)
     for k, v in out_project_data.__dict__.items():
         out_func(k, v)
+    out_func("tblAgeClasses", cbm3_output_descriptions.load_age_classes())
     load_func_factory = LoadFunctionFactory(
         loaded_csets, describer=None, cbm_project_db_path=project_db_path,
         cbm_output_dir=cbm_output_dir,

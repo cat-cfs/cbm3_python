@@ -35,8 +35,13 @@ def get_constraints():
          "AdminBoundaryID": _get_constraints(primary_key=True),
          "AdminBoundaryName": _get_constraints(unique=True),
      },
+     "tblAgeClasses": {
+         "AgeClassID": _get_constraints(primary_key=True),
+         "AgeRange": _get_constraints(unique=True),
+     },
      "tblAgeIndicators": {
-         "AgeIndID": _get_constraints(primary_key=True),
+         "AgeIndID": _get_constraints(
+             foreign_key="tblAgeClasses.AgeClassID", primary_key=True),
          "TimeStep":  _get_constraints(index=True),
          "SPUID": _get_constraints(index=True, foreign_key="tblSPU.SPUID"),
          # "AgeClassID": None,  # need to add additional table!

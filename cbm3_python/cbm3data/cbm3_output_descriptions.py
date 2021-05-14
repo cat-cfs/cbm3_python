@@ -1,3 +1,4 @@
+import os
 from types import SimpleNamespace
 from cbm3_python.cbm3data import accessdb
 import pandas as pd
@@ -95,6 +96,12 @@ def create_project_level_output_tables(project_descriptions):
     return result
 
 
+def load_age_classes():
+    path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "tblAgeClasses.csv")
+    return pd.read_csv(path)
+
+
 class ResultsDescriber():
 
     def __init__(self, project_db_path, aidb_path, loaded_csets,
@@ -104,7 +111,7 @@ class ResultsDescriber():
         self.aidb_data = load_archive_index_data(aidb_path)
         self.default_view = self._create_default_data_views()
         self.project_view = self._create_project_data_view()
-
+        self.age_classes = load_age_classes()
         self.mapped_csets = self._map_classifier_descriptions(
             loaded_csets, classifier_value_field)
 
@@ -244,3 +251,7 @@ class ResultsDescriber():
         return land_class_name.merge(
             kf3334_name_desc, left_index=True, right_index=True).merge(
                 df, left_index=True, right_index=True, validate="1:1")
+
+    def merge_age_class_descriptions(self, df):
+        return self.age_classes.merge(
+            df, left_on="AgeClassID", right_on="AgeClassID", validate="1:m")
