@@ -54,7 +54,45 @@ def load_project_level_data(project_db_path):
         tblClassifierValues=accessdb.as_data_frame(
             "SELECT * FROM tblClassifierValues", project_db_path),
         tblClassifierSetValues=accessdb.as_data_frame(
-            "SELECT * FROM tblClassifierSetValues", project_db_path))
+            "SELECT * FROM tblClassifierSetValues", project_db_path),
+        tblClassifierAggregates=accessdb.as_data_frame(
+            "SELECT * FROM tblClassifierAggregate", project_db_path))
+
+
+def create_project_level_output_tables(project_descriptions):
+    """creates the equivalent column/table naming as the CBM3
+    run results db format for classifier tables
+
+    Args:
+        project_descriptions (object): object containing metadata tables
+            processed/collect from the project db.
+    """
+    result = SimpleNamespace(
+        tblEcoBoundary=project_descriptions.tblEcoBoundary,
+        tblAdminBoundary=project_descriptions.tblAdminBoundary,
+        tblSPU=project_descriptions.tblSPU,
+        tblDisturbanceType=project_descriptions.tblDisturbanceType)
+    result.tblUserDefdClasses = project_descriptions.tblClassifiers.rename(
+        columns={
+            "ClassifierID": "UserDefdClassID",
+            "Name": "ClassDesc"})
+    result.tblUserDefdSubclasses = \
+        project_descriptions.tblClassifierValues.rename(
+            columns={
+                "ClassifierID": "UserDefdClassID",
+                "ClassifierValueID": "UserDefdSubclassID",
+                "Name": "UserDefdSubClassName",
+                "Description": "SubclassDesc"})
+    result.tblUserDefdClassSets = \
+        project_descriptions.tblClassifierSets.rename(
+            columns={"ClassifierSetID": "UserDefdClassSetID"})
+    result.tblUserDefdClassSetValues = \
+        project_descriptions.tblClassifierSetValues.rename(
+            columns={
+                "ClassifierSetID": "UserDefdClassSetID",
+                "ClassifierID": "UserDefdClassID",
+                "ClassifierValueID": "UserDefdSubClassID"})
+    return result
 
 
 class ResultsDescriber():
