@@ -41,7 +41,8 @@ def get_constraints():
          "SPUID": _get_constraints(index=True, foreign_key="tblSPU.SPUID"),
          # "AgeClassID": None,  # need to add additional table!
          "UserDefdClassSetID": _get_constraints(
-             index=True, foreign_key="tblClassifierSetValues.ClassifierSetID"),
+             index=True,
+             foreign_key="tblUserDefdClassSets.UserDefdClassSetID"),
          "LandClassID": _get_constraints(
              index=True, foreign_key="tblUNFCCCLandClass.UNFCCCLandClassID"),
          "kf2": _get_constraints(
@@ -51,18 +52,27 @@ def get_constraints():
          "kf5": _get_constraints(index=True),
          "kf6": _get_constraints(index=True),
      },
-     "tblClassifierSetValues": {
-         "ClassifierSetID": _get_constraints(index=True),
-         "ClassifierID": _get_constraints(index=True),
-         "ClassifierValueID": _get_constraints(index=True),
+     "tblUserDefdClasses": {
+         "UserDefdClassID": _get_constraints(primary_key=True),
+         "ClassDesc": _get_constraints(unique=True),
      },
-     "tblClassifierValues": {
-         "ClassifierID": _get_constraints(index=True),
-         "ClassifierValueID": _get_constraints(index=True)
+     "tblUserDefdSubclasses": {
+         "UserDefdClassID": _get_constraints(
+            foreign_key="tblUserDefdClasses.UserDefdClassID",
+            index=True, primary_key=True),
+         "UserDefdSubclassID": _get_constraints(
+             index=True, primary_key=True)
      },
-     "tblClassifiers": {
-         "ClassifierID": _get_constraints(primary_key=True),
-         "Name": _get_constraints(unique=True),
+     "tblUserDefdClassSets": {
+        "UserDefdClassSetID": _get_constraints(
+            primary_key=True, index=True)
+     },
+     "tblUserDefdClassSetValues": {
+         "UserDefdClassSetID": _get_constraints(
+             foreign_key="tblUserDefdClassSets.UserDefdClassSetID",
+             index=True, primary_key=True),
+         "UserDefdClassID": _get_constraints(primary_key=True, index=True),
+         "UserDefdSubClassID": _get_constraints(primary_key=True, index=True),
      },
      "tblDistIndicators": {
          "DistIndID": _get_constraints(primary_key=True),
@@ -71,7 +81,8 @@ def get_constraints():
              foreign_key="tblDisturbanceType.DistTypeID", index=True),
          "SPUID": _get_constraints(index=True, foreign_key="tblSPU.SPUID"),
          "UserDefdClassSetID": _get_constraints(
-             index=True, foreign_key="tblClassifierSetValues.ClassifierSetID"),
+             index=True,
+             foreign_key="tblUserDefdClassSets.UserDefdClassSetID"),
          "LandClassID": _get_constraints(
              index=True, foreign_key="tblUNFCCCLandClass.UNFCCCLandClassID"),
          "kf2": _get_constraints(
@@ -119,7 +130,8 @@ def get_constraints():
          "SPUID": _get_constraints(index=True, foreign_key="tblSPU.SPUID"),
          "TimeStep": _get_constraints(index=True),
          "UserDefdClassSetID": _get_constraints(
-             index=True, foreign_key="tblClassifierSetValues.ClassifierSetID"),
+             index=True,
+             foreign_key="tblUserDefdClassSets.UserDefdClassSetID"),
          "LandClassID": _get_constraints(
              index=True, foreign_key="tblUNFCCCLandClass.UNFCCCLandClassID"),
          "kf2": _get_constraints(
@@ -149,7 +161,8 @@ def get_constraints():
          "SPUID": _get_constraints(index=True, foreign_key="tblSPU.SPUID"),
          "TimeStep": _get_constraints(index=True),
          "UserDefdClassSetID": _get_constraints(
-             index=True, foreign_key="tblClassifierSetValues.ClassifierSetID"),
+             index=True,
+             foreign_key="tblUserDefdClassSets.UserDefdClassSetID"),
          "LandClassID": _get_constraints(
              index=True, foreign_key="tblUNFCCCLandClass.UNFCCCLandClassID"),
          "kf2": _get_constraints(
@@ -166,7 +179,8 @@ def get_constraints():
          "DistTypeID": _get_constraints(
              foreign_key="tblDisturbanceType.DistTypeID", index=True),
          "UserDefdClassSetID": _get_constraints(
-             index=True, foreign_key="tblClassifierSetValues.ClassifierSetID"),
+             index=True,
+             foreign_key="tblUserDefdClassSets.UserDefdClassSetID"),
          "LandClassID": _get_constraints(
              index=True, foreign_key="tblUNFCCCLandClass.UNFCCCLandClassID"),
          "kf2": _get_constraints(
@@ -201,7 +215,8 @@ def get_constraints():
          "DistTypeID": _get_constraints(
              foreign_key="tblDisturbanceType.DistTypeID", index=True),
          "UserDefdClassSetID": _get_constraints(
-             index=True, foreign_key="tblClassifierSetValues.ClassifierSetID"),
+             index=True,
+             foreign_key="tblUserDefdClassSets.UserDefdClassSetID"),
          "LandClassID": _get_constraints(
              index=True, foreign_key="tblUNFCCCLandClass.UNFCCCLandClassID"),
          "kf2": _get_constraints(

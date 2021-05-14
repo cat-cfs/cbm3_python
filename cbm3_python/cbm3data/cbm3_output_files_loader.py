@@ -329,10 +329,18 @@ def load_output_relational_tables(cbm_output_dir, project_db_path,
         cbm_output_dir, chunksize=chunksize)
     project_data.tblClassifierSetValues = \
         cbm3_output_classifiers.melt_loaded_csets(loaded_csets)
+    project_data.tblClassifierSets = \
+        cbm3_output_classifiers.create_classifier_sets(
+            loaded_csets, project_data.tblClassifiers,
+            project_data.tblClassifierValues,
+            project_data.tblClassifierAggregates)
+    out_project_data = \
+        cbm3_output_descriptions.create_project_level_output_tables(
+            project_data)
 
     for k, v in aidb_data.__dict__.items():
         out_func(k, v)
-    for k, v in project_data.__dict__.items():
+    for k, v in out_project_data.__dict__.items():
         out_func(k, v)
     load_func_factory = LoadFunctionFactory(
         loaded_csets, describer=None, cbm_project_db_path=project_db_path,
