@@ -71,8 +71,46 @@ def melt_loaded_csets(csets):
         "value": "ClassifierValueID"
     }).sort_values(by=["ClassifierSetID", "ClassifierID"])
 
-    csets_melt[
+    csets_melt.loc[
         (csets_melt.ClassifierValueID < 0) |
-        pd.isna(csets_melt.ClassifierValueID)] = 1
+        pd.isna(csets_melt.ClassifierValueID), "ClassifierValueID"] = 1
     csets_melt = csets_melt.astype("int64")
     return csets_melt
+
+
+def create_classifier_sets(loaded_csets, tblClassifiers, tblClassifierValues,
+                           tblClassifierAggregates):
+
+    mapped_output_series = []
+    sorted_classifiers = enumerate(
+        tblClassifiers.sort_values(by="ClassifierID").ClassifierID)
+    for classifier_index, classifier_id in sorted_classifiers:
+        classifier_value_map = {
+            row.ClassifierValueID: row.Name
+            for _, row in tblClassifierValues[
+                tblClassifierValues.ClassifierID == classifier_id].iterrows()}
+        classifier_aggregate_map = {
+            row.AggregateID: row.Name
+            for _, row in tblClassifierAggregates[
+                tblClassifierAggregates.ClassifierID == classifier_id
+                ].iterrows()}
+
+        classifier_value_map.update(classifier_aggregate_map)
+        output_series = loaded_csets[loaded_csets.columns[classifier_index+1]]
+        output_series[(output_series < 0) | pd.isna(output_series)] = 1
+        output_series = output_series.map(classifier_value_map)
+        if pd.isna(output_series).any():
+            raise ValueError("unmapped classifier values detected")
+        mapped_output_series.append(output_series)
+
+    tblClassifierSetName = pd.DataFrame(
+        data={
+            f"c{i_out_series}": out_series
+            for i_out_series, out_series in
+            enumerate(mapped_output_series)}
+        ).apply(lambda x: ",".join(x), axis=1)
+    tblClassifierSets = pd.DataFrame(
+        data={
+            "ClassifierSetID": loaded_csets.ClassifierSetID,
+            "Name": tblClassifierSetName})
+    return tblClassifierSets
