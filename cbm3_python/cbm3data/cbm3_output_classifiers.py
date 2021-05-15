@@ -5,6 +5,11 @@ from warnings import warn
 
 def create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
                               cbm_results_dir, chunksize=None):
+    if (tblClassifierSetValues.ClassifierValueID < 0).any():
+        warn("tblClassifierSetValues.ClassifierValueID: < 0 values detected")
+        tblClassifierSetValues.loc[
+            tblClassifierSetValues.ClassifierValueID < 0,
+            "ClassifierValueID"] = 1
 
     raw_cset_columns = [
         f"c{x+1}" for x in range(0, len(tblClassifiers.index))]
@@ -86,7 +91,7 @@ def melt_loaded_csets(csets):
 def create_classifier_sets(loaded_csets, tblClassifiers, tblClassifierValues,
                            tblClassifierAggregates):
 
-    mapped_output_series = []
+    mapped_output_series_list = []
     sorted_classifiers = enumerate(
         tblClassifiers.sort_values(by="ClassifierID").ClassifierID)
     for classifier_index, classifier_id in sorted_classifiers:
@@ -102,16 +107,22 @@ def create_classifier_sets(loaded_csets, tblClassifiers, tblClassifierValues,
 
         classifier_value_map.update(classifier_aggregate_map)
         output_series = loaded_csets[loaded_csets.columns[classifier_index+1]]
-        output_series = output_series.map(classifier_value_map)
-        if pd.isna(output_series).any():
-            raise ValueError("unmapped classifier values detected")
-        mapped_output_series.append(output_series)
+        mapped_output_series = output_series.map(classifier_value_map)
+        if pd.isna(mapped_output_series).any():
+            missing = list(
+                output_series[
+                    ~output_series.isin(classifier_value_map.keys())])
+            raise ValueError(
+                "unmapped classifier values detected "
+                f"classifier_id: {classifier_id}, "
+                f"missing classifier value ids: {missing}")
+        mapped_output_series_list.append(mapped_output_series)
 
     tblClassifierSetName = pd.DataFrame(
         data={
             f"c{i_out_series}": out_series
             for i_out_series, out_series in
-            enumerate(mapped_output_series)}
+            enumerate(mapped_output_series_list)}
         ).apply(lambda x: ",".join(x), axis=1)
     tblClassifierSets = pd.DataFrame(
         data={
