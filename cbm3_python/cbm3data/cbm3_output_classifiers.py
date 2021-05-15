@@ -31,6 +31,8 @@ def create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
     if not chunksize:
         pool_indicators = [pool_indicators]
     for chunk in pool_indicators:
+        for col in raw_cset_columns:
+            chunk.loc[chunk[col] <= 0, col] = 1
         raw_classifier_data = raw_classifier_data.append(
             chunk[raw_cset_columns]).drop_duplicates()
 
@@ -48,17 +50,20 @@ def create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
 def replace_with_classifier_set_id(raw_table, cset_pivot):
     classifier_set_insertion_index = raw_table.columns.get_loc("c1")
     raw_cset_columns = [f"c{x+1}" for x in range(0, len(cset_pivot.columns)-1)]
-    raw_table = cset_pivot.drop_duplicates(
-        subset=raw_cset_columns, ignore_index=True).merge(
+    cset_pivot_out = cset_pivot.drop_duplicates(
+        subset=raw_cset_columns, ignore_index=True)
+    for col in raw_cset_columns:
+        raw_table.loc[raw_table[col] <= 0, col] = 1
+    output = cset_pivot_out.merge(
         raw_table, left_on=raw_cset_columns,
         right_on=raw_cset_columns, copy=True, validate="1:m")
-    classifier_set_col = raw_table["ClassifierSetID"]
-    raw_table = raw_table.drop(columns=[f"c{x}" for x in range(1, 11)])
-    raw_table = raw_table[list(raw_table.columns)[1:]]
-    raw_table.insert(
+    classifier_set_col = output["ClassifierSetID"]
+    output = output.drop(columns=[f"c{x}" for x in range(1, 11)])
+    output = output[list(output.columns)[1:]]
+    output.insert(
         loc=classifier_set_insertion_index, column="UserDefdClassSetID",
         value=classifier_set_col)
-    return raw_table
+    return output
 
 
 def melt_loaded_csets(csets):
@@ -73,7 +78,6 @@ def melt_loaded_csets(csets):
     }).sort_values(by=["ClassifierSetID", "ClassifierID"])
 
     csets_melt.loc[
-        (csets_melt.ClassifierValueID < 0) |
         pd.isna(csets_melt.ClassifierValueID), "ClassifierValueID"] = 1
     csets_melt = csets_melt.astype("int64")
     return csets_melt
@@ -98,7 +102,6 @@ def create_classifier_sets(loaded_csets, tblClassifiers, tblClassifierValues,
 
         classifier_value_map.update(classifier_aggregate_map)
         output_series = loaded_csets[loaded_csets.columns[classifier_index+1]]
-        output_series[(output_series < 0) | pd.isna(output_series)] = 1
         output_series = output_series.map(classifier_value_map)
         if pd.isna(output_series).any():
             raise ValueError("unmapped classifier values detected")
