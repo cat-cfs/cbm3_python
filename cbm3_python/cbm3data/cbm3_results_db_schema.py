@@ -120,7 +120,7 @@ def get_constraints():
      },
      "tblEcoBoundary": {
          "EcoBoundaryID": _get_constraints(primary_key=True),
-         "EcoBoundaryName": _get_constraints(unique=True),
+         # "EcoBoundaryName": _get_constraints(unique=True),
          "DefaultEcoBoundaryID": _get_constraints(
              foreign_key="tblEcoBoundaryDefault.EcoBoundaryID", index=True)
      },
