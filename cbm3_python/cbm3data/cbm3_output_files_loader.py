@@ -39,6 +39,13 @@ class LoadFunctionFactory():
         return self._wrap_chunkable(func, self.cbm_output_dir, self.chunksize)
 
     def get_all(self):
+        """Get the functions to load, process and describe CBM3 output
+        datasets.
+
+        Returns:
+            dict: a dictionary containing the load functions (values) for
+                each table name (keys)
+        """
         return {
             "tblAgeIndicators": {
                 "load_function": self._wrap_load_func(
@@ -302,6 +309,10 @@ def _get_gross_growth_column_funcs():
 def _compose(*fs):
     """Adapted from:
     https://stackoverflow.com/questions/16739290/composing-functions-in-python
+
+    for specified functions f1(x), f2(x), ..., fn(x)
+
+    return a composed function fn( ... f2(f1(x)))
     """
     def compose2(f, g):
         return lambda *a, **kw: f(g(*a, **kw))
@@ -318,7 +329,24 @@ def load_output_relational_tables(cbm_output_dir, project_db_path,
                                   aidb_path, out_func, chunksize=None,
                                   include_spatial=False,
                                   include_diagnostics=False):
+    """Load all CBM datasets to a relational database output
 
+    Args:
+        cbm_output_dir (str): path to a CBMRun/output dir
+        project_db_path (str): path to a CBM-CFS3 access database project
+        aidb_path (str): path to a CBM-CFS3 archive index database
+        out_func (func): a function of (table_name, data) called for each
+            loaded data chunk.  This function can be called more than one
+            time per table_name if the load is split into multiple chunks.
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+        include_spatial (bool, optional): If set to true "tblPoolsSpatial",
+            and "tblFluxSpatial" will be loaded if present, and they will
+            otherwise be ignored. Defaults to False.
+        include_diagnostics (bool, optional): If set to true extra diagnostic
+            tables will be loaded. Defaults to False.
+    """
     project_data = cbm3_output_descriptions.load_project_level_data(
         project_db_path)
 
@@ -368,9 +396,22 @@ def load_output_relational_tables(cbm_output_dir, project_db_path,
 
 
 def load_output_descriptive_tables(cbm_output_dir, project_db_path,
-                                   aidb_path, out_func,
-                                   classifier_value_field="Name",
-                                   chunksize=None):
+                                   aidb_path, out_func, chunksize=None):
+    """Load all CBM datasets to a descriptive format.
+
+    Args:
+
+        cbm_output_dir (str): path to a CBMRun/output dir
+        project_db_path (str): path to a CBM-CFS3 access database project
+        aidb_path (str): path to a CBM-CFS3 archive index database
+        out_func (func): a function of (table_name, data) called for each
+            loaded data chunk.  This function can be called more than one
+            time per table_name if the load is split into multiple chunks.
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    """
     project_data = cbm3_output_descriptions.load_project_level_data(
         project_db_path)
     loaded_csets = cbm3_output_classifiers.create_loaded_classifiers(
@@ -378,7 +419,8 @@ def load_output_descriptive_tables(cbm_output_dir, project_db_path,
         project_data.tblClassifierSetValues,
         cbm_output_dir, chunksize=chunksize)
     describer = ResultsDescriber(
-        project_db_path, aidb_path, loaded_csets, classifier_value_field)
+        project_db_path, aidb_path, loaded_csets,
+        classifier_value_field="Name")
     load_func_factory = LoadFunctionFactory(
         loaded_csets, describer=describer, cbm_project_db_path=project_db_path,
         cbm_output_dir=cbm_output_dir,
