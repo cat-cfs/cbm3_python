@@ -5,7 +5,16 @@ import pandas as pd
 
 
 def load_archive_index_data(aidb_path):
-    # load default spu data from archive index
+    """Loads descriptive/metadata tables from the specified CBM3 MS access
+    archive index database path.
+
+    Args:
+        aidb_path (str): Path to a CBM-CFS3 archive index database.
+
+    Returns:
+        namespace: A namespace of descriptive pandas.DataFrame
+    """
+
     aidb_data = SimpleNamespace(
         tblEcoBoundaryDefault=accessdb.as_data_frame(
             "SELECT EcoBoundaryID, EcoBoundaryName "
@@ -38,7 +47,16 @@ def load_archive_index_data(aidb_path):
 
 
 def load_project_level_data(project_db_path):
-    # get project level info
+    """Loads descriptive/metadata tables from the specified CBM3 MS access
+    project database path.
+
+    Args:
+        project_db_path (str): Path to a CBM-CFS3 project database
+
+    Returns:
+        namespace: A namespace of descriptive pandas.DataFrames
+    """
+
     return SimpleNamespace(
         tblEcoBoundary=accessdb.as_data_frame(
             "SELECT * FROM tblEcoBoundary", project_db_path),
@@ -97,6 +115,11 @@ def create_project_level_output_tables(project_descriptions):
 
 
 def load_age_classes():
+    """Loads the tblAgeClasses metadata table
+
+    Returns:
+        pandas.DataFrame: tblAgeClasses
+    """
     path = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), "tblAgeClasses.csv")
     return pd.read_csv(path)
@@ -216,21 +239,59 @@ class ResultsDescriber():
         return mapped_csets
 
     def merge_spatial_unit_description(self, df):
+        """Merges spatial unit metadata columns to a dataframe containing
+        a project-level SPUID column.
+
+        Args:
+            df (pandas.DataFrame): a table containing column "SPUID"
+
+        Returns:
+            pandas.DataFrame: the merged table (copied)
+        """
         return self.project_view.project_spu_view.merge(
             df, left_on="ProjectSPUID", right_on="SPUID",
             validate="1:m")
 
     def merge_disturbance_type_description(self, df):
+        """Merges disturbance type metadata columns to a dataframe containing
+        a project-level DistTypeID column.
+
+        Args:
+            df (pandas.DataFrame): a table containing column "DistTypeID"
+
+        Returns:
+            pandas.DataFrame: the merged table (copied)
+        """
         return self.project_view.disturbance_type_view.merge(
             df, left_on="ProjectDistTypeID",
             right_on="DistTypeID", how="right", validate="1:m")
 
     def merge_classifier_set_description(self, df):
+        """Merges classifier value columns to a dataframe containing
+        a project-level UserDefdClassSetID column.
+
+        Args:
+            df (pandas.DataFrame): a table containing column
+                "UserDefdClassSetID"
+
+        Returns:
+            pandas.DataFrame: the merged table (copied)
+        """
         return self.mapped_csets.merge(
             df, left_on="ClassifierSetID",
             right_on="UserDefdClassSetID", validate="1:m")
 
     def merge_landclass_description(self, df):
+        """Merges UNFCCC land class metadata columns to a dataframe containing
+        project-level LandClassID and kf2 columns.
+
+        Args:
+            df (pandas.DataFrame): a table containing columns "LandClassID"
+                and "kf2".
+
+        Returns:
+            pandas.DataFrame: the merged table (copied)
+        """
 
         land_class_name = self.aidb_data.tblUNFCCCLandClass.merge(
             df[["LandClassID"]],
@@ -253,5 +314,14 @@ class ResultsDescriber():
                 df, left_index=True, right_index=True, validate="1:1")
 
     def merge_age_class_descriptions(self, df):
+        """Merges age class metadata columns to a dataframe containing
+        a project-level AgeClassID column
+
+        Args:
+            df (pandas.DataFrame): a table containing column "AgeClassID"
+
+        Returns:
+            pandas.DataFrame: the merged table (copied)
+        """
         return self.age_classes.merge(
             df, left_on="AgeClassID", right_on="AgeClassID", validate="1:m")
