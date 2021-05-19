@@ -221,9 +221,13 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
             elif loader_settings == {} or loader_settings["type"] is None:
                 return None
             else:
+                if tempfiles_output_dir:
+                    load_dir = tempfiles_output_dir
+                else:
+                    load_dir = s.CBMTemp
                 cbm3_output_loader.load(
                     loader_settings,
-                    os.path.join(tempfiles_output_dir, "CBMRun"),
+                    os.path.join(load_dir, "CBMRun", "output"),
                     project_path, aidb_path)
         finally:
             # cleanup
