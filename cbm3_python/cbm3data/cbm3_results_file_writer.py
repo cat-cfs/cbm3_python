@@ -51,11 +51,7 @@ class CBM3ResultsFileWriter:
                 kwargs.update(self.writer_kwargs)
             df.to_csv(*args, **kwargs)
         elif self.format == "hdf":
-            raise NotImplementedError("hdf not yet implemented")
-            # this does not currently work! look into
-            # https://pandas.pydata.org/docs/reference/api/pandas.HDFStore.append.html
-            # pandas.HDFStore.append
-            kwargs = dict(key=name, mode="a")
+            kwargs = dict(key=name, mode="a", format='t', append=True)
             if self.writer_kwargs:
                 kwargs.update(self.writer_kwargs)
             df.to_hdf(*args, **kwargs)
