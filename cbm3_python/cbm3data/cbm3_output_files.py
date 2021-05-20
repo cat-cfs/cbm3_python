@@ -39,6 +39,18 @@ def get_classifier_column_names():
 
 
 def load_pool_indicators(dir, chunksize=None):
+    """load cbmrun/output/poolind.out to a pandas.DataFrame
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     col_def = _build_col_def(
         dict(column_names=["RunID", "TimeStep", "SPUID"],
              column_type="Int64"),
@@ -63,6 +75,18 @@ def load_pool_indicators(dir, chunksize=None):
 
 
 def load_flux_indicators(dir, chunksize=None):
+    """load cbmrun/output/fluxind.out to a pandas.DataFrame
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     col_def = _build_col_def(
         dict(column_names=["RunID", "TimeStep", "DistTypeID", "SPUID"],
              column_type="Int64"),
@@ -96,6 +120,18 @@ def load_flux_indicators(dir, chunksize=None):
 
 
 def load_age_indicators(dir, chunksize=None):
+    """load cbmrun/output/ageind.out to a pandas.DataFrame
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     col_def = _build_col_def(
         dict(column_names=["RunID", "TimeStep", "SPUID", "AgeClass"],
              column_type="Int64"),
@@ -113,6 +149,18 @@ def load_age_indicators(dir, chunksize=None):
 
 
 def load_dist_indicators(dir, chunksize=None):
+    """load cbmrun/output/distinds.out to a pandas.DataFrame
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     col_def = _build_col_def(
         dict(column_names=["RunID", "TimeStep", "DistTypeID", "SPUID"],
              column_type="Int64"),
@@ -130,6 +178,20 @@ def load_dist_indicators(dir, chunksize=None):
 
 
 def load_svl_files(input_dir, output_dir, chunksize=None):
+    """load cbmrun/output/svl***.dat and cbmrun/input/svl***.ini files
+    to a pandas.DataFrame
+
+    Args:
+        input_dir (str): path to the CBMRun/input dir
+        output_dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     result = svl_file_parser.parse_all(input_dir, output_dir, chunksize)
     if chunksize:
         return result
@@ -138,6 +200,18 @@ def load_svl_files(input_dir, output_dir, chunksize=None):
 
 
 def load_nir_output(dir, chunksize=None):
+    """load cbmrun/output/NIROutput.txt to a pandas.DataFrame
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     filename = "NIROutput.txt"
     col_def = _build_col_def(
         dict(column_names=[
@@ -157,6 +231,18 @@ def load_nir_output(dir, chunksize=None):
 
 
 def load_nodist(dir, chunksize=None):
+    """load cbmrun/output/nodist.out to a pandas.DataFrame
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     filename = "nodist.fil"
     col_def = _build_col_def(
         dict(column_names=["RunID", "TimeStep", "DistTypeID", "DistGroup"],
@@ -169,6 +255,18 @@ def load_nodist(dir, chunksize=None):
 
 
 def load_distseries(dir, chunksize=None):
+    """load cbmrun/output/distseries.csv to a pandas.DataFrame
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     filename = "distseries.csv"
     # column headers are present in this csv file
     col_def = _build_col_def(
@@ -182,6 +280,18 @@ def load_distseries(dir, chunksize=None):
 
 
 def load_accdiagnostics(dir, chunksize=None):
+    """load cbmrun/output/accdiagnostics.txt to a pandas.DataFrame
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     filename = "accdiagnostics.txt"
     col_def = _build_col_def(
         dict(column_names=["id"], column_type="Int64"),
@@ -199,6 +309,18 @@ def load_accdiagnostics(dir, chunksize=None):
 
 
 def load_predistage(dir, chunksize=None):
+    """load cbmrun/output/predistage.csv to a pandas.DataFrame
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     filename = "predistage.csv"
     # column headers are present in this csv file
     col_def = _build_col_def(
@@ -221,6 +343,19 @@ def load_predistage(dir, chunksize=None):
 
 
 def load_seed(dir, chunksize=None):
+    """load cbmrun/output/seed.txt to a pandas.DataFrame. If the file is not
+    present an empty dataframe is returned.
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     filename = "seed.txt"
     path = os.path.join(dir, filename)
     col_def = _build_col_def(
@@ -237,6 +372,18 @@ def load_seed(dir, chunksize=None):
 
 
 def load_spatial_pools(dir, chunksize=None):
+    """load cbmrun/output/spatialpool.out to a pandas.DataFrame.
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     filename = "spatialpool.out"
     col_def = _build_col_def(
         dict(column_names=["RunID", "SVOID", "Age", "TimeStep", "SPUID"],
@@ -260,6 +407,19 @@ def load_spatial_pools(dir, chunksize=None):
 
 
 def load_spatial_flux(dir, chunksize=None):
+    """load cbmrun/output/SpatialFluxInd.out to a pandas.DataFrame. If the
+    file is not present an empty dataframe is returned.
+
+    Args:
+        dir (str): path to the CBMRun/output dir
+        chunksize (int, optional): If specified sets a maximum number of rows
+            to hold in memory at a given time while loading output. If
+            unspecified there is no limit. Defaults to None.
+
+    Returns:
+        pandas.DataFrame, or object: returns an iterable of dataframes
+            if chunksize is specified, and otherwise a single dataframe.
+    """
     filename = "SpatialFluxInd.out"
     col_def = _build_col_def(
         dict(column_names=[
