@@ -19,6 +19,12 @@ def _get_constraints(primary_key=None, index=None,
 
 
 def get_constraints():
+    """Get a nested dictionary of table names to column
+    dictionaries containing constraint and index definitions for sqlalchemy
+
+    Returns:
+        dict: the column constraints and indexes
+    """
     return {
      "tblAccountingRuleDiagnostics": {
          "DistTypeID": _get_constraints(
@@ -269,6 +275,19 @@ def _unpack_constraint_schema(constraint_defs, name, column):
 
 
 def create_column_definitions(name, df, constraint_defs):
+    """Create the column definitions to pass to an sqlalchemy engine
+    for table construction.
+
+    Args:
+        name (str): the table name
+        df (pandas.DataFrame): a table from which the column names and
+            types will be derived
+        constraint_defs (dict): dictionary of constraint and index
+            definitions. See :py:func:`get_constraints`
+
+    Returns:
+        list: list of sqlalchemy.Column
+    """
     result = []
     for i_column, column in enumerate(df.columns):
 
