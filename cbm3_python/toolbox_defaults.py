@@ -13,7 +13,7 @@ def get_cbm_executable_dir():
 
 def get_install_path():
     program_files_dir = os.path.join(
-        "c:\\", "Program Files (x86)", "Operational-Scale CBM-CFS3")
+        os.getenv("ProgramFiles(x86)"), "Operational-Scale CBM-CFS3")
     appdata_dir = os.path.join(
         os.getenv("LOCALAPPDATA"), "Programs",
         "Operational-Scale CBM-CFS3")
