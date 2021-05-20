@@ -8,6 +8,20 @@ FORMATS = [
 class CBM3ResultsFileWriter:
 
     def __init__(self, format, out_path, writer_kwargs):
+        """Create object to append dataframes to file
+
+        Args:
+            format (str): either "csv" or "hdf"
+            out_path (str): Location into which DataFrames will be appended.
+                For csv format this is a directory, and for hdf this is a
+                filename.
+            writer_kwargs (dict): extra keyword arguments to pass to the
+                underlying pandas write methods
+
+        Raises:
+            ValueError: the specified format string does not match one of the
+                supported formats.
+        """
         if format not in FORMATS:
             raise ValueError(
                 f"format must be one of: {FORMATS}")
@@ -35,8 +49,20 @@ class CBM3ResultsFileWriter:
         else:
             return self.out_path
 
-    def write(self, name, df):
-        out_path = self._def_get_file_path(name)
+    def write(self, table_name, df):
+        """Append the specified dataframe associated with the specified
+        table_name to file.
+
+        On the first call to this function for a given table any existing
+        table will be overwritten, and a new file will be initialized.  On
+        subsequent calls with the same table name, the specified data will
+        be appended to the corresponding file output.
+
+        Args:
+            table_name (str): the name of the table to write
+            df (pandas.DataFrame): the data to write
+        """
+        out_path = self._def_get_file_path(table_name)
         if out_path not in self.created_files:
             if os.path.exists(out_path):
                 os.remove(out_path)
@@ -51,7 +77,7 @@ class CBM3ResultsFileWriter:
                 kwargs.update(self.writer_kwargs)
             df.to_csv(*args, **kwargs)
         elif self.format == "hdf":
-            kwargs = dict(key=name, mode="a", format='t', append=True)
+            kwargs = dict(key=table_name, mode="a", format='t', append=True)
             if self.writer_kwargs:
                 kwargs.update(self.writer_kwargs)
             df.to_hdf(*args, **kwargs)

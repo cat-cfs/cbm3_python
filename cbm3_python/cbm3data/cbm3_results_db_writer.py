@@ -8,28 +8,20 @@ class CBMResultsDBWriter:
 
     def __init__(self, url, constraint_defs, create_engine_kwargs=None,
                  multi_update_variable_limit=None):
-        """
-
-        Usage example::
-
-            from sqlalchemy import create_engine
-
-            if os.path.exists(os.path.abspath("test.db")):
-                os.remove(os.path.abspath("test.db"))
-            engine = create_engine("sqlite:///test.db")
-            with SQLAlchemyWriter(engine, foreign_key_defs) as writer:
-                cbm3_output_files_loader.load_output_relational_tables(
-                    cbm_output_dir=cbm_output_dir,
-                    project_db_path=project_db_path,
-                    aidb_path=aidb_path,
-                    out_func=writer.sqlalchemy_write,
-                    chunksize=chunksize)
+        """Create object to insert dataframes to a relational database.
 
         Args:
-            engine ([type]): [description]
-            constraint_defs ([type]): [description]
+            url (str): url string containing db connection information passed
+                to sqlalchemy.create_engine
+            constraint_defs (dict): sqlalchemy constraint definitions. Nested
+                dict of table_name.column_name.
+            create_engine_kwargs (dict, optional): Extra keyword args passed
+                to sqlalchemy.create_engine. Defaults to None.
+            multi_update_variable_limit (int, optional): If specified the use
+                the "multi" pandas.DataFrame.to_sql method for query batching.
+                The integer value is used to set the upper limit on batch
+                size. Defaults to None.
         """
-
         self.engine = \
             create_engine(url, **create_engine_kwargs) \
             if create_engine_kwargs else create_engine(url)
@@ -47,19 +39,32 @@ class CBMResultsDBWriter:
         if self.connection:
             self.connection.close()
 
-    def write(self, name, df):
-        if name not in self.created_tables:
+    def write(self, table_name, df):
+        """Write the specified data using the sqlalchemy engine.
+
+        If the specified table name has not already been created by this
+        instance, it will be created. If the specified table name matches
+        the name of an already existing table, and error will be raised.
+
+        On any subsequent calls to this function with the same table_name, the
+        specified data frame will be appended to the table.
+
+        Args:
+            table_name (str): the table name
+            df (pandas.DataFrame): a pandas data frame to insert to the table.
+        """
+        if table_name not in self.created_tables:
             # create the table defintion
             table = Table(
-                name, self.meta,
+                table_name, self.meta,
                 *cbm3_results_db_schema.create_column_definitions(
-                    name, df, self.constraint_defs))
+                    table_name, df, self.constraint_defs))
             table.create(self.engine)
-            self.created_tables[name] = table
+            self.created_tables[table_name] = table
         # insert the values in df
-        table = self.created_tables[name]
+        table = self.created_tables[table_name]
         to_sql_kwargs = dict(
-            name=name,
+            name=table_name,
             con=self.engine,
             if_exists="append",
             index=False)
