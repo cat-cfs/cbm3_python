@@ -35,6 +35,12 @@ def _build_col_def(*args):
 
 
 def get_classifier_column_names():
+    """Get headers for the 10 classifier columns found in many CBM output
+    files.
+
+    Returns:
+        list: list of strings ["c1", "c2", ... "c10"]
+    """
     return [f"c{x}" for x in range(1, 11)]
 
 
@@ -44,8 +50,8 @@ def load_pool_indicators(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -80,8 +86,8 @@ def load_flux_indicators(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -125,8 +131,8 @@ def load_age_indicators(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -154,8 +160,8 @@ def load_dist_indicators(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -185,8 +191,8 @@ def load_svl_files(input_dir, output_dir, chunksize=None):
         input_dir (str): path to the CBMRun/input dir
         output_dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -205,8 +211,8 @@ def load_nir_output(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -236,8 +242,8 @@ def load_nodist(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -260,8 +266,8 @@ def load_distseries(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -285,8 +291,8 @@ def load_accdiagnostics(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -314,8 +320,8 @@ def load_predistage(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -349,8 +355,8 @@ def load_seed(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -377,8 +383,8 @@ def load_spatial_pools(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes
@@ -413,8 +419,8 @@ def load_spatial_flux(dir, chunksize=None):
     Args:
         dir (str): path to the CBMRun/output dir
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame, or object: returns an iterable of dataframes

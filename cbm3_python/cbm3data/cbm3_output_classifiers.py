@@ -17,8 +17,8 @@ def create_loaded_classifiers(tblClassifiers, tblClassifierSetValues,
         cbm_results_dir (str): directory containing CBM text results
             (the CBMRun/output dir)
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     Returns:
         pandas.DataFrame: A table of classifier value ids for each classifier

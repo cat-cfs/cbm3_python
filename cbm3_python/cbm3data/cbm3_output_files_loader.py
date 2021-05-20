@@ -339,8 +339,8 @@ def load_output_relational_tables(cbm_output_dir, project_db_path,
             loaded data chunk.  This function can be called more than one
             time per table_name if the load is split into multiple chunks.
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
         include_spatial (bool, optional): If set to true "tblPoolsSpatial",
             and "tblFluxSpatial" will be loaded if present, and they will
             otherwise be ignored. Defaults to False.
@@ -408,8 +408,8 @@ def load_output_descriptive_tables(cbm_output_dir, project_db_path,
             loaded data chunk.  This function can be called more than one
             time per table_name if the load is split into multiple chunks.
         chunksize (int, optional): If specified sets a maximum number of rows
-            to hold in memory at a given time while loading output. If
-            unspecified there is no limit. Defaults to None.
+            to hold in memory at a given time while loading output.
+            Defaults to None.
 
     """
     project_data = cbm3_output_descriptions.load_project_level_data(
