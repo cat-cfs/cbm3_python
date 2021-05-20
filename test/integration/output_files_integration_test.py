@@ -98,18 +98,21 @@ class OutputFilesIntegrationTests(unittest.TestCase):
                 out_func=create_out_func(relational_flux_indicators),
                 chunksize=12)
 
-            self.assertTrue(
-                np.allclose(
-                    descriptive_flux_indicators.df[
+            a = descriptive_flux_indicators.df[
                         cbm_results_db_flux_ind.columns
-                    ].groupby("TimeStep").sum().reset_index()
-                     .sort_values(by="TimeStep").to_numpy(),
-                    cbm_results_db_flux_ind.to_numpy()))
+                    ].groupby("TimeStep").sum().reset_index() \
+                .sort_values(by="TimeStep")
+            b = relational_flux_indicators.df[
+                cbm_results_db_flux_ind.columns
+            ].groupby("TimeStep").sum().reset_index() \
+             .sort_values(by="TimeStep").to_numpy()
 
             self.assertTrue(
                 np.allclose(
-                    relational_flux_indicators.df[
-                        cbm_results_db_flux_ind.columns
-                    ].groupby("TimeStep").sum().reset_index()
-                     .sort_values(by="TimeStep").to_numpy(),
-                    cbm_results_db_flux_ind.to_numpy()))
+                    a.to_numpy(dtype=float),
+                    cbm_results_db_flux_ind.to_numpy(dtype=float)))
+
+            self.assertTrue(
+                np.allclose(
+                    b.to_numpy(dtype=float),
+                    cbm_results_db_flux_ind.to_numpy(dtype=float)))
