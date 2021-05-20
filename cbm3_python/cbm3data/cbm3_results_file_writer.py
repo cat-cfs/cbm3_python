@@ -27,9 +27,7 @@ class CBM3ResultsFileWriter:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.excel_writer:
-            for item in self.disposals:
-                item.dispose()
+        pass
 
     def _def_get_file_path(self, name):
         if self.format == "csv":
