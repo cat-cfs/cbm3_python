@@ -99,13 +99,14 @@ class OutputFilesIntegrationTests(unittest.TestCase):
                 chunksize=12)
 
             a = descriptive_flux_indicators.df[
-                        cbm_results_db_flux_ind.columns
-                    ].groupby("TimeStep").sum().reset_index() \
-                .sort_values(by="TimeStep")
+                cbm_results_db_flux_ind.columns
+            ].groupby("TimeStep").sum().reset_index() \
+             .sort_values(by="TimeStep")
+
             b = relational_flux_indicators.df[
                 cbm_results_db_flux_ind.columns
             ].groupby("TimeStep").sum().reset_index() \
-             .sort_values(by="TimeStep").to_numpy()
+             .sort_values(by="TimeStep")
 
             self.assertTrue(
                 np.allclose(
