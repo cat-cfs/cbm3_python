@@ -21,7 +21,7 @@ sum(iif(tfi.DistTypeID=0,tfi.DeltaBiomass_AG+tfi.DeltaBiomass_BG,0))
     as [Net Growth],
 sum(iif(tfi.DistTypeID=0,tfi.DeltaDOM,0)) as [Net Litterfall],
 sum(iif(tfi.DistTypeID=0,tfi.BiomassToSoil,0)) as [Total Litterfall],
-sum(iif(tfi.DistTypeID=0, 
+sum(iif(tfi.DistTypeID=0,
     tfi.VFastAGToAir+tfi.VFastBGToAir+tfi.FastAGToAir+tfi.FastBGToAir+
     tfi.MediumToAir+tfi.SlowAGToAir+tfi.SlowBGToAir+tfi.SWStemSnagToAir+
     tfi.SWBranchSnagToAir+tfi.HWStemSnagToAir+tfi.HWBranchSnagToAir+
@@ -31,11 +31,11 @@ sum(tfi.GrossGrowth_AG+tfi.GrossGrowth_BG
     as [NetCO2emissions_removals_CO2e],
 sum(tfi.COProduction*44/12) AS [SumofCOProduction_CO2e],
 sum(tfi.CH4Production*16/12) AS [SumofCH4Production_CO2e],
-sum(iif(tfi.CH4production<>0 and tfi.DistTypeID<>0, 
+sum(iif(tfi.CH4production<>0 and tfi.DistTypeID<>0,
     tfi.CO2production*44/12*0.00017*310, 0)) AS [N2O_CO2e],
 sum((tfi.SoftProduction+tfi.HardProduction+tfi.DOMProduction)*44/12)
     as [ToFps_CO2e],
-sum(tfi.SoftProduction+tfi.HardProduction+tfi.DOMProduction) 
+sum(tfi.SoftProduction+tfi.HardProduction+tfi.DOMProduction)
     as [Total Harvest (Biomass + Snags)],
 sum(tfi.SoftProduction+tfi.HardProduction) as [Total Harvest (Biomass)],
 sum(tfi.DOMProduction) as [Total Harvest (Snags)],
