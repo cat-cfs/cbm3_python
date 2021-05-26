@@ -1,7 +1,7 @@
 import pandas as pd
 
 from cbm3_python.cbm3data import results_queries
-
+from cbm3_python.cbm3data.results_queries import stock_changes_view
 
 def _load_df(sql, results_db):
     from cbm3_python.cbm3data import accessdb
@@ -47,21 +47,10 @@ def load_stock_changes(results_db,
                        classifier_set_grouping=False,
                        land_class_grouping=False,
                        rollup_format=False):
-    sql = results_queries.get_stock_changes_view(
-        disturbance_type_grouping, spatial_unit_grouping,
-        classifier_set_grouping, land_class_grouping)
-    df = _load_df(sql, results_db)
-    if classifier_set_grouping:
-        df = _join_classifiers(df, get_classifier_values(results_db))
-    if spatial_unit_grouping:
-        df = _join_spatial_units(df, _load_df(
-            results_queries.get_spatial_units_view(rollup_format),
-            results_db))
-    if disturbance_type_grouping:
-        df = _join_disturbance_types(df, _load_df(
-            results_queries.get_disturbance_types_view(rollup_format),
-            results_db))
-    return df
+    flux_ind_df = load_flux_indicators(
+        results_db, disturbance_type_grouping, spatial_unit_grouping,
+        classifier_set_grouping, land_class_grouping, rollup_format)
+    return stock_changes_view.get_stock_changes_view(flux_ind_df)
 
 
 def load_flux_indicators(results_db,
