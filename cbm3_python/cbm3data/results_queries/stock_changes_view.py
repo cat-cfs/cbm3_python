@@ -1,9 +1,8 @@
-import pandas as pd
 import numpy as np
 
 
 def get_stock_changes_view(tfi):
-    df = pd.DataFrame(index=tfi.index)
+    df = tfi[:, 0:tfi.get_loc("CO2Production")].copy()
 
     df["Delta Total Ecosystem"] = \
         tfi.GrossGrowth_AG + tfi.GrossGrowth_BG - \
