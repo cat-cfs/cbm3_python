@@ -3,6 +3,7 @@ import pandas as pd
 from cbm3_python.cbm3data import results_queries
 from cbm3_python.cbm3data.results_queries import stock_changes_view
 
+
 def _load_df(sql, results_db):
     from cbm3_python.cbm3data import accessdb
     if isinstance(results_db, str):
@@ -11,7 +12,7 @@ def _load_df(sql, results_db):
         return pd.read_sql(sql, results_db)
 
 
-def get_classifier_values(results_db):
+def _get_classifier_values(results_db):
     '''
     loads the classifier values in the specified results database into an
     indexed collection to serve for labels, grouping and filtering CBM results
@@ -29,11 +30,29 @@ def load_pool_indicators(results_db,
                          classifier_set_grouping=False,
                          land_class_grouping=False,
                          rollup_format=False):
+    """Load pool indicators from a cbm3 results database
+
+    Args:
+        results_db (str, connection, or sqlalchemy.Connectable): path to a
+            CBM3 MS access database if a string is specified. Otherwise a
+            connection to a database with CBM3 results schema.
+        spatial_unit_grouping (bool, optional): If set to True the result will
+            be returned with spatial unit stratification. Defaults to False.
+        classifier_set_grouping (bool, optional): If set to True the result will
+            be returned with classifier set stratification. Defaults to False.
+        land_class_grouping (bool, optional): If set to True the result will
+            be returned with land class stratification. Defaults to False.
+        rollup_format (bool, optional): If set to true query the database in
+            the rollup CBM3 format variant. Defaults to False.
+
+    Returns:
+        pandas.DataFrame: dataframe containing the results
+    """
     sql = results_queries.get_pool_indicators_view_sql(
         spatial_unit_grouping, classifier_set_grouping, land_class_grouping)
     df = _load_df(sql, results_db)
     if classifier_set_grouping:
-        df = _join_classifiers(df, get_classifier_values(results_db))
+        df = _join_classifiers(df, _get_classifier_values(results_db))
     if spatial_unit_grouping:
         df = _join_spatial_units(df, _load_df(
             results_queries.get_spatial_units_view(rollup_format),
@@ -47,6 +66,26 @@ def load_stock_changes(results_db,
                        classifier_set_grouping=False,
                        land_class_grouping=False,
                        rollup_format=False):
+    """Load stock changes from a cbm3 results database
+
+    Args:
+        results_db (str, connection, or sqlalchemy.Connectable): path to a
+            CBM3 MS access database if a string is specified. Otherwise a
+            connection to a database with CBM3 results schema.
+        disturbance_type_grouping (bool, optional):  If set to True the result will
+            be returned with disturbance type stratification. Defaults to False.
+        spatial_unit_grouping (bool, optional): If set to True the result will
+            be returned with spatial unit stratification. Defaults to False.
+        classifier_set_grouping (bool, optional): If set to True the result will
+            be returned with classifier set stratification. Defaults to False.
+        land_class_grouping (bool, optional): If set to True the result will
+            be returned with land class stratification. Defaults to False.
+        rollup_format (bool, optional): If set to true query the database in
+            the rollup CBM3 format variant. Defaults to False.
+
+    Returns:
+        pandas.DataFrame: dataframe containing the results
+    """
     flux_ind_df = load_flux_indicators(
         results_db, disturbance_type_grouping, spatial_unit_grouping,
         classifier_set_grouping, land_class_grouping, rollup_format)
@@ -59,12 +98,32 @@ def load_flux_indicators(results_db,
                          classifier_set_grouping=False,
                          land_class_grouping=False,
                          rollup_format=False):
+    """Load flux indicators from a cbm3 results database
+
+    Args:
+        results_db (str, connection, or sqlalchemy.Connectable): path to a
+            CBM3 MS access database if a string is specified. Otherwise a
+            connection to a database with CBM3 results schema.
+        disturbance_type_grouping (bool, optional):  If set to True the result will
+            be returned with disturbance type stratification. Defaults to False.
+        spatial_unit_grouping (bool, optional): If set to True the result will
+            be returned with spatial unit stratification. Defaults to False.
+        classifier_set_grouping (bool, optional): If set to True the result will
+            be returned with classifier set stratification. Defaults to False.
+        land_class_grouping (bool, optional): If set to True the result will
+            be returned with land class stratification. Defaults to False.
+        rollup_format (bool, optional): If set to true query the database in
+            the rollup CBM3 format variant. Defaults to False.
+
+    Returns:
+        pandas.DataFrame: dataframe containing the results
+    """
     sql = results_queries.get_flux_indicators_view(
         disturbance_type_grouping, spatial_unit_grouping,
         classifier_set_grouping, land_class_grouping)
     df = _load_df(sql, results_db)
     if classifier_set_grouping:
-        df = _join_classifiers(df, get_classifier_values(results_db))
+        df = _join_classifiers(df, _get_classifier_values(results_db))
     if spatial_unit_grouping:
         df = _join_spatial_units(df, _load_df(
             results_queries.get_spatial_units_view(rollup_format),
@@ -81,12 +140,30 @@ def load_age_indicators(results_db,
                         classifier_set_grouping=False,
                         land_class_grouping=False,
                         rollup_format=False):
+    """Load age indicators from a cbm3 results database
+
+    Args:
+        results_db (str, connection, or sqlalchemy.Connectable): path to a
+            CBM3 MS access database if a string is specified. Otherwise a
+            connection to a database with CBM3 results schema.
+        spatial_unit_grouping (bool, optional): If set to True the result will
+            be returned with spatial unit stratification. Defaults to False.
+        classifier_set_grouping (bool, optional): If set to True the result will
+            be returned with classifier set stratification. Defaults to False.
+        land_class_grouping (bool, optional): If set to True the result will
+            be returned with land class stratification. Defaults to False.
+        rollup_format (bool, optional): If set to true query the database in
+            the rollup CBM3 format variant. Defaults to False.
+
+    Returns:
+        pandas.DataFrame: dataframe containing the results
+    """
     sql = results_queries.get_age_indicators_view_sql(
         spatial_unit_grouping, classifier_set_grouping,
         land_class_grouping)
     df = _load_df(sql, results_db)
     if classifier_set_grouping:
-        df = _join_classifiers(df, get_classifier_values(results_db))
+        df = _join_classifiers(df, _get_classifier_values(results_db))
     if spatial_unit_grouping:
         df = _join_spatial_units(df, _load_df(
             results_queries.get_spatial_units_view(rollup_format),
@@ -100,12 +177,32 @@ def load_disturbance_indicators(results_db,
                                 classifier_set_grouping=False,
                                 land_class_grouping=False,
                                 rollup_format=False):
+    """Load disturbance indicators from a cbm3 results database
+
+    Args:
+        results_db (str, connection, or sqlalchemy.Connectable): path to a
+            CBM3 MS access database if a string is specified. Otherwise a
+            connection to a database with CBM3 results schema.
+        disturbance_type_grouping (bool, optional):  If set to True the result will
+            be returned with disturbance type stratification. Defaults to False.
+        spatial_unit_grouping (bool, optional): If set to True the result will
+            be returned with spatial unit stratification. Defaults to False.
+        classifier_set_grouping (bool, optional): If set to True the result will
+            be returned with classifier set stratification. Defaults to False.
+        land_class_grouping (bool, optional): If set to True the result will
+            be returned with land class stratification. Defaults to False.
+        rollup_format (bool, optional): If set to true query the database in
+            the rollup CBM3 format variant. Defaults to False.
+
+    Returns:
+        pandas.DataFrame: dataframe containing the results
+    """
     sql = results_queries.get_disturbance_indicators_view_sql(
         disturbance_type_grouping, spatial_unit_grouping,
         classifier_set_grouping, land_class_grouping)
     df = _load_df(sql, results_db)
     if classifier_set_grouping:
-        df = _join_classifiers(df, get_classifier_values(results_db))
+        df = _join_classifiers(df, _get_classifier_values(results_db))
     if spatial_unit_grouping:
         df = _join_spatial_units(df, _load_df(
             results_queries.get_spatial_units_view(rollup_format),
