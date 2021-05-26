@@ -82,16 +82,6 @@ def get_formatted_query(path, table_name,
     return sql
 
 
-def get_stock_changes_view(disturbance_type_grouping=False,
-                           spatial_unit_grouping=False,
-                           classifier_set_grouping=False,
-                           land_class_grouping=False):
-    return get_formatted_query(
-        get_local_path("stock_changes_view.sql"), "tfi",
-        disturbance_type_grouping, spatial_unit_grouping,
-        classifier_set_grouping, land_class_grouping)
-
-
 def get_flux_indicators_view(disturbance_type_grouping=False,
                              spatial_unit_grouping=False,
                              classifier_set_grouping=False,
