@@ -54,6 +54,9 @@ class Simulator(object):
         if self.stdout_path is None:
             subprocess.check_call(cmd)
         else:
+            # make a dir for stdout if it's not already present
+            if not os.path.exists(os.path.dirname(self.stdout_path)):
+                os.makedirs(os.path.dirname(self.stdout_path))
             with open(self.stdout_path, "a") as handle:
                 subprocess.check_call(cmd, stdout=handle, stderr=handle)
 
