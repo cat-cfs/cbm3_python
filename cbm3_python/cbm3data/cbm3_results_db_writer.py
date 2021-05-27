@@ -32,7 +32,7 @@ class CBMResultsDBWriter:
         self._connection = None
 
     def __enter__(self):
-        self.connection = self._engine.connect()
+        self._connection = self._engine.connect()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
