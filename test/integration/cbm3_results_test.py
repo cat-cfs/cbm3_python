@@ -22,14 +22,41 @@ class CBMResultsIntegrationTests(unittest.TestCase):
                 project_db_path=sim.project_path,
                 aidb_path=sim.aidb_path)
 
-            cbm_results_db_flux_ind = cbm3_results.load_flux_indicators(
+            flux_ind = cbm3_results.load_flux_indicators(
                 sim.results_path, True, True, True, True, False)
+            stock_changes = cbm3_results.load_stock_changes(
+                sim.results_path, True, True, True, True, False)
+            pool_ind = cbm3_results.load_pool_indicators(
+                sim.results_path, True, True, True, False)
+            age_ind = cbm3_results.load_age_indicators(
+                sim.results_path, True, True, True, False)
+            dist_ind = cbm3_results.load_disturbance_indicators(
+                sim.results_path, True, True, True, False)
             with sqlite3.connect(output_sqlite) as sqlite_con:
-                cbm_results_db_flux_ind_sqlite = \
+                flux_ind_sqlite = \
                     cbm3_results.load_flux_indicators(
                         sqlite_con, True, True, True, True, False)
+                stock_changes_sqlite = cbm3_results.load_stock_changes(
+                    sim.results_path, True, True, True, True, False)
+                pool_ind_sqlite = \
+                    cbm3_results.load_pool_indicators(
+                        sqlite_con, True, True, True, False)
+                age_ind_sqlite = \
+                    cbm3_results.load_age_indicators(
+                        sqlite_con, True, True, True, False)
+                dist_ind_sqlite = cbm3_results.load_disturbance_indicators(
+                    sim.results_path, True, True, True, False)
+
             sqlite_con.close()
-            cols_equal = \
-                list(cbm_results_db_flux_ind.columns) == \
-                list(cbm_results_db_flux_ind_sqlite.columns)
-            self.assertTrue(cols_equal)
+
+            self.assertTrue(
+                list(flux_ind.columns) == list(flux_ind_sqlite.columns))
+            self.assertTrue(
+                list(stock_changes.columns) ==
+                list(stock_changes_sqlite.columns))
+            self.assertTrue(
+                list(pool_ind.columns) == list(pool_ind_sqlite.columns))
+            self.assertTrue(
+                list(age_ind.columns) == list(age_ind_sqlite.columns))
+            self.assertTrue(
+                list(dist_ind.columns) == list(dist_ind_sqlite.columns))
