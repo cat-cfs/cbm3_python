@@ -1,5 +1,4 @@
 import os
-import json
 import shutil
 import traceback
 from concurrent.futures import ProcessPoolExecutor
@@ -81,11 +80,11 @@ class ConcurrentRunner:
         Returns:
             dict: the input run_args
         """
-        
+
         try:
             output = {"Exception": None}
             output.update(self._run_func(run_args))
-            return output        
+            return output
         except:
             output = {"Exception": traceback.format_exc()}
             output.update(run_args)
@@ -106,14 +105,14 @@ class ConcurrentRunner:
                 py:class:`concurrent.futures.ProcessPoolExecutor
                 Defaults to None.
             raise_exceptions (bool, optional): If set to true information on
-                any exceptions encountered in the list of run args will be 
+                any exceptions encountered in the list of run args will be
                 raised in a RuntimeError.  If false, no exception will be
-                raised, but the same error information is returned in the 
+                raised, but the same error information is returned in the
                 resulting task dictionaries in the "Exception" entry. Defaults
                 to True.
 
         Raises:
-            RuntimeError: raised if "raise_exceptions" is set to true, and at 
+            RuntimeError: raised if "raise_exceptions" is set to true, and at
                 least one of the simulations specified in run_args encountered
                 an exception.
         Yields:
@@ -129,10 +128,12 @@ class ConcurrentRunner:
                 yield item
 
         if exceptions:
-            message = os.linesep.join([
-                   os.linesep.join([
+            message = os.linesep.join(
+                [
+                    os.linesep.join([
                        "",
                        f"Project path: {x['project_path']}",
                        f"Exception: {x['Exception']}"])
-               for x in exceptions])
+                    for x in exceptions
+                ])
             raise RuntimeError(message)
