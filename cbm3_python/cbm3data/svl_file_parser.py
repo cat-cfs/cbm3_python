@@ -169,4 +169,4 @@ def parse_all(input_dir, output_dir, chunksize=None):
         chunks = _parse_all_chunked(input_dir, output_dir, None)
         df1 = next(chunks)
         df2 = next(chunks)
-        yield df1.append(df2)
+        yield df1.append(df2).reset_index(drop=True)
