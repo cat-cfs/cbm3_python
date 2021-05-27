@@ -3,17 +3,13 @@
 
 import pandas as pd
 import pyodbc
-import logging
+from cbm3_python.util import loghelper
 import os
 from pyodbc import ProgrammingError
 try:
     from collections.abc import Iterable
 except ImportError:
     from collections import Iterable
-
-# Scott - Nov 2013
-# wrapper for ms access object allowing queries
-# and some other basic operations
 
 
 def as_data_frame(query, access_db_path):
@@ -82,13 +78,13 @@ class AccessDB(object):
 
     def ExecuteQuery(self, query, params=None):
         if self.log_enabled:
-            logging.info("{0}\n{1}".format(self.path, query))
+            loghelper.get_logger().info("{0}\n{1}".format(self.path, query))
         cursor = self.connection.cursor()
         try:
             params = self._floatifyIntParams(params)
             cursor.execute(query, params) if params else cursor.execute(query)
         except ProgrammingError:
-            logging.info("{0}".format(query))
+            loghelper.get_logger().info("{0}".format(query))
             raise
         cursor.commit()
 
@@ -100,7 +96,7 @@ class AccessDB(object):
             params = [self._floatifyIntParams(p) for p in params]
             cursor.executemany(query, params)
         except ProgrammingError:
-            logging.info("{}".format(query))
+            loghelper.get_logger().info("{}".format(query))
             raise
         cursor.commit()
 
@@ -118,7 +114,7 @@ class AccessDB(object):
 
     def Query(self, query, params=None):
         if self.log_enabled:
-            logging.info("{0}\n{1}".format(self.path, query))
+            loghelper.get_logger().info("{0}\n{1}".format(self.path, query))
         cursor = self.connection.cursor()
         params = self._floatifyIntParams(params)
         cursor.execute(query, params) if params else cursor.execute(query)

@@ -1,5 +1,5 @@
 import argparse
-import logging
+from cbm3_python.util import loghelper
 from cbm3_python.cbm3data import sit_helper
 from cbm3_python import toolbox_defaults
 
@@ -45,7 +45,7 @@ def main():
             archive_index_db_path=aidb_path,
             working_dir=args.working_dir)
     except Exception:
-        logging.exception("")
+        loghelper.get_logger().exception("")
 
 
 if __name__ == '__main__':

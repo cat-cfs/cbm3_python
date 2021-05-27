@@ -5,7 +5,6 @@ import os
 import json
 import argparse
 import datetime
-import logging
 import cbm3_python.simulation.projectsimulator as projectsimulator
 from cbm3_python import toolbox_defaults
 from cbm3_python.util import loghelper
@@ -153,11 +152,11 @@ def main():
             dist_classes_path=dist_classes_path,
             dist_rules_path=dist_rules_path,
             loader_settings=loader_settings)
-        logging.info("simulation finish, results path: {0}"
-                     .format(results_path))
+        loghelper.get_logger().info(
+            f"simulation finish, results path: {results_path}")
 
     except Exception:
-        logging.exception("")
+        loghelper.get_logger().exception("")
 
 
 if __name__ == '__main__':

@@ -2,14 +2,15 @@
 #  as represented by the Minister of Natural Resources Canada
 
 import csv
-import logging
+from cbm3_python.util import loghelper
+
 
 class CreateAccountingRules(object):
 
     def __init__(self, projectAccessDb, dist_classes_path, dist_rules_path):
         self.projectAccessDb = projectAccessDb
         self.dist_classes_path = dist_classes_path
-        self.dist_rules_path =  dist_rules_path
+        self.dist_rules_path = dist_rules_path
 
     def createAccountingRulesTables(self):
         table_defs = [
@@ -173,7 +174,7 @@ class CreateAccountingRules(object):
 
     def create_accounting_rules(self):
         self.createAccountingRulesTables()
-        logging.info("  Creating kf5 accounting rules")
+        loghelper.get_logger().info("  Creating kf5 accounting rules")
 
         self.projectAccessDb.ExecuteMany(
             "INSERT INTO tblaccountingruletype (name) VALUES (?)",
