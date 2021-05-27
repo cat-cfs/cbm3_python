@@ -2,7 +2,7 @@ import numpy as np
 
 
 def get_stock_changes_view(tfi):
-    df = tfi[:, 0:tfi.get_loc("CO2Production")].copy()
+    df = tfi.iloc[:, 0:tfi.columns.get_loc("CO2Production")].copy()
 
     df["Delta Total Ecosystem"] = \
         tfi.GrossGrowth_AG + tfi.GrossGrowth_BG - \
@@ -50,8 +50,8 @@ def get_stock_changes_view(tfi):
     df["SumofCOProduction_CO2e"] = tfi.COProduction * 44 / 12
     df["SumofCH4Production_CO2e"] = tfi.CH4Production * 16 / 12
     df["N2O_CO2e"] = np.where(
-        (tfi.CH4production != 0.0) & (tfi.DistTypeID != 0),
-        tfi.CO2production * 44 / 12 * 0.00017 * 310, 0.0)
+        (tfi.CH4Production != 0.0) & (tfi.DistTypeID != 0),
+        tfi.CO2Production * 44 / 12 * 0.00017 * 310, 0.0)
     df["ToFps_CO2e"] = (
         tfi.SoftProduction + tfi.HardProduction + tfi.DOMProduction) * 44 / 12
     df["Total Harvest (Biomass + Snags)"] = \
