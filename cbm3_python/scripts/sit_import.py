@@ -1,10 +1,11 @@
 import argparse
+import sys
 from cbm3_python.util import loghelper
 from cbm3_python.cbm3data import sit_helper
 from cbm3_python import toolbox_defaults
 
 
-def main():
+def main(args):
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument(
@@ -32,7 +33,7 @@ def main():
                  "created during the sit process.  If not specified a sub "
                  "directory in the specified 'sit_data_dir' is used.")
 
-        args = parser.parse_args()
+        args = parser.parse_args(args)
 
         aidb_path = args.aidb_path
         if not aidb_path:
@@ -49,4 +50,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
