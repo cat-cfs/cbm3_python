@@ -38,8 +38,9 @@ def load_pool_indicators(results_db,
             connection to a database with CBM3 results schema.
         spatial_unit_grouping (bool, optional): If set to True the result will
             be returned with spatial unit stratification. Defaults to False.
-        classifier_set_grouping (bool, optional): If set to True the result will
-            be returned with classifier set stratification. Defaults to False.
+        classifier_set_grouping (bool, optional): If set to True the result
+            will be returned with classifier set stratification. Defaults to
+            False.
         land_class_grouping (bool, optional): If set to True the result will
             be returned with land class stratification. Defaults to False.
         rollup_format (bool, optional): If set to true query the database in
@@ -72,12 +73,14 @@ def load_stock_changes(results_db,
         results_db (str, connection, or sqlalchemy.Connectable): path to a
             CBM3 MS access database if a string is specified. Otherwise a
             connection to a database with CBM3 results schema.
-        disturbance_type_grouping (bool, optional):  If set to True the result will
-            be returned with disturbance type stratification. Defaults to False.
+        disturbance_type_grouping (bool, optional):  If set to True the result
+            will be returned with disturbance type stratification. Defaults to
+            False.
         spatial_unit_grouping (bool, optional): If set to True the result will
             be returned with spatial unit stratification. Defaults to False.
-        classifier_set_grouping (bool, optional): If set to True the result will
-            be returned with classifier set stratification. Defaults to False.
+        classifier_set_grouping (bool, optional): If set to True the result
+            will be returned with classifier set stratification. Defaults to
+            False.
         land_class_grouping (bool, optional): If set to True the result will
             be returned with land class stratification. Defaults to False.
         rollup_format (bool, optional): If set to true query the database in
@@ -104,12 +107,14 @@ def load_flux_indicators(results_db,
         results_db (str, connection, or sqlalchemy.Connectable): path to a
             CBM3 MS access database if a string is specified. Otherwise a
             connection to a database with CBM3 results schema.
-        disturbance_type_grouping (bool, optional):  If set to True the result will
-            be returned with disturbance type stratification. Defaults to False.
+        disturbance_type_grouping (bool, optional):  If set to True the result
+            will be returned with disturbance type stratification. Defaults to
+            False.
         spatial_unit_grouping (bool, optional): If set to True the result will
             be returned with spatial unit stratification. Defaults to False.
-        classifier_set_grouping (bool, optional): If set to True the result will
-            be returned with classifier set stratification. Defaults to False.
+        classifier_set_grouping (bool, optional): If set to True the result
+            will be returned with classifier set stratification. Defaults to
+            False.
         land_class_grouping (bool, optional): If set to True the result will
             be returned with land class stratification. Defaults to False.
         rollup_format (bool, optional): If set to true query the database in
@@ -148,8 +153,9 @@ def load_age_indicators(results_db,
             connection to a database with CBM3 results schema.
         spatial_unit_grouping (bool, optional): If set to True the result will
             be returned with spatial unit stratification. Defaults to False.
-        classifier_set_grouping (bool, optional): If set to True the result will
-            be returned with classifier set stratification. Defaults to False.
+        classifier_set_grouping (bool, optional): If set to True the result
+            will be returned with classifier set stratification. Defaults to
+            False.
         land_class_grouping (bool, optional): If set to True the result will
             be returned with land class stratification. Defaults to False.
         rollup_format (bool, optional): If set to true query the database in
@@ -183,12 +189,14 @@ def load_disturbance_indicators(results_db,
         results_db (str, connection, or sqlalchemy.Connectable): path to a
             CBM3 MS access database if a string is specified. Otherwise a
             connection to a database with CBM3 results schema.
-        disturbance_type_grouping (bool, optional):  If set to True the result will
-            be returned with disturbance type stratification. Defaults to False.
+        disturbance_type_grouping (bool, optional):  If set to True the result
+            will be returned with disturbance type stratification. Defaults to
+            False.
         spatial_unit_grouping (bool, optional): If set to True the result will
             be returned with spatial unit stratification. Defaults to False.
-        classifier_set_grouping (bool, optional): If set to True the result will
-            be returned with classifier set stratification. Defaults to False.
+        classifier_set_grouping (bool, optional): If set to True the result
+            will be returned with classifier set stratification. Defaults to
+            False.
         land_class_grouping (bool, optional): If set to True the result will
             be returned with land class stratification. Defaults to False.
         rollup_format (bool, optional): If set to true query the database in
