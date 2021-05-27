@@ -70,7 +70,9 @@ class ConcurrentRunner:
         Args:
             run_args (dict): arguments to
                 :py:func:`cbm3_python.simulation.projectsimulator.run`
-                in dictionary form.
+                in dictionary form.  An optional additional value with
+                key "log_path" can be specified in the dictionary into
+                which each concurrent simulation will log.
 
         Raises:
             ValueError: raised if particular required arguments have been
@@ -80,7 +82,6 @@ class ConcurrentRunner:
 
                     * aidb_path
                     * cbm_exe_path
-                    * results_database_path
 
         Returns:
             dict: the input run_args
