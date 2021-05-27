@@ -22,22 +22,23 @@ class CBMResultsDBWriter:
                 The integer value is used to set the upper limit on batch
                 size. Defaults to None.
         """
-        self.engine = \
+        self._engine = \
             create_engine(url, **create_engine_kwargs) \
             if create_engine_kwargs else create_engine(url)
-        self.constraint_defs = constraint_defs
-        self.variable_limit = multi_update_variable_limit
-        self.meta = MetaData()
-        self.created_tables = {}
-        self.connection = None
+        self._constraint_defs = constraint_defs
+        self._variable_limit = multi_update_variable_limit
+        self._meta = MetaData()
+        self._created_tables = {}
+        self._connection = None
 
     def __enter__(self):
-        self.connection = self.engine.connect()
+        self.connection = self._engine.connect()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self.connection:
-            self.connection.close()
+        if self._connection:
+            self._connection.close()
+        self._engine.dispose()
 
     def write(self, table_name, df):
         """Write the specified data using the sqlalchemy engine.
@@ -53,23 +54,23 @@ class CBMResultsDBWriter:
             table_name (str): the table name
             df (pandas.DataFrame): a pandas data frame to insert to the table.
         """
-        if table_name not in self.created_tables:
+        if table_name not in self._created_tables:
             # create the table defintion
             table = Table(
-                table_name, self.meta,
+                table_name, self._meta,
                 *cbm3_results_db_schema.create_column_definitions(
-                    table_name, df, self.constraint_defs))
-            table.create(self.engine)
-            self.created_tables[table_name] = table
+                    table_name, df, self._constraint_defs))
+            table.create(self._engine)
+            self._created_tables[table_name] = table
         # insert the values in df
-        table = self.created_tables[table_name]
+        table = self._created_tables[table_name]
         to_sql_kwargs = dict(
             name=table_name,
-            con=self.engine,
+            con=self._engine,
             if_exists="append",
             index=False)
-        if self.variable_limit:
-            max_rows = self.variable_limit // len(df.columns)
+        if self._variable_limit:
+            max_rows = self._variable_limit // len(df.columns)
             to_sql_kwargs.update(
                 dict(method="multi", chunksize=max_rows))
         df.to_sql(**to_sql_kwargs)
