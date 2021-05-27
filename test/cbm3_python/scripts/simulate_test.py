@@ -9,7 +9,8 @@ from cbm3_python.scripts import simulate
 class SimulateTest(unittest.TestCase):
 
     @patch("cbm3_python.scripts.simulate.projectsimulator")
-    def test_keyword_args_defaults(self, projectsimulator):
+    @patch("cbm3_python.scripts.simulate.loghelper")
+    def test_keyword_args_defaults(self, loghelper, projectsimulator):
         simulate.main(["my_project.mdb"])
         projectsimulator.run.assert_called_with(
             project_path=os.path.abspath("my_project.mdb"),
@@ -29,7 +30,8 @@ class SimulateTest(unittest.TestCase):
             loader_settings=None)
 
     @patch("cbm3_python.scripts.simulate.projectsimulator")
-    def test_keyword_args(self, projectsimulator):
+    @patch("cbm3_python.scripts.simulate.loghelper")
+    def test_keyword_args(self, loghelper, projectsimulator):
         call_args = ["my_project.mdb"]
         call_kwargs = dict(
             project_simulation_id=2,
