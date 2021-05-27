@@ -217,6 +217,11 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
             if tempfiles_output_dir:
                 s.CopyTempFiles(output_dir=tempfiles_output_dir)
             if loader_settings is None:
+                if results_database_path:
+                    results_database_dir = os.path.dirname(
+                        results_database_path)
+                if not os.path.exists(results_database_dir):
+                    os.makedirs(results_database_dir)
                 s.LoadCBMResults(output_path=results_database_path)
             elif loader_settings == {} or loader_settings["type"] is None:
                 return None
