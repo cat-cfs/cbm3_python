@@ -32,7 +32,7 @@ class CBMOutputLoaderTest(unittest.TestCase):
             cbm3_output_loader.load(
                 loader_config={
                     "type": "db", "url": f"sqlite:///{output_sqlite2}",
-                    "chunksize": 50},
+                    "chunksize": 5},
                 cbm_output_dir=os.path.join(
                     sim.tempfiles_dir, "CBMRun", "output"),
                 project_db_path=sim.project_path,
@@ -48,30 +48,30 @@ class CBMOutputLoaderTest(unittest.TestCase):
     def test_load_methods_files(self):
         with import_run_helper.simulate() as sim:
 
-            #hdf1_path = os.path.join(sim.tempdir, "hdf1")
-            #hdf2_path = os.path.join(sim.tempdir, "hdf2")
+            hdf1_path = os.path.join(sim.tempdir, "hdf1")
+            hdf2_path = os.path.join(sim.tempdir, "hdf2")
 
-            #cbm3_output_loader.load(
-            #    loader_config={
-            #        "type": "hdf", "output_path": hdf1_path,
-            #        "chunksize": None},
-            #    cbm_output_dir=os.path.join(
-            #        sim.tempfiles_dir, "CBMRun", "output"),
-            #    project_db_path=sim.project_path,
-            #    aidb_path=sim.aidb_path)
+            cbm3_output_loader.load(
+                loader_config={
+                    "type": "hdf", "output_path": hdf1_path,
+                    "chunksize": None},
+                cbm_output_dir=os.path.join(
+                    sim.tempfiles_dir, "CBMRun", "output"),
+                project_db_path=sim.project_path,
+                aidb_path=sim.aidb_path)
 
-            #cbm3_output_loader.load(
-            #    loader_config={
-            #        "type": "hdf", "output_path": hdf2_path,
-            #        "chunksize": 64},
-            #    cbm_output_dir=os.path.join(
-            #        sim.tempfiles_dir, "CBMRun", "output"),
-            #    project_db_path=sim.project_path,
-            #    aidb_path=sim.aidb_path)
+            cbm3_output_loader.load(
+                loader_config={
+                    "type": "hdf", "output_path": hdf2_path,
+                    "chunksize": 64},
+                cbm_output_dir=os.path.join(
+                    sim.tempfiles_dir, "CBMRun", "output"),
+                project_db_path=sim.project_path,
+                aidb_path=sim.aidb_path)
 
-            #hdf1_result = pd.read_hdf(hdf1_path, "tblFluxIndicators")
-            #hdf2_result = pd.read_hdf(hdf2_path, "tblFluxIndicators")
-            #self.assertTrue(hdf1_result.equals(hdf2_result))
+            hdf1_result = pd.read_hdf(hdf1_path, "tblFluxIndicators")
+            hdf2_result = pd.read_hdf(hdf2_path, "tblFluxIndicators")
+            self.assertTrue(hdf1_result.equals(hdf2_result))
 
             csv1_path = os.path.join(sim.tempdir, "csv1")
             csv2_path = os.path.join(sim.tempdir, "csv2")
@@ -88,7 +88,7 @@ class CBMOutputLoaderTest(unittest.TestCase):
             cbm3_output_loader.load(
                 loader_config={
                     "type": "csv", "output_path": csv2_path,
-                    "chunksize": 33},
+                    "chunksize": 13},
                 cbm_output_dir=os.path.join(
                     sim.tempfiles_dir, "CBMRun", "output"),
                 project_db_path=sim.project_path,
@@ -98,8 +98,4 @@ class CBMOutputLoaderTest(unittest.TestCase):
                 os.path.join(csv1_path, "tblFluxIndicators.csv"))
             csv2_result = pd.read_csv(
                 os.path.join(csv2_path, "tblFluxIndicators.csv"))
-            self.assertTrue(
-                csv1_result.sort_values(
-                    by=list(csv1_result.columns), ignore_index=True).equals(
-                    csv2_result.sort_values(
-                        by=list(csv2_result.columns), ignore_index=True)))
+            self.assertTrue(csv1_result.equals(csv2_result))
