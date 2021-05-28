@@ -301,10 +301,10 @@ def load_accdiagnostics(dir, chunksize=None):
     filename = "accdiagnostics.txt"
     col_def = _build_col_def(
         dict(column_names=["id"], column_type="int64"),
-        dict(column_names=["rule_type"], column_type="string"),
+        dict(column_names=["rule_type"], column_type="object"),
         dict(column_names=["target", "target_value"], column_type="float64"),
         dict(column_names=["TimeStep"], column_type="int64"),
-        dict(column_names=["action"], column_type="string"),
+        dict(column_names=["action"], column_type="object"),
         dict(column_names=["DistTypeID"], column_type="int64"),
         dict(column_names=["area"], column_type="float64"),
         dict(column_names=["age"], column_type="int64")
