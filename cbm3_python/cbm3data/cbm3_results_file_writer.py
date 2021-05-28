@@ -1,4 +1,6 @@
 import os
+import pandas as pd
+
 
 FORMATS = [
     "csv", "hdf"
@@ -27,6 +29,7 @@ class CBM3ResultsFileWriter:
                 f"format must be one of: {FORMATS}")
 
         self.format = format
+        out_path = os.path.abspath(out_path)
         if format == "csv":
             self.out_dir = out_path
         else:
@@ -36,6 +39,10 @@ class CBM3ResultsFileWriter:
             os.makedirs(self.out_dir)
         self.created_files = set()
         self.writer_kwargs = writer_kwargs
+        # workaround for the lack of support for index control in pandas
+        # append to hdf
+        # https://github.com/pandas-dev/pandas/issues/7363
+        self._hdf_table_index_offset = {}
 
     def __enter__(self):
         return self
@@ -77,7 +84,14 @@ class CBM3ResultsFileWriter:
                 kwargs.update(self.writer_kwargs)
             df.to_csv(*args, **kwargs)
         elif self.format == "hdf":
+            row_offset = 0
+            if table_name in self._hdf_table_index_offset:
+                row_offset = self._hdf_table_index_offset[table_name]
+                self._hdf_table_index_offset[table_name] += len(df.index)
+            else:
+                self._hdf_table_index_offset[table_name] = len(df.index)
             kwargs = dict(key=table_name, mode="a", format='t', append=True)
             if self.writer_kwargs:
                 kwargs.update(self.writer_kwargs)
+            df.index = pd.Series(df.index) + row_offset
             df.to_hdf(*args, **kwargs)
