@@ -88,26 +88,26 @@ def _typed_dataframe(col_def, data):
 
 def parse_svl_files(dir, chunksize=None):
     col_def = _build_col_def(
-        dict(column_names=["SPUID"], column_type="Int64"),
-        dict(column_names=["Area"], column_type="Float64"),
+        dict(column_names=["SPUID"], column_type="int64"),
+        dict(column_names=["Area"], column_type="float64"),
         dict(column_names=[
             "SVOID", "LastDisturbanceTypeID", "YearsSinceLastDisturbance"],
-             column_type="Int64"),
+             column_type="int64"),
         # YearsSinceLUC this can be null
         dict(column_names=["YearsSinceLUC"], column_type="string"),
         dict(column_names=[
             "SWForestType", "SWGrowthCurveID", "SWManagementType",
             "SWMaturityState", "SWYearsInMaturityState", "SWAge"],
-             column_type="Int64"),
+             column_type="int64"),
         dict(column_names=[
             "SWTotalBio_C_Density", "SWMerch_C_Density",
             "SWFoliage_C_Density", "SWSubMerch_C_Density",
             "SWOther_C_Density", "SWCoarseRoot_C_Density",
-            "SWFineRoot_C_Density"], column_type="Float64"),
+            "SWFineRoot_C_Density"], column_type="float64"),
         dict(column_names=[
             "HWForestType", "HWGrowthCurveID", "HWManagementType",
             "HWMaturityState", "HWYearsInMaturityState", "HWAge"],
-            column_type="Int64"),
+            column_type="int64"),
         dict(column_names=[
             "HWTotalBio_C_Density", "HWMerch_C_Density",
             "HWFoliage_C_Density", "HWSubMerch_C_Density",
@@ -117,11 +117,11 @@ def parse_svl_files(dir, chunksize=None):
             "FastCAG_Density", "FastCBG_Density", "MediumC_Density",
             "SlowCAG_Density", "SlowCBG_Density", "SWSSnagC_Density",
             "SWBSnagC_Density", "HWSSnagC_Density", "HWBSnagC_Density",
-            "BlackC_Density", "PeatC_Density"], column_type="Float64"),
+            "BlackC_Density", "PeatC_Density"], column_type="float64"),
         dict(column_names=[
             "c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9", "c10",
             "landclass", "kf2", "kf3", "kf4", "kf5", "kf6"],
-            column_type="Int64"))
+            column_type="int64"))
 
     lines = []
     for file in iterate_svl_files(dir):

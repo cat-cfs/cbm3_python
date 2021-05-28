@@ -59,12 +59,12 @@ def load_pool_indicators(dir, chunksize=None):
     """
     col_def = _build_col_def(
         dict(column_names=["RunID", "TimeStep", "SPUID"],
-             column_type="Int64"),
+             column_type="int64"),
         dict(column_names=get_classifier_column_names(),
-             column_type="Int64"),
+             column_type="int64"),
         dict(column_names=[
             "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-            "KFProjectType", "KFProjectID"], column_type="Int64"),
+            "KFProjectType", "KFProjectID"], column_type="int64"),
         dict(column_names=[
             "SWMerchC", "SWFoliageC", "SWOtherC",
             "SWSubmerchC", "SWCoarseRootC", "SWFineRootC", "HWMerchC",
@@ -72,7 +72,7 @@ def load_pool_indicators(dir, chunksize=None):
             "HWFineRootC", "VeryFastCAG", "VeryFastCBG", "FastCAG", "FastCBG",
             "MediumC", "SlowCAG", "SlowCBG", "SWSSnagC", "SWBSnagC",
             "HWSSnagC", "HWBSnagC", "BlackC", "PeatC"],
-             column_type="Float64"))
+             column_type="float64"))
 
     return pd.read_csv(
         os.path.join(dir, "poolind.out"), header=None, delim_whitespace=True,
@@ -95,11 +95,11 @@ def load_flux_indicators(dir, chunksize=None):
     """
     col_def = _build_col_def(
         dict(column_names=["RunID", "TimeStep", "DistTypeID", "SPUID"],
-             column_type="Int64"),
-        dict(column_names=get_classifier_column_names(), column_type="Int64"),
+             column_type="int64"),
+        dict(column_names=get_classifier_column_names(), column_type="int64"),
         dict(column_names=[
             "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-            "KFProjectType", "KFProjectID"], column_type="Int64"),
+            "KFProjectType", "KFProjectID"], column_type="int64"),
         dict(column_names=[
             "CO2Production", "CH4Production", "COProduction",
             "BioCO2Emission", "BioCH4Emission", "BioCOEmission",
@@ -117,7 +117,7 @@ def load_flux_indicators(dir, chunksize=None):
             "SoilToAir_PEAT", "BioToAir_MERCHANTABLE", "BioToAir_FOLIAGE",
             "BioToAir_OTHER", "BioToAir_SUBMERCHANTABLE",
             "BioToAir_COARSEROOT", "BioToAir_FINEROOT"],
-            column_type="Float64"))
+            column_type="float64"))
 
     return pd.read_csv(
         os.path.join(dir, "fluxind.out"), header=None, delim_whitespace=True,
@@ -140,13 +140,13 @@ def load_age_indicators(dir, chunksize=None):
     """
     col_def = _build_col_def(
         dict(column_names=["RunID", "TimeStep", "SPUID", "AgeClass"],
-             column_type="Int64"),
-        dict(column_names=get_classifier_column_names(), column_type="Int64"),
+             column_type="int64"),
+        dict(column_names=get_classifier_column_names(), column_type="int64"),
         dict(column_names=[
             "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-            "KFProjectType", "KFProjectID"], column_type="Int64"),
+            "KFProjectType", "KFProjectID"], column_type="int64"),
         dict(column_names=["Area", "Biomass_C", "DOM_C", "Avg_Age"],
-             column_type="Float64"))
+             column_type="float64"))
 
     return pd.read_csv(
         os.path.join(dir, "ageind.out"), header=None, delim_whitespace=True,
@@ -169,13 +169,13 @@ def load_dist_indicators(dir, chunksize=None):
     """
     col_def = _build_col_def(
         dict(column_names=["RunID", "TimeStep", "DistTypeID", "SPUID"],
-             column_type="Int64"),
+             column_type="int64"),
         dict(column_names=get_classifier_column_names(),
-             column_type="Int64"),
+             column_type="int64"),
         dict(column_names=[
             "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-            "KFProjectType", "KFProjectID"], column_type="Int64"),
-        dict(column_names=["DistArea", "DistProduct"], column_type="Float64"))
+            "KFProjectType", "KFProjectID"], column_type="int64"),
+        dict(column_names=["DistArea", "DistProduct"], column_type="float64"))
 
     return pd.read_csv(
         os.path.join(dir, "distinds.out"), header=None, delim_whitespace=True,
@@ -222,14 +222,14 @@ def load_nir_output(dir, chunksize=None):
     col_def = _build_col_def(
         dict(column_names=[
             "TimeStep", "Year", "SPUID", "DistTypeID", "LandClass_From",
-            "LandClass_To"], column_type="Int64"),
+            "LandClass_To"], column_type="int64"),
         dict(column_names=[
             "DisturbedArea", "SWMerchC", "SWFoliageC",
             "SWOtherC", "SWCoarseRootC", "SWFineRootC", "HWMerchC",
             "HWFoliageC", "HWOtherC", "HWCoarseRootC", "HWFineRootC",
             "VeryFastCAG", "VeryFastCBG", "FastCAG", "FastCBG", "MediumC",
             "SlowCAG", "SlowCBG", "SWSSnagC", "HWSSnagC", "SWBSnagC",
-            "HWBSnagC", "BlackC", "PeatC"], column_type="Float64"))
+            "HWBSnagC", "BlackC", "PeatC"], column_type="float64"))
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
         names=col_def.column_names, dtype=col_def.column_types,
@@ -252,8 +252,8 @@ def load_nodist(dir, chunksize=None):
     filename = "nodist.fil"
     col_def = _build_col_def(
         dict(column_names=["RunID", "TimeStep", "DistTypeID", "DistGroup"],
-             column_type="Int64"),
-        dict(column_names=["UndisturbedArea"], column_type="Float64"))
+             column_type="int64"),
+        dict(column_names=["UndisturbedArea"], column_type="float64"))
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
         names=col_def.column_names, dtype=col_def.column_types,
@@ -277,8 +277,8 @@ def load_distseries(dir, chunksize=None):
     # column headers are present in this csv file
     col_def = _build_col_def(
         dict(column_names=["timestep", "previous_kf5", "current_kf5"],
-             column_type="Int64"),
-        dict(column_names=["area_disturbed"], column_type="Float64"))
+             column_type="int64"),
+        dict(column_names=["area_disturbed"], column_type="float64"))
     return pd.read_csv(
         os.path.join(dir, filename), header=0,
         names=col_def.column_names, dtype=col_def.column_types,
@@ -300,14 +300,14 @@ def load_accdiagnostics(dir, chunksize=None):
     """
     filename = "accdiagnostics.txt"
     col_def = _build_col_def(
-        dict(column_names=["id"], column_type="Int64"),
+        dict(column_names=["id"], column_type="int64"),
         dict(column_names=["rule_type"], column_type="string"),
-        dict(column_names=["target", "target_value"], column_type="Float64"),
-        dict(column_names=["TimeStep"], column_type="Int64"),
+        dict(column_names=["target", "target_value"], column_type="float64"),
+        dict(column_names=["TimeStep"], column_type="int64"),
         dict(column_names=["action"], column_type="string"),
-        dict(column_names=["DistTypeID"], column_type="Int64"),
-        dict(column_names=["area"], column_type="Float64"),
-        dict(column_names=["age"], column_type="Int64")
+        dict(column_names=["DistTypeID"], column_type="int64"),
+        dict(column_names=["area"], column_type="float64"),
+        dict(column_names=["age"], column_type="int64")
     )
     return pd.read_csv(
         os.path.join(dir, filename), header=None, names=col_def.column_names,
@@ -332,11 +332,11 @@ def load_predistage(dir, chunksize=None):
     col_def = _build_col_def(
         dict(column_names=[
             "spuid", "dist_type", "timestep", "c0", "c1", "c2", "c3", "c4",
-            "c5", "c6", "c7", "c8", "c9"], column_type="Int64"),
-        dict(column_names=["empty"], column_type="Float64"),
+            "c5", "c6", "c7", "c8", "c9"], column_type="int64"),
+        dict(column_names=["empty"], column_type="float64"),
         dict(column_names=["k0", "k1", "k2", "k3", "k4", "k5", "pre_dist_age"],
-             column_type="Int64"),
-        dict(column_names=["area_disturbed"], column_type="Float64"))
+             column_type="int64"),
+        dict(column_names=["area_disturbed"], column_type="float64"))
     df = pd.read_csv(
         os.path.join(dir, filename), header=0,
         names=col_def.column_names, dtype=col_def.column_types,
@@ -366,7 +366,7 @@ def load_seed(dir, chunksize=None):
     path = os.path.join(dir, filename)
     col_def = _build_col_def(
         dict(column_names=["MonteCarloAssumptionID", "RunID", "RandomSeed"],
-             column_type="Int64"))
+             column_type="int64"))
 
     if not os.path.exists(path):
         return _yield_empty_dataframe(col_def, chunksize)
@@ -393,18 +393,18 @@ def load_spatial_pools(dir, chunksize=None):
     filename = "spatialpool.out"
     col_def = _build_col_def(
         dict(column_names=["RunID", "SVOID", "Age", "TimeStep", "SPUID"],
-             column_type="Int64"),
-        dict(column_names=get_classifier_column_names(), column_type="Int64"),
+             column_type="int64"),
+        dict(column_names=get_classifier_column_names(), column_type="int64"),
         dict(column_names=[
             "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year", "KF33_Year",
-            "KFProjectType", "KFProjectID"], column_type="Int64"),
+            "KFProjectType", "KFProjectID"], column_type="int64"),
         dict(column_names=[
          "SWMerchC", "SWFoliageC", "SWOtherC",
          "SWSubmerchC", "SWCoarseRootC", "SWFineRootC", "HWMerchC",
          "HWFoliageC", "HWOtherC", "HWSubmerchC", "HWCoarseRootC",
          "HWFineRootC", "VeryFastCAG", "VeryFastCBG", "FastCAG", "FastCBG",
          "MediumC", "SlowCAG", "SlowCBG", "SWSSnagC", "SWBSnagC", "HWSSnagC",
-         "HWBSnagC", "BlackC", "PeatC"], column_type="Float64"))
+         "HWBSnagC", "BlackC", "PeatC"], column_type="float64"))
 
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
@@ -430,13 +430,13 @@ def load_spatial_flux(dir, chunksize=None):
     col_def = _build_col_def(
         dict(column_names=[
             "RunID", "SVOID", "TimeStep", "SPUID", "DistTypeID"],
-            column_type="Int64"),
+            column_type="int64"),
         dict(column_names=get_classifier_column_names(),
-             column_type="Int64"),
+             column_type="int64"),
         dict(column_names=[
              "UNFCCC_ForestType", "KP33_34", "UNFCCC_Year",
              "KF33_Year", "KFProjectType", "KFProjectID"],
-             column_type="Int64"),
+             column_type="int64"),
         dict(column_names=[
          "CO2Production", "CH4Production",
          "COProduction", "BioCO2Emission", "BioCH4Emission", "BioCOEmission",
@@ -452,7 +452,7 @@ def load_spatial_flux(dir, chunksize=None):
          "SoilToAir_HBRANCHSNAG", "SoilToAir_BLACKCARBON", "SoilToAir_PEAT",
          "BioToAir_MERCHANTABLE", "BioToAir_FOLIAGE", "BioToAir_OTHER",
          "BioToAir_SUBMERCHANTABLE", "BioToAir_COARSEROOT",
-         "BioToAir_FINEROOT"], column_type="Float64"))
+         "BioToAir_FINEROOT"], column_type="float64"))
     file_path = os.path.join(dir, filename)
 
     if not os.path.exists(file_path):
