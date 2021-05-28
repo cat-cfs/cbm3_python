@@ -82,7 +82,13 @@ def _typed_dataframe(col_def, data):
     df = pd.DataFrame(columns=col_def.column_names, data=data)
 
     for col_name in col_def.column_names:
-        df[col_name] = df[col_name].astype(col_def.column_types[col_name])
+        if col_name == "YearsSinceLUC":
+            # fix this col since it is defined in the input svl files, but not
+            # the output ones
+            df["YearsSinceLUC"] = df["YearsSinceLUC"] \
+                .astype("str").str.strip().replace("", -1).astype("int64")
+        else:
+            df[col_name] = df[col_name].astype(col_def.column_types[col_name])
     return df
 
 
@@ -94,7 +100,7 @@ def parse_svl_files(dir, chunksize=None):
             "SVOID", "LastDisturbanceTypeID", "YearsSinceLastDisturbance"],
              column_type="int64"),
         # YearsSinceLUC this can be null
-        dict(column_names=["YearsSinceLUC"], column_type="string"),
+        dict(column_names=["YearsSinceLUC"], column_type="object"),
         dict(column_names=[
             "SWForestType", "SWGrowthCurveID", "SWManagementType",
             "SWMaturityState", "SWYearsInMaturityState", "SWAge"],
