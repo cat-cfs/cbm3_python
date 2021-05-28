@@ -143,10 +143,10 @@ class ResultsDescriber():
             ["SPUID", "AdminBoundaryID", "EcoBoundaryID"]].merge(
                 self.aidb_data.tblEcoBoundaryDefault[
                     ["EcoBoundaryID", "EcoBoundaryName"]],
-                validate="m:1", sort=False).merge(
+                validate="m:1", sort=False, how="left").merge(
                     self.aidb_data.tblAdminBoundaryDefault[
                         ["AdminBoundaryID", "AdminBoundaryName"]],
-                    validate="m:1", sort=False)
+                    validate="m:1", sort=False, how="left")
         default_spu_view = default_spu_view.rename(columns={
             "SPUID": "DefaultSPUID",
             "AdminBoundaryID": "DefaultAdminBoundaryID",
@@ -178,10 +178,10 @@ class ResultsDescriber():
         ].merge(
             self.project_data.tblEcoBoundary[
                 ["EcoBoundaryID", "EcoBoundaryName"]],
-            validate="m:1", sort=False).merge(
+            validate="m:1", sort=False, how="left").merge(
                 self.project_data.tblAdminBoundary[
                     ["AdminBoundaryID", "AdminBoundaryName"]],
-                validate="m:1", sort=False)
+                validate="m:1", sort=False, how="left")
 
         project_spu_view = project_spu_view.rename(
             columns={
@@ -198,13 +198,14 @@ class ResultsDescriber():
             "ProjectAdminBoundaryName", "DefaultSPUID"]]
 
         project_spu_view = project_spu_view.merge(
-            self.default_view.default_spu_view, validate="m:1", sort=False)
+            self.default_view.default_spu_view, validate="m:1", sort=False,
+            how="left")
 
         disturbance_type_view = self.project_data.tblDisturbanceType[
             ["DistTypeID", "DistTypeName", "Description", "DefaultDistTypeID"]]
         disturbance_type_view = disturbance_type_view.merge(
             self.default_view.default_disturbance_type_view,
-            validate="m:1", sort=False)
+            validate="m:1", sort=False, how="left")
         disturbance_type_view = disturbance_type_view.rename(columns={
             "DistTypeID": "ProjectDistTypeID",
             "DistTypeName": "ProjectDistTypeName",
@@ -250,7 +251,7 @@ class ResultsDescriber():
         """
         return self.project_view.project_spu_view.merge(
             df, left_on="ProjectSPUID", right_on="SPUID",
-            validate="1:m", sort=False)
+            validate="1:m", sort=False, how="right")
 
     def merge_disturbance_type_description(self, df):
         """Merges disturbance type metadata columns to a dataframe containing
@@ -264,7 +265,8 @@ class ResultsDescriber():
         """
         return self.project_view.disturbance_type_view.merge(
             df, left_on="ProjectDistTypeID",
-            right_on="DistTypeID", how="right", validate="1:m", sort=False)
+            right_on="DistTypeID", validate="1:m", sort=False,
+            how="right")
 
     def merge_classifier_set_description(self, df):
         """Merges classifier value columns to a dataframe containing
@@ -279,7 +281,8 @@ class ResultsDescriber():
         """
         return self.mapped_csets.merge(
             df, left_on="ClassifierSetID",
-            right_on="UserDefdClassSetID", validate="1:m", sort=False)
+            right_on="UserDefdClassSetID", validate="1:m", sort=False,
+            how="right")
 
     def merge_landclass_description(self, df):
         """Merges UNFCCC land class metadata columns to a dataframe containing
@@ -298,7 +301,8 @@ class ResultsDescriber():
             left_on="UNFCCCLandClassID",
             right_on="LandClassID",
             validate="1:m",
-            sort=False)[["Name"]].rename(
+            sort=False,
+            how="right")[["Name"]].rename(
                 columns={"Name": "UNFCCCLandClassName"}).set_index(df.index)
 
         kf3334_name_desc = self.aidb_data.tblKP3334Flags.merge(
@@ -306,7 +310,8 @@ class ResultsDescriber():
             left_on=["KP3334ID"],
             right_on=["kf2"],
             validate="1:m",
-            sort=False)[["Name", "Description"]].rename(
+            sort=False,
+            how="right")[["Name", "Description"]].rename(
                 columns={
                     "Name": "KP3334Name",
                     "Description": "KP3334Description"}).set_index(df.index)
@@ -315,7 +320,7 @@ class ResultsDescriber():
             kf3334_name_desc, left_index=True, right_index=True,
             sort=False).merge(
                 df, left_index=True, right_index=True, sort=False,
-                validate="1:1")
+                validate="1:1", how="right")
 
     def merge_age_class_descriptions(self, df):
         """Merges age class metadata columns to a dataframe containing
@@ -329,4 +334,4 @@ class ResultsDescriber():
         """
         return self.age_classes.merge(
             df, left_on="AgeClassID", right_on="AgeClassID", sort=False,
-            validate="1:m")
+            validate="1:m", how="right")

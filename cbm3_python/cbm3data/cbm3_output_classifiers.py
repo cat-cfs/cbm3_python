@@ -101,8 +101,8 @@ def replace_with_classifier_set_id(raw_table, cset_pivot):
     for col in raw_cset_columns:
         raw_table.loc[raw_table[col] <= 0, col] = 1
     output = cset_pivot_out.merge(
-        raw_table, left_on=raw_cset_columns,
-        right_on=raw_cset_columns, copy=True, validate="1:m")
+        raw_table, left_on=raw_cset_columns, right_on=raw_cset_columns,
+        copy=True, validate="1:m", how="right", sort=False)
     classifier_set_col = output["ClassifierSetID"]
     output = output.drop(columns=[f"c{x}" for x in range(1, 11)])
     output = output[list(output.columns)[1:]]
