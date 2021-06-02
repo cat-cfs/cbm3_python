@@ -30,8 +30,8 @@ class ConcurrentRunner:
 
             if not os.path.exists(os.path.dirname(log_path)):
                 os.makedirs(os.path.dirname(log_path))
-                loghelper.start_logging(
-                    run_args["log_path"], 'w+', use_console=False)
+            loghelper.start_logging(
+                run_args["log_path"], 'w+', use_console=False)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             toolbox_env_path = os.path.join(temp_dir, "toolbox")
@@ -91,7 +91,7 @@ class ConcurrentRunner:
             output = {"Exception": None}
             output.update(self._run_func(run_args))
             return output
-        except:
+        except Exception:
             output = {"Exception": traceback.format_exc()}
             output.update(run_args)
             return output
