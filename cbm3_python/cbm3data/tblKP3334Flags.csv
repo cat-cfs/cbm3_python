@@ -1,0 +1,11 @@
+KP3334ID,Name,Description
+0,Undetermined,Undetermined
+1,AR 3.3,Afforestation
+2,D 3.3,Deforestation
+3,FM,Forest Management
+4,CM,Cropland Management
+5,GLM,Grazing Land Management
+6,RE,Re-vegetation
+7,AR 3.3 / FM,Afforestation that might otherwise be reported under 3.4 FM
+8,D 3.3 / CM,Deforestation that might otherwise be reported under 3.4 CM
+9,D 3.3 / GLM,Deforestation that might otherwise be reported under 3.4 GLM
