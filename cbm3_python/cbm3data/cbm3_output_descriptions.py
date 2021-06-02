@@ -2,6 +2,31 @@ import os
 from types import SimpleNamespace
 from cbm3_python.cbm3data import accessdb
 import pandas as pd
+from warnings import warn
+
+
+def _load_unfccc_land_classes(aidb_path):
+    """workaround for older versions of archive index that do not have the
+    table: tblUNFCCCLandClass.  If the table is present, return that table,
+    otherwise load a packaged copy of the table.
+
+    Args:
+        aidb_path (str):
+
+    Returns:
+        pandas.DataFrame: tblUNFCCCLandClass
+    """
+    with accessdb.AccessDB(aidb_path, False) as aidb:
+        if aidb.tableExists("tblUNFCCCLandClass"):
+            return pd.read_sql(
+                "SELECT * FROM tblUNFCCCLandClass", aidb.connection)
+        else:
+            warn("tblUNFCCCLandClass not found in archive index database "
+                 f"'{aidb_path}' loading packaged substitute")
+            path = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "tblUNFCCCLandClass.csv")
+            return pd.read_csv(path)
 
 
 def load_archive_index_data(aidb_path):
@@ -29,8 +54,7 @@ def load_archive_index_data(aidb_path):
         tblDisturbanceTypeDefault=accessdb.as_data_frame(
             "SELECT DistTypeID, DistTypeName, Description "
             "FROM tblDisturbanceTypeDefault", aidb_path),
-        tblUNFCCCLandClass=accessdb.as_data_frame(
-            "SELECT * FROM tblUNFCCCLandClass", aidb_path),
+        tblUNFCCCLandClass=_load_unfccc_land_classes(aidb_path),
         tblKP3334Flags=accessdb.as_data_frame(
             "SELECT * FROM tblKP3334Flags", aidb_path))
 

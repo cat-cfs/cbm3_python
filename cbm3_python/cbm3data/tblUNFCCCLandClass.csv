@@ -1,0 +1,24 @@
+UNFCCCLandClassID,Name
+0,Forest Land remaining Forest Land
+1,Cropland remaining
+2,Grassland remaining
+3,Wetlands remaining
+4,Settlements remaining
+5,Other remaining
+6,Cropland converted to Forest Land
+7,Grassland converted to Forest Land
+8,Wetlands converted to Forest Land
+9,Settlements converted to Forest Land
+10,Other converted to Forest Land
+11,Forest Land converted to Cropland
+12,Forest Land converted to Grassland
+13,Forest Land converted to Wetlands
+14,Forest Land converted to Settlements
+15,Forest Land converted to Other
+16,Unmanaged Forest Land
+17,Unmanaged Forest Land converted to Cropland
+18,Unmanaged Forest Land converted to Grassland
+19,Unmanaged Forest Land converted to Wetlands
+20,Unmanaged Forest Land converted to Settlements
+21,Unmanaged Forest Land converted to Other
+22,Unmanaged Forest Land converted to Managed Forest
