@@ -5,27 +5,32 @@ import pandas as pd
 from warnings import warn
 
 
-def _load_unfccc_land_classes(aidb_path):
-    """workaround for older versions of archive index that do not have the
-    table: tblUNFCCCLandClass.  If the table is present, return that table,
-    otherwise load a packaged copy of the table.
+def _load_substituted(aidb_path, table_name):
+    """workaround for older versions of archive index that do not have
+    certain tables.  If the table is present, return that table,
+    otherwise load a packaged copy of the table (packaged csv file)
+
+    A warning.warn will be called if the specified table is loaded from the
+    substitute csv file.
 
     Args:
-        aidb_path (str):
+        aidb_path (str): path to the archive index
+        table_name (str): name of the table to fetch
 
     Returns:
-        pandas.DataFrame: tblUNFCCCLandClass
+        pandas.DataFrame: the resulting table derived from the aidb or csv
+            file.
     """
     with accessdb.AccessDB(aidb_path, False) as aidb:
-        if aidb.tableExists("tblUNFCCCLandClass"):
+        if aidb.tableExists(table_name):
             return pd.read_sql(
-                "SELECT * FROM tblUNFCCCLandClass", aidb.connection)
+                f"SELECT * FROM {table_name}", aidb.connection)
         else:
-            warn("tblUNFCCCLandClass not found in archive index database "
+            warn(f"{table_name} not found in archive index database "
                  f"'{aidb_path}' loading packaged substitute")
             path = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
-                "tblUNFCCCLandClass.csv")
+                f"{table_name}.csv")
             return pd.read_csv(path)
 
 
@@ -54,9 +59,8 @@ def load_archive_index_data(aidb_path):
         tblDisturbanceTypeDefault=accessdb.as_data_frame(
             "SELECT DistTypeID, DistTypeName, Description "
             "FROM tblDisturbanceTypeDefault", aidb_path),
-        tblUNFCCCLandClass=_load_unfccc_land_classes(aidb_path),
-        tblKP3334Flags=accessdb.as_data_frame(
-            "SELECT * FROM tblKP3334Flags", aidb_path))
+        tblUNFCCCLandClass=_load_substituted(aidb_path, "tblUNFCCCLandClass"),
+        tblKP3334Flags=_load_substituted(aidb_path, "tblKP3334Flags"))
 
     # note in current build v1.2.7739.338 tblKP3334Flags is missing a row,
     # and the following lines compensate for that
