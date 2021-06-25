@@ -221,15 +221,15 @@ def load_nir_output(dir, chunksize=None):
     filename = "NIROutput.txt"
     col_def = _build_col_def(
         dict(column_names=[
-            "TimeStep", "Year", "SPUID", "DistTypeID", "LandClass_From",
-            "LandClass_To"], column_type="int64"),
+            "TimeStep", "CalendarYear", "SPUID", "DistTypeID",
+            "LandClass_From", "LandClass_To"], column_type="int64"),
         dict(column_names=[
-            "DisturbedArea", "SWMerchC", "SWFoliageC",
-            "SWOtherC", "SWCoarseRootC", "SWFineRootC", "HWMerchC",
-            "HWFoliageC", "HWOtherC", "HWCoarseRootC", "HWFineRootC",
-            "VeryFastCAG", "VeryFastCBG", "FastCAG", "FastCBG", "MediumC",
-            "SlowCAG", "SlowCBG", "SWSSnagC", "HWSSnagC", "SWBSnagC",
-            "HWBSnagC", "BlackC", "PeatC"], column_type="float64"))
+            "Area", "SW_MerchC", "SW_FoliageC", "SW_OtherC", "SW_CoarseC",
+            "SW_FineC", "HW_MerchC", "HW_FoliageC", "HW_OtherC", "HW_CoarseC",
+            "HW_FineC", "VF_AG_C", "VF_BG_C", "F_AG_C", "F_BG_C", "MediumC",
+            "Slow_AG_C", "Slow_BG_C", "SW_StemSnag_C", "HW_StemSnag_C",
+            "SW_BranchSnag_C", "HW_BranchSnag_C", "BlackC", "PeatC", ],
+            column_type="float64"))
     return pd.read_csv(
         os.path.join(dir, filename), header=None, delim_whitespace=True,
         names=col_def.column_names, dtype=col_def.column_types,
