@@ -125,12 +125,12 @@ def load_db(db_writer, cbm_output_dir, project_db_path, aidb_path,
 
 def load_file(writer, cbm_output_dir, project_db_path, aidb_path,
               chunksize=None):
-    """Load CBM3 results into a relational database.
+    """Loads CBM3 output using descriptive dataframes 
 
     Args:
-        db_writer (object): an object with a function
+        writer (object): an object with a function
             write(table_name, pandas.DataFrame) accepting batches
-            of data to write to a database.
+            of data to write to file(s).
         cbm_output_dir (str): path to the CBMRun/output dir
         project_db_path (str): path to the CBM3 project database
         aidb_path (str): path to the CBM3 archive index database
