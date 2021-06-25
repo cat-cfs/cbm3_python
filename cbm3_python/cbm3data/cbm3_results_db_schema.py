@@ -157,7 +157,7 @@ def get_constraints():
          "Name": _get_constraints(unique=True),
      },
      "tblNIRSpecialOutput": {
-         "NIRSpecialOutputID": _get_constraints(primary_key=True),
+         "usLessPkField": _get_constraints(primary_key=True),
          "SPUID": _get_constraints(index=True, foreign_key="tblSPU.SPUID"),
          "TimeStep": _get_constraints(index=True),
          "DistTypeID": _get_constraints(

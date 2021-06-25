@@ -120,7 +120,7 @@ class LoadFunctionFactory():
                     cbm3_output_files.load_nir_output),
                 "process_function": lambda index_offset: _compose(
                     _get_add_id_column_func(
-                        "NIRSpecialOutputID", index_offset)),
+                        "usLessPkField", index_offset)),
                 "describe_function": _compose(
                     self.describer.merge_spatial_unit_description,
                     self.describer.merge_disturbance_type_description)
