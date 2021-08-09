@@ -84,6 +84,16 @@ def load_project_level_data(project_db_path):
     Returns:
         namespace: A namespace of descriptive pandas.DataFrames
     """
+    tblDisturbanceType = accessdb.as_data_frame(
+        "SELECT DistTypeID, DistTypeName, Description, DefaultDistTypeID "
+        "FROM tblDisturbanceType", project_db_path)
+    if not (tblDisturbanceType.DistTypeID == 0).any():
+        # add disturbance type 0
+        tblDisturbanceType = pd.DataFrame(
+            columns=["DistTypeID", "DistTypeName", "Description",
+                     "DefaultDistTypeID"],
+            data=[[0, "Annual Processes", "Annual Processes", 0]]
+            ).append(tblDisturbanceType).reset_index(drop=True)
 
     return SimpleNamespace(
         tblEcoBoundary=accessdb.as_data_frame(
@@ -93,9 +103,7 @@ def load_project_level_data(project_db_path):
         tblSPU=accessdb.as_data_frame(
             "SELECT SPUID, AdminBoundaryID, EcoBoundaryID, DefaultSPUID "
             "FROM tblSPU", project_db_path),
-        tblDisturbanceType=accessdb.as_data_frame(
-            "SELECT DistTypeID, DistTypeName, Description, DefaultDistTypeID "
-            "FROM tblDisturbanceType", project_db_path),
+        tblDisturbanceType=tblDisturbanceType,
         tblClassifiers=accessdb.as_data_frame(
             "SELECT ClassifierID, Name FROM tblClassifiers", project_db_path),
         tblClassifierValues=accessdb.as_data_frame(
