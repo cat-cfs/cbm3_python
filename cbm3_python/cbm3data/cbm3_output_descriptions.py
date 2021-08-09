@@ -103,6 +103,10 @@ def load_project_level_data(project_db_path):
         tblSPU=accessdb.as_data_frame(
             "SELECT SPUID, AdminBoundaryID, EcoBoundaryID, DefaultSPUID "
             "FROM tblSPU", project_db_path),
+        tblSPUGroup=accessdb.as_data_frame(
+            "SELECT * from tblSPUGroup", project_db_path),
+        tblSPUGroupLookup=accessdb.as_data_frame(
+            "SELECT * from tblSPUGroupLookup", project_db_path),
         tblDisturbanceType=tblDisturbanceType,
         tblClassifiers=accessdb.as_data_frame(
             "SELECT ClassifierID, Name FROM tblClassifiers", project_db_path),
@@ -126,6 +130,8 @@ def create_project_level_output_tables(project_descriptions):
         tblEcoBoundary=project_descriptions.tblEcoBoundary,
         tblAdminBoundary=project_descriptions.tblAdminBoundary,
         tblSPU=project_descriptions.tblSPU,
+        tblSPUGroup=project_descriptions.tblSPUGroup,
+        tblSPUGroupLookup=project_descriptions.tblSPUGroupLookup,
         tblDisturbanceType=project_descriptions.tblDisturbanceType)
     result.tblUserDefdClasses = project_descriptions.tblClassifiers.rename(
         columns={
