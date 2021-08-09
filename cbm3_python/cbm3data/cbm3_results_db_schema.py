@@ -47,7 +47,8 @@ def get_constraints():
      },
      "tblAgeIndicators": {
          "AgeIndID": _get_constraints(primary_key=True),
-         "AgeClassID": _get_constraints(foreign_key="tblAgeClasses.AgeClassID"),
+         "AgeClassID": _get_constraints(
+             foreign_key="tblAgeClasses.AgeClassID"),
          "TimeStep":  _get_constraints(index=True),
          "SPUID": _get_constraints(index=True, foreign_key="tblSPU.SPUID"),
          # "AgeClassID": None,  # need to add additional table!
