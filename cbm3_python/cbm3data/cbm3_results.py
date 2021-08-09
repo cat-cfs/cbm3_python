@@ -1,5 +1,5 @@
 import pandas as pd
-
+import warnings
 from cbm3_python.cbm3data import results_queries
 from cbm3_python.cbm3data.results_queries import stock_changes_view
 
@@ -62,7 +62,7 @@ def load_pool_indicators(results_db,
 
 
 def load_stock_changes(results_db,
-                       disturbance_type_grouping=False,
+                       disturbance_type_grouping=True,
                        spatial_unit_grouping=False,
                        classifier_set_grouping=False,
                        land_class_grouping=False,
@@ -75,7 +75,9 @@ def load_stock_changes(results_db,
             connection to a database with CBM3 results schema.
         disturbance_type_grouping (bool, optional):  If set to True the result
             will be returned with disturbance type stratification. Defaults to
-            False.
+            True. If set to false a warning will be produced but the result
+            will still be returned with disturbance type stratification, since
+            this is required to compute certain stock changes columns.
         spatial_unit_grouping (bool, optional): If set to True the result will
             be returned with spatial unit stratification. Defaults to False.
         classifier_set_grouping (bool, optional): If set to True the result
@@ -89,9 +91,18 @@ def load_stock_changes(results_db,
     Returns:
         pandas.DataFrame: dataframe containing the results
     """
+    if not disturbance_type_grouping:
+        warnings.warn(
+            "disturbance type stratification is required for computing stock "
+            "changes. This warning can be avoided by omitting (or setting "
+            "true) the `disturbance_type_grouping` parameter in calls to "
+            "`cbm3_python.cbm3data.cbm3_results.load_stock_changes` ")
     flux_ind_df = load_flux_indicators(
-        results_db, disturbance_type_grouping, spatial_unit_grouping,
-        classifier_set_grouping, land_class_grouping, rollup_format)
+        results_db, disturbance_type_grouping=True,
+        spatial_unit_grouping=spatial_unit_grouping,
+        classifier_set_grouping=classifier_set_grouping,
+        land_class_grouping=land_class_grouping,
+        rollup_format=rollup_format)
     return stock_changes_view.get_stock_changes_view(flux_ind_df)
 
 
@@ -224,16 +235,19 @@ def load_disturbance_indicators(results_db,
 
 def _join_classifiers(indicators, classifiers):
     return pd.merge(
-        indicators, classifiers,
+        classifiers, indicators,
         left_on="UserDefdClassSetID",
-        right_on="UserDefdClassSetID")
+        right_on="UserDefdClassSetID",
+        validate="1:m")
 
 
 def _join_spatial_units(indicators, spatial_units):
-    return pd.merge(indicators, spatial_units,
-                    left_on="SPUID", right_on="SPUID")
+    return pd.merge(
+        spatial_units, indicators, left_on="SPUID", right_on="SPUID",
+        validate="1:m")
 
 
 def _join_disturbance_types(indicators, disturbance_types):
-    return pd.merge(indicators, disturbance_types,
-                    left_on="DistTypeID", right_on="DistTypeID")
+    return pd.merge(
+        disturbance_types, indicators, left_on="DistTypeID",
+        right_on="DistTypeID", validate="1:m")
