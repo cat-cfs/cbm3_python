@@ -114,7 +114,9 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
         loader_settings (dict, optional): If None the toolbox loader is used,
             otherwise this arg specifies loader specific settings. Defaults to
             None.  If an empty dictionary or {"type": None} are specified then
-            the cbm results will not be loaded.
+            the cbm results will not be loaded. See:
+            :py:func:`cbm3_python.cbm3data.cbm3_output_loader.load` for
+            documentation
 
     Returns:
         str: The path to the loaded CBM results database
