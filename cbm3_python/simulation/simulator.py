@@ -218,13 +218,14 @@ class Simulator(object):
             self.toolboxPath, r'createCBMFiles.exe') + '" ' + str(self.simID)
         loghelper.get_logger().info("Command line: " + cmd)
         self.call_subprocess_cmd(cmd)
+        cbm_run_input_dir = os.path.join(self.CBMTemp, "CBMRun", "input")
         if save_svl_by_timestep:
             file_replace.replace(
-                "model.inf",
+                os.path.join(cbm_run_input_dir, "model.inf"),
                 self._create_model_inf_replace_func(
                     save_svl_every_timestep_option=1))
         inf = open(
-            os.path.join(self.CBMTemp, r'CBMRun\input\indicate.inf'), 'w')
+            os.path.join(cbm_run_input_dir, "indicate.inf"), 'w')
         inf.write('0\n')
         inf.flush()
         inf.close()
