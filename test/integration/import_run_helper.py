@@ -41,7 +41,7 @@ def import_mdb(working_dir, sit_mdb_path, mapping_file_path):
 
 
 @contextmanager
-def simulate():
+def simulate(**kwargs):
     this_dir = os.path.dirname(os.path.realpath(__file__))
     mapping_file_path = os.path.join(this_dir, "mapping.json")
     sit_mdb_path = os.path.join(this_dir, "cbm3_sit.mdb")
@@ -53,22 +53,24 @@ def simulate():
         aidb_path = toolbox_defaults.get_archive_index_path()
         cbm_exe_path = toolbox_defaults.get_cbm_executable_dir()
         toolbox_path = toolbox_defaults.get_install_path()
+        run_kwargs = dict(
+            project_path=project_path,
+            results_database_path=results_path,
+            tempfiles_output_dir=tempfiles_dir,
+            aidb_path=aidb_path,
+            cbm_exe_path=cbm_exe_path
+        )
+        run_kwargs.update(kwargs)
         list(projectsimulator.run_concurrent(
-            run_args=[dict(
-                project_path=project_path,
-                results_database_path=results_path,
-                tempfiles_output_dir=tempfiles_dir,
-                aidb_path=aidb_path,
-                cbm_exe_path=cbm_exe_path
-            )],
+            run_args=[run_kwargs],
             toolbox_path=toolbox_path,
             max_workers=1))
 
         yield SimpleNamespace(
             tempdir=tempdir,
-            project_path=project_path,
-            results_path=results_path,
-            tempfiles_dir=tempfiles_dir,
-            aidb_path=aidb_path,
-            cbm_exe_path=cbm_exe_path,
+            project_path=run_kwargs["project_path"],
+            results_path=run_kwargs["results_database_path"],
+            tempfiles_dir=run_kwargs["tempfiles_output_dir"],
+            aidb_path=run_kwargs["aidb_path"],
+            cbm_exe_path=run_kwargs["cbm_exe_path"],
             toolbox_path=toolbox_path)
