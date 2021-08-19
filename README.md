@@ -2,6 +2,8 @@
 
 Python scripts for automating CBM-CFS3 tasks
 
+![](coverage.svg)
+
 ## Requirements
 
 * The [CBM-CFS3 toolbox](https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107)
