@@ -27,6 +27,7 @@ class SimulateTest(unittest.TestCase):
             copy_makelist_results=False,
             dist_classes_path=None,
             dist_rules_path=None,
+            save_svl_by_timestep=False,
             loader_settings=None)
 
     @patch("cbm3_python.scripts.simulate.projectsimulator")
@@ -47,6 +48,7 @@ class SimulateTest(unittest.TestCase):
             copy_makelist_results=True,
             dist_classes_path="dist_classes",
             dist_rules_path="dist_rules",
+            save_svl_by_timestep=True,
             loader_settings='{"a": "b"}')
         args = call_args.copy()
         for k, v in call_kwargs.items():
@@ -77,4 +79,5 @@ class SimulateTest(unittest.TestCase):
                 call_kwargs["dist_classes_path"]),
             dist_rules_path=os.path.abspath(
                 call_kwargs["dist_rules_path"]),
+            save_svl_by_timestep=True,
             loader_settings={"a": "b"})
