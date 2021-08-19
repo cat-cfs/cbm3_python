@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 import unittest
 import sqlite3
 from cbm3_python.cbm3data import cbm3_results
@@ -8,6 +9,46 @@ from test.integration import import_run_helper
 
 
 class CBMOutputLoaderTest(unittest.TestCase):
+
+    def test_save_svl_by_timestep_feature(self):
+        with import_run_helper.simulate(save_svl_by_timestep=True) as sim:
+
+            output_sqlite = os.path.join(sim.tempdir, "results_sqlite.db")
+            cbm3_output_loader.load(
+                loader_config={
+                    "type": "db", "url": f"sqlite:///{output_sqlite}",
+                    "chunksize": None},
+                cbm_output_dir=os.path.join(
+                    sim.tempfiles_dir, "CBMRun", "output"),
+                project_db_path=sim.project_path,
+                aidb_path=sim.aidb_path)
+
+            with sqlite3.connect(output_sqlite) as sqlite_con:
+                stock_changes_sqlite = cbm3_results.load_pool_indicators(
+                    sqlite_con)
+                tblSVL = pd.read_sql("SELECT * from tblSVL", sqlite_con)
+
+                stock_changes_total_dom = stock_changes_sqlite[
+                    ["TimeStep", "Dead Organic Matter"]
+                    ].groupby("TimeStep").sum()
+                tbl_svl_total_dom = tblSVL[
+                    ["TimeStep", "Area", "TotalDOMC_Density"]]
+                tbl_svl_total_dom["Dead Organic Matter"] = (
+                    tbl_svl_total_dom.Area *
+                    tbl_svl_total_dom.TotalDOMC_Density)
+                tbl_svl_total_dom = tbl_svl_total_dom.groupby("TimeStep").sum()
+                comparison = stock_changes_total_dom.merge(
+                    tbl_svl_total_dom, left_index=True, right_index=True,
+                    suffixes=("_a", "_b"))
+                self.assertTrue(
+                    list(stock_changes_total_dom.index.unique()) ==
+                    list(tbl_svl_total_dom.index.unique()))
+                self.assertTrue(
+                    np.allclose(
+                        comparison["Dead Organic Matter_a"],
+                        comparison["Dead Organic Matter_b"]))
+
+            sqlite_con.close()
 
     def test_load_methods_sqlite(self):
         with import_run_helper.simulate() as sim:

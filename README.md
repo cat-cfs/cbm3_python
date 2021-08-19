@@ -2,14 +2,13 @@
 
 Python scripts for automating CBM-CFS3 tasks
 
+![](coverage.svg)
+
 ## Requirements
 
 * The [CBM-CFS3 toolbox](https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107)
 * The Windows operating system
 * python 3x
-* [git](https://git-scm.com/) - not strictly required, but needed for the CBM Standard Import Tool workflow and also helpful for installing this package
-* [python packages](https://github.com/cat-cfs/cbm3_python/blob/master/requirements.txt)
-
 
 
 ## Installing
@@ -64,7 +63,7 @@ An example is included in notebook format, and markdown notebook format (using [
 
 ### Loading CBM-CFS3 Results to other formats
 
-cbm3_python can load results to any [sqlalchemy supported database](https://www.sqlalchemy.org/features.html). The resulting output has equivalent schema to the CBM-CFS3 ms access results database.  
+cbm3_python can load results to any [sqlalchemy supported database](https://www.sqlalchemy.org/features.html). The resulting output has equivalent schema to the CBM-CFS3 ms access results database.
 
 The output can also be loaded to csv or hdf output. The output in this format is descriptive: row metadata is included on each row of the loaded tables rather than being stored in related tables like the results database format.
 
@@ -115,4 +114,3 @@ projectsimulator.run(
     project_path="/projects/my_cbm_project.mdb",
     loader_settings={"type": "hdf", "output_path": "/projects/hdf_output_file.hdf"})
 ```
-

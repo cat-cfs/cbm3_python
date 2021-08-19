@@ -37,6 +37,7 @@ import glob
 import re
 import xml.etree.ElementTree as ET
 from cbm3_python.util import loghelper
+from cbm3_python.util import file_replace
 
 
 class Simulator(object):
@@ -196,61 +197,35 @@ class Simulator(object):
         for f in glob.iglob(ini_glob):
             shutil.copy2(f, CBMinpath)
 
-    def CopySVLFromPreviousRun(self, previousRunCBMOutputDir):
-        linebreak = '\n'
-        loghelper.get_logger().info(
-            "\n\n Copying svl data from previous CBMRun output dir {0}".format(
-                previousRunCBMOutputDir))
-        srcPaths = []
+    @staticmethod
+    def _create_model_inf_replace_func(save_svl_every_timestep_option=1):
+        def replace_func(i, line):
+            line_25 = "# 1= Save SVO data to disk every timestep; 0= not"
+            if i == 25:
+                # this is a check to see if the format is different than
+                # expected
+                if line.strip() != line_25:
+                    raise ValueError("format of model.inf unexpected")
+            if i == 28:
+                return str(save_svl_every_timestep_option) + '\n'
+            return line
+        return replace_func
 
-        def split(s):
-            return re.findall('[\S]+', s)
+    def CreateCBMFiles(self, save_svl_by_timestep=False):
 
-        previousRunCBMOutputDir = os.path.abspath(previousRunCBMOutputDir)
-        for filename in os.listdir(previousRunCBMOutputDir):
-            # collect the svl###.dat files
-            if filename.startswith("svl") and filename.endswith(".dat"):
-                srcPaths.append(
-                    os.path.join(previousRunCBMOutputDir, filename))
-        for srcpath in srcPaths:
-            CBMinpath = os.path.join(self.CBMTemp, r'CBMRun\input')
-            newFileName = os.path.join(
-                CBMinpath,
-                "{0}.ini".format(
-                    os.path.splitext(os.path.basename(srcpath))[0]))
-            with open(srcpath, 'r') as fInput:
-                fInput.readline()  # skip line 1
-                with open(newFileName, 'w') as fOutput:
-                    fOutput.write("0 0" + linebreak)
-                    for srcline in fInput:
-                        tokens = split(srcline)
-                        line1 = " ".join(tokens[0:5] + ['0'])
-                        softwood = " ".join(tokens[5:18])
-                        hardwood = " ".join(tokens[18:31])
-                        dom = " ".join(tokens[31:45])
-                        cset = " ".join(
-                            [x for x in tokens[45:55] if x != "-99"])
-                        kyotoflags = " ".join(
-                            ['0', '1', '1990', '0', '0', '0']
-                            if tokens[55:61] == ['0', '0', '0', '0', '0', '0']
-                            else tokens[55:61])
-
-                        outlines = [
-                            line1, softwood, hardwood, dom, "  ".join(
-                                [cset, kyotoflags])]
-
-                        for outline in outlines:
-                            fOutput.write(outline + linebreak)
-                        fOutput.write(linebreak)  # extra line break
-
-    def CreateCBMFiles(self):
         loghelper.get_logger().info("\n\n Creating CBM files...\n")
         cmd = '"' + os.path.join(
             self.toolboxPath, r'createCBMFiles.exe') + '" ' + str(self.simID)
         loghelper.get_logger().info("Command line: " + cmd)
         self.call_subprocess_cmd(cmd)
+        cbm_run_input_dir = os.path.join(self.CBMTemp, "CBMRun", "input")
+        if save_svl_by_timestep:
+            file_replace.replace(
+                os.path.join(cbm_run_input_dir, "model.inf"),
+                self._create_model_inf_replace_func(
+                    save_svl_every_timestep_option=1))
         inf = open(
-            os.path.join(self.CBMTemp, r'CBMRun\input\indicate.inf'), 'w')
+            os.path.join(cbm_run_input_dir, "indicate.inf"), 'w')
         inf.write('0\n')
         inf.flush()
         inf.close()
