@@ -1,14 +1,22 @@
+from datetime import time
 import os
 import glob
 from types import SimpleNamespace
 import pandas as pd
 
 
-def iterate_svl_files(dir):
+def _iterate_svl_files(dir, n_timesteps):
     patterns = ["svl*", "spu*.dat"]
     for pattern in patterns:
         for path in glob.glob(os.path.join(os.path.abspath(dir), pattern)):
-            yield path
+            base_path = os.path.basename(path)
+            if os.path.splitext(base_path)[1].lower() == ".ini":
+                timestep = 0
+            elif "_" not in base_path:
+                timestep = n_timesteps
+            else:
+                timestep = int(base_path.split(".")[0].split("_")[1])
+            yield timestep, path
 
 
 def _process_type(t):
@@ -27,7 +35,7 @@ def _process_token_types(tokens):
     return tokens
 
 
-def iterate_svl_lines(svl_file_path):
+def _iterate_svl_lines(svl_file_path):
 
     dat_file = False
     if os.path.splitext(svl_file_path)[1].lower() == ".dat":
@@ -82,6 +90,7 @@ def _build_col_def(*args):
 
 def _get_column_defintion():
     return _build_col_def(
+        dict(column_names=["TimeStep"], column_type="int64"),
         dict(column_names=["SPUID"], column_type="int64"),
         dict(column_names=["Area"], column_type="float64"),
         dict(column_names=[
@@ -132,11 +141,18 @@ def _typed_dataframe(col_def, data):
     return df
 
 
-def parse_svl_files(dir, chunksize=None):
+def _add_timestep_column(svl_line_iterable, timestep):
+    for line in svl_line_iterable:
+        line.insert(0, timestep)
+        yield line
+
+
+def _parse_svl_files(dir, n_timesteps, chunksize=None):
     col_def = _get_column_defintion()
     lines = []
-    for file in iterate_svl_files(dir):
-        svl_line_iterable = iterate_svl_lines(file)
+    for timestep, file in _iterate_svl_files(dir, n_timesteps):
+        svl_line_iterable = _iterate_svl_lines(file)
+        svl_line_iterable = _add_timestep_column(svl_line_iterable, timestep)
         if chunksize:
             for line in svl_line_iterable:
                 lines.append(line)
@@ -146,9 +162,7 @@ def parse_svl_files(dir, chunksize=None):
         else:
             for line in svl_line_iterable:
                 lines.append(line)
-    result = _typed_dataframe(col_def, lines)
-
-    yield result
+    yield _typed_dataframe(col_def, lines)
 
 
 def _get_n_timesteps(input_dir):
@@ -165,11 +179,9 @@ def _get_n_timesteps(input_dir):
 
 def _parse_all_chunked(input_dir, output_dir, chunksize):
     n_timesteps = _get_n_timesteps(input_dir)
-    for df in parse_svl_files(input_dir, chunksize):
-        df.insert(0, "TimeStep", 0)
+    for df in _parse_svl_files(input_dir, n_timesteps, chunksize):
         yield df
-    for df in parse_svl_files(output_dir, chunksize):
-        df.insert(0, "TimeStep", n_timesteps)
+    for df in _parse_svl_files(output_dir, n_timesteps, chunksize):
         yield df
 
 
@@ -180,6 +192,7 @@ def parse_all(input_dir, output_dir, chunksize=None):
             yield chunk
     else:
         chunks = _parse_all_chunked(input_dir, output_dir, None)
-        df1 = next(chunks)
-        df2 = next(chunks)
-        yield df1.append(df2).reset_index(drop=True)
+        out_data = pd.DataFrame()
+        for chunk in chunks:
+            out_data = out_data.append(chunk, ignore_index=True)
+        yield out_data
