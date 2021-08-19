@@ -37,7 +37,7 @@ import glob
 import re
 import xml.etree.ElementTree as ET
 from cbm3_python.util import loghelper
-
+from cbm3_python.util import file_replace
 
 class Simulator(object):
     def __init__(self, executablePath, simID, projectPath, CBMRunDir,
@@ -243,12 +243,28 @@ class Simulator(object):
                             fOutput.write(outline + linebreak)
                         fOutput.write(linebreak)  # extra line break
 
-    def CreateCBMFiles(self):
+    @staticmethod
+    def _create_model_inf_replace_func(save_svl_every_timestep_option=1):
+        def replace_func(i, line):
+            if i == 25:
+                if line.strip() != "# 1= Save SVO data to disk every timestep; 0= not":
+                    raise ValueError("format of model.inf unexpected")
+            if i == 28:
+                return str(save_svl_every_timestep_option) + '\n'
+            return line
+        return replace_func
+
+    def CreateCBMFiles(self, save_svl_by_timestep=False):
+
         loghelper.get_logger().info("\n\n Creating CBM files...\n")
         cmd = '"' + os.path.join(
             self.toolboxPath, r'createCBMFiles.exe') + '" ' + str(self.simID)
         loghelper.get_logger().info("Command line: " + cmd)
         self.call_subprocess_cmd(cmd)
+        if save_svl_by_timestep:
+            file_replace.replace(
+                "model.inf", 
+                self._create_model_inf_replace_func(save_svl_every_timestep_option=1))
         inf = open(
             os.path.join(self.CBMTemp, r'CBMRun\input\indicate.inf'), 'w')
         inf.write('0\n')
