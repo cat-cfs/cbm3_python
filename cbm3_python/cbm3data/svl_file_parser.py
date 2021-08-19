@@ -5,8 +5,10 @@ import pandas as pd
 
 
 def iterate_svl_files(dir):
-    for path in glob.glob(os.path.join(os.path.abspath(dir), "svl*")):
-        yield path
+    patterns = ["svl*", "spu*.dat"]
+    for pattern in patterns:
+        for path in glob.glob(os.path.join(os.path.abspath(dir), pattern)):
+            yield path
 
 
 def _process_type(t):
@@ -78,22 +80,8 @@ def _build_col_def(*args):
     return column_def
 
 
-def _typed_dataframe(col_def, data):
-    df = pd.DataFrame(columns=col_def.column_names, data=data)
-
-    for col_name in col_def.column_names:
-        if col_name == "YearsSinceLUC":
-            # fix this col since it is defined in the input svl files, but not
-            # the output ones
-            df["YearsSinceLUC"] = df["YearsSinceLUC"] \
-                .astype("str").str.strip().replace("", -1).astype("int64")
-        else:
-            df[col_name] = df[col_name].astype(col_def.column_types[col_name])
-    return df
-
-
-def parse_svl_files(dir, chunksize=None):
-    col_def = _build_col_def(
+def _get_column_defintion():
+    return _build_col_def(
         dict(column_names=["SPUID"], column_type="int64"),
         dict(column_names=["Area"], column_type="float64"),
         dict(column_names=[
@@ -129,6 +117,23 @@ def parse_svl_files(dir, chunksize=None):
             "landclass", "kf2", "kf3", "kf4", "kf5", "kf6"],
             column_type="int64"))
 
+
+def _typed_dataframe(col_def, data):
+    df = pd.DataFrame(columns=col_def.column_names, data=data)
+
+    for col_name in col_def.column_names:
+        if col_name == "YearsSinceLUC":
+            # fix this col since it is defined in the input svl files, but not
+            # the output ones
+            df["YearsSinceLUC"] = df["YearsSinceLUC"] \
+                .astype("str").str.strip().replace("", -1).astype("int64")
+        else:
+            df[col_name] = df[col_name].astype(col_def.column_types[col_name])
+    return df
+
+
+def parse_svl_files(dir, chunksize=None):
+    col_def = _get_column_defintion()
     lines = []
     for file in iterate_svl_files(dir):
         svl_line_iterable = iterate_svl_lines(file)
@@ -141,7 +146,9 @@ def parse_svl_files(dir, chunksize=None):
         else:
             for line in svl_line_iterable:
                 lines.append(line)
-    yield _typed_dataframe(col_def, lines)
+    result = _typed_dataframe(col_def, lines)
+
+    yield result
 
 
 def _get_n_timesteps(input_dir):
