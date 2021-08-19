@@ -97,6 +97,11 @@ def main(args):
             help="one of a pair of optional file paths used to configure "
                  "extended kf6 accounting")
         parser.add_argument(
+            "--save_svl_by_timestep", action="store_true",
+            help="if set the CBM executable will be configured to "
+                 "write out all stand database (SVLxxx.dat) files at the end "
+                 "of every time step.")
+        parser.add_argument(
             "--loader_settings", type=json.loads,
             help="An optional json formatted string indicating settings for "
                  "loading CBM results. If omitted the CBM-Toolbox built-in "
