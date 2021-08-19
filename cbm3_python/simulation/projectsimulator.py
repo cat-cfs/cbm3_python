@@ -60,7 +60,7 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
         results_database_path=None, tempfiles_output_dir=None,
         skip_makelist=False, use_existing_makelist_output=False,
         copy_makelist_results=False, stdout_path=None, dist_classes_path=None,
-        dist_rules_path=None, loader_settings=None):
+        dist_rules_path=None, save_svl_by_timestep=False, loader_settings=None):
     """runs the specified single simulation assumption project and loads the
     results
 
@@ -111,6 +111,9 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
         dist_rules_path (str, optional): File 2 of 2 of a pair of optional
             file paths used to configure extended kf accounting. Defaults to
             None.
+        save_svl_by_timestep (bool, optional): if set to true the CBM
+            executable will be configured to write out all stand database
+            (SVLxxx.dat) files at the end of every time step.
         loader_settings (dict, optional): If None the toolbox loader is used,
             otherwise this arg specifies loader specific settings. Defaults to
             None.  If an empty dictionary or {"type": None} are specified then
@@ -212,7 +215,7 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
                 if isinstance(copy_makelist_results, str):
                     makelist_src_path = copy_makelist_results
                 s.copyMakelistOutput(makelist_src_path)
-            s.CreateCBMFiles()
+            s.CreateCBMFiles(save_svl_by_timestep=save_svl_by_timestep)
             s.CopyCBMExecutable()
             s.RunCBM()
 
