@@ -60,7 +60,8 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
         results_database_path=None, tempfiles_output_dir=None,
         skip_makelist=False, use_existing_makelist_output=False,
         copy_makelist_results=False, stdout_path=None, dist_classes_path=None,
-        dist_rules_path=None, save_svl_by_timestep=False, loader_settings=None):
+        dist_rules_path=None, save_svl_by_timestep=False,
+        loader_settings=None):
     """runs the specified single simulation assumption project and loads the
     results
 
