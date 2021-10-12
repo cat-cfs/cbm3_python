@@ -5,7 +5,7 @@ from cbm3_python.cbm3data import sit_helper
 from cbm3_python import toolbox_defaults
 
 
-def main(args):
+def sit_import_main(args):
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument(
@@ -49,5 +49,9 @@ def main(args):
         loghelper.get_logger().exception("")
 
 
+def main():
+    sit_import_main(sys.argv[1:])
+
+
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
