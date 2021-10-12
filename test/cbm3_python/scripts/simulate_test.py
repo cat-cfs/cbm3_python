@@ -11,7 +11,7 @@ class SimulateTest(unittest.TestCase):
     @patch("cbm3_python.scripts.simulate.projectsimulator")
     @patch("cbm3_python.scripts.simulate.loghelper")
     def test_keyword_args_defaults(self, loghelper, projectsimulator):
-        simulate.main(["my_project.mdb"])
+        simulate.simulate_main(["my_project.mdb"])
         projectsimulator.run.assert_called_with(
             project_path=os.path.abspath("my_project.mdb"),
             project_simulation_id=None,
@@ -55,7 +55,7 @@ class SimulateTest(unittest.TestCase):
             args.append(f"--{k}")
             if v is not True:
                 args.append(f"{v}")
-        simulate.main(args)
+        simulate.simulate_main(args)
         projectsimulator.run.assert_called_with(
             project_path=os.path.abspath("my_project.mdb"),
             project_simulation_id=2,
