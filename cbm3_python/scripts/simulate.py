@@ -11,7 +11,7 @@ from cbm3_python import toolbox_defaults
 from cbm3_python.util import loghelper
 
 
-def main(args):
+def simulate_main(args):
     try:
         logpath = os.path.join(
             "{0}_{1}.log".format(
@@ -117,5 +117,9 @@ def main(args):
         loghelper.get_logger().exception("")
 
 
+def main():
+    simulate_main(sys.argv[1:])
+
+
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
