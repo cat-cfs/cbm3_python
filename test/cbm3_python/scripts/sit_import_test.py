@@ -8,7 +8,7 @@ class SITImportTest(unittest.TestCase):
 
     @patch("cbm3_python.scripts.sit_import.sit_helper")
     def test_keyword_args_defaults(self, sit_helper):
-        sit_import.main(["sit_data_dir", "cbm3_project_path"])
+        sit_import.sit_import_main(["sit_data_dir", "cbm3_project_path"])
         sit_helper.csv_import.assert_called_with(
             csv_dir="sit_data_dir",
             imported_project_path="cbm3_project_path",
@@ -18,7 +18,7 @@ class SITImportTest(unittest.TestCase):
 
     @patch("cbm3_python.scripts.sit_import.sit_helper")
     def test_keyword_args(self, sit_helper):
-        sit_import.main([
+        sit_import.sit_import_main([
             "sit_data_dir",
             "cbm3_project_path",
             "--initialize_mapping",
