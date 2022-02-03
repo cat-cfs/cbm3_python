@@ -48,10 +48,10 @@ def get_stock_changes_view(tfi):
         (tfi.GrossGrowth_AG + tfi.GrossGrowth_BG - tfi.DOMCO2Emission -
          tfi.BioCO2Emission) * (-44 / 12)
     df["SumofCOProduction_CO2e"] = tfi.COProduction * 44 / 12
-    df["SumofCH4Production_CO2e"] = tfi.CH4Production * 16 / 12
+    df["SumofCH4Production_CO2e"] = tfi.CH4Production * 16 / 12 * 25
     df["N2O_CO2e"] = np.where(
         (tfi.CH4Production != 0.0) & (tfi.DistTypeID != 0),
-        tfi.CO2Production * 44 / 12 * 0.00017 * 310, 0.0)
+        tfi.CO2Production * 44 / 12 * 0.00017 * 298, 0.0)
     df["ToFps_CO2e"] = (
         tfi.SoftProduction + tfi.HardProduction + tfi.DOMProduction) * 44 / 12
     df["Total Harvest (Biomass + Snags)"] = \
