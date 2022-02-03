@@ -104,13 +104,3 @@ projectsimulator.run(
     project_path="/projects/my_cbm_project.mdb",
     loader_settings={"type": "csv", "output_path": "/projects/csv_output_dir"})
 ```
-
-**hdf example**
-
-```python
-from cbm3_python.simulation import projectsimulator
-
-projectsimulator.run(
-    project_path="/projects/my_cbm_project.mdb",
-    loader_settings={"type": "hdf", "output_path": "/projects/hdf_output_file.hdf"})
-```
