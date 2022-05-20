@@ -1,4 +1,3 @@
-
 import os
 import unittest
 from mock import patch
@@ -7,7 +6,6 @@ from cbm3_python.scripts import simulate
 
 
 class SimulateTest(unittest.TestCase):
-
     @patch("cbm3_python.scripts.simulate.projectsimulator")
     @patch("cbm3_python.scripts.simulate.loghelper")
     def test_keyword_args_defaults(self, loghelper, projectsimulator):
@@ -28,7 +26,8 @@ class SimulateTest(unittest.TestCase):
             dist_classes_path=None,
             dist_rules_path=None,
             save_svl_by_timestep=False,
-            loader_settings=None)
+            loader_settings=None,
+        )
 
     @patch("cbm3_python.scripts.simulate.projectsimulator")
     @patch("cbm3_python.scripts.simulate.loghelper")
@@ -49,7 +48,8 @@ class SimulateTest(unittest.TestCase):
             dist_classes_path="dist_classes",
             dist_rules_path="dist_rules",
             save_svl_by_timestep=True,
-            loader_settings='{"a": "b"}')
+            loader_settings='{"a": "b"}',
+        )
         args = call_args.copy()
         for k, v in call_kwargs.items():
             args.append(f"--{k}")
@@ -60,24 +60,25 @@ class SimulateTest(unittest.TestCase):
             project_path=os.path.abspath("my_project.mdb"),
             project_simulation_id=2,
             n_timesteps=10,
-            aidb_path=os.path.abspath(
-                call_kwargs["aidb_path"]),
+            aidb_path=os.path.abspath(call_kwargs["aidb_path"]),
             toolbox_installation_dir=os.path.abspath(
-                call_kwargs["toolbox_installation_dir"]),
-            cbm_exe_path=os.path.abspath(
-                call_kwargs["cbm_exe_path"]),
+                call_kwargs["toolbox_installation_dir"]
+            ),
+            cbm_exe_path=os.path.abspath(call_kwargs["cbm_exe_path"]),
             results_database_path=os.path.abspath(
-                call_kwargs["results_database_path"]),
+                call_kwargs["results_database_path"]
+            ),
             tempfiles_output_dir=os.path.abspath(
-                call_kwargs["tempfiles_output_dir"]),
+                call_kwargs["tempfiles_output_dir"]
+            ),
             skip_makelist=True,
-            stdout_path=os.path.abspath(
-                call_kwargs["stdout_path"]),
+            stdout_path=os.path.abspath(call_kwargs["stdout_path"]),
             use_existing_makelist_output=True,
             copy_makelist_results=True,
             dist_classes_path=os.path.abspath(
-                call_kwargs["dist_classes_path"]),
-            dist_rules_path=os.path.abspath(
-                call_kwargs["dist_rules_path"]),
+                call_kwargs["dist_classes_path"]
+            ),
+            dist_rules_path=os.path.abspath(call_kwargs["dist_rules_path"]),
             save_svl_by_timestep=True,
-            loader_settings={"a": "b"})
+            loader_settings={"a": "b"},
+        )

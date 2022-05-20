@@ -6,6 +6,7 @@ import pyodbc
 from cbm3_python.util import loghelper
 import os
 from pyodbc import ProgrammingError
+
 try:
     from collections.abc import Iterable
 except ImportError:
@@ -29,7 +30,6 @@ def as_data_frame(query, access_db_path):
 
 
 class AccessDB(object):
-
     def __init__(self, path, log_enabled=True):
         self.path = path
         self.log_enabled = log_enabled
@@ -37,7 +37,8 @@ class AccessDB(object):
 
     def __enter__(self):
         self.connection = pyodbc.connect(
-            self.connection_string, autocommit=False)
+            self.connection_string, autocommit=False
+        )
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -48,9 +49,10 @@ class AccessDB(object):
             self.connection.close()
 
     def getConnectionString(self, path):
-        return \
-            "Driver={Microsoft Access Driver (*.mdb, *.accdb)};" \
+        return (
+            "Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
             f"User Id='admin';Dbq={path}"
+        )
 
     def _floatifyIntParams(self, params):
         """
@@ -58,6 +60,7 @@ class AccessDB(object):
         float. See:
         https://stackoverflow.com/questions/20240130/optional-feature-not-implemented-106-sqlbindparameter-error-with-pyodbc
         """
+
         def safeConvert(value):
             if type(value) is int:
                 float_value = float(value)
@@ -66,7 +69,8 @@ class AccessDB(object):
                     # integers can be exactly represented as floats
                     raise ValueError(
                         f"Cannot exactly represent integer: {value} as "
-                        "floating point value")
+                        "floating point value"
+                    )
                 return float_value
             else:
                 return value
@@ -125,8 +129,9 @@ class AccessDB(object):
         get the maximum value of a numeric column for the specified table and
         column names
         """
-        result = self.Query("SELECT Max({0}.{1}) AS MaxID FROM {0};"
-                            .format(table, IDcolumn)).fetchone()
+        result = self.Query(
+            "SELECT Max({0}.{1}) AS MaxID FROM {0};".format(table, IDcolumn)
+        ).fetchone()
 
         if result is None or result[0] is None:
             return 0
@@ -142,8 +147,7 @@ class AccessDB(object):
     def dirname(self):
         return os.path.dirname(self.path)
 
-    def get_batched_query_ranges(self, table_name, id_colname,
-                                 max_batch_size):
+    def get_batched_query_ranges(self, table_name, id_colname, max_batch_size):
         """
         workaround for "File sharing lock count exceeded.../ MaxLocksPerFile"
         issues that can occur in access database queries that affect a large
@@ -158,12 +162,17 @@ class AccessDB(object):
                  batches
         """
         max_id = self.GetMaxID(table_name, id_colname)
-        n_batches = int(max_id/max_batch_size)
+        n_batches = int(max_id / max_batch_size)
         remainder = max_id % max_batch_size
-        ranges = [(x*max_batch_size,
-                   x*max_batch_size+max_batch_size)
-                  for x in range(n_batches)]
+        ranges = [
+            (x * max_batch_size, x * max_batch_size + max_batch_size)
+            for x in range(n_batches)
+        ]
         if remainder > 0:
-            ranges.append((n_batches * max_batch_size,
-                           n_batches * max_batch_size + remainder))
+            ranges.append(
+                (
+                    n_batches * max_batch_size,
+                    n_batches * max_batch_size + remainder,
+                )
+            )
         return ranges

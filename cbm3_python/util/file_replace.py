@@ -18,7 +18,7 @@ def replace(file_path, replace_func):
     """
     # Create temp file
     fh, abs_path = mkstemp()
-    with fdopen(fh, 'w') as new_file:
+    with fdopen(fh, "w") as new_file:
         with open(file_path) as old_file:
             for i, line in enumerate(old_file):
                 new_file.write(replace_func(i, line))

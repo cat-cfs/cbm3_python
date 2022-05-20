@@ -4,7 +4,7 @@
 import logging
 
 
-def start_logging(fn, fmode='w', use_console=True):
+def start_logging(fn, fmode="w", use_console=True):
     """Start logging to a file and optionally to the console window
 
     Args:
@@ -17,8 +17,9 @@ def start_logging(fn, fmode='w', use_console=True):
     rootLogger = logging.getLogger()
 
     logFormatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-        datefmt='%m-%d %H:%M')
+        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+        datefmt="%m-%d %H:%M",
+    )
 
     fileHandler = logging.FileHandler(fn, fmode)
     fileHandler.setFormatter(logFormatter)

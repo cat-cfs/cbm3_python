@@ -5,8 +5,9 @@ from cbm3_python.cbm3data.projectdb import ProjectDB
 from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.cbm3data import cbm3_output_loader
 from cbm3_python.simulation.simulator import Simulator
-from cbm3_python.simulation.tools.createaccountingrules \
-    import CreateAccountingRules
+from cbm3_python.simulation.tools.createaccountingrules import (
+    CreateAccountingRules,
+)
 from cbm3_python import toolbox_defaults
 
 
@@ -23,14 +24,14 @@ def clear_old_results(project_db):
     """
 
     ranges = project_db.get_batched_query_ranges(
-        table_name="tblSVLAttributes",
-        id_colname="SVOID",
-        max_batch_size=50000)
+        table_name="tblSVLAttributes", id_colname="SVOID", max_batch_size=50000
+    )
     for query_range in ranges:
         project_db.ExecuteQuery(
             "delete from tblSVLAttributes where tblSVLAttributes.SVOID "
             "BETWEEN ? and ?",
-            query_range)
+            query_range,
+        )
 
 
 def _delete_old_tempfiles(tempfiles_output_dir):
@@ -41,27 +42,39 @@ def _delete_old_tempfiles(tempfiles_output_dir):
         return
 
     dir_list = set([x.lower() for x in os.listdir(tempfiles_output_dir)])
-    is_empty_or_has_only_cbmrun_makelist = \
-        dir_list == set(['cbmrun', 'makelist']) or \
-        not dir_list
+    is_empty_or_has_only_cbmrun_makelist = (
+        dir_list == set(["cbmrun", "makelist"]) or not dir_list
+    )
 
-    ok_to_delete = \
-        is_empty_or_has_only_cbmrun_makelist and \
-        os.path.isabs(tempfiles_output_dir)
+    ok_to_delete = is_empty_or_has_only_cbmrun_makelist and os.path.isabs(
+        tempfiles_output_dir
+    )
     if ok_to_delete:
         shutil.rmtree(tempfiles_output_dir)
     else:
         raise ValueError(
-            f"Cannot remove tempfiles_output_dir: {tempfiles_output_dir}")
+            f"Cannot remove tempfiles_output_dir: {tempfiles_output_dir}"
+        )
 
 
-def run(project_path, project_simulation_id=None, n_timesteps=None,
-        aidb_path=None, toolbox_installation_dir=None, cbm_exe_path=None,
-        results_database_path=None, tempfiles_output_dir=None,
-        skip_makelist=False, use_existing_makelist_output=False,
-        copy_makelist_results=False, stdout_path=None, dist_classes_path=None,
-        dist_rules_path=None, save_svl_by_timestep=False,
-        loader_settings=None):
+def run(
+    project_path,
+    project_simulation_id=None,
+    n_timesteps=None,
+    aidb_path=None,
+    toolbox_installation_dir=None,
+    cbm_exe_path=None,
+    results_database_path=None,
+    tempfiles_output_dir=None,
+    skip_makelist=False,
+    use_existing_makelist_output=False,
+    copy_makelist_results=False,
+    stdout_path=None,
+    dist_classes_path=None,
+    dist_rules_path=None,
+    save_svl_by_timestep=False,
+    loader_settings=None,
+):
     """runs the specified single simulation assumption project and loads the
     results
 
@@ -136,8 +149,13 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
     # don't allow relative paths here, it will cause failures later in CBM
     # command line apps that have difficult to understand error messages
     existing_paths = [
-        project_path, aidb_path, cbm_exe_path, toolbox_installation_dir,
-        dist_classes_path, dist_rules_path]
+        project_path,
+        aidb_path,
+        cbm_exe_path,
+        toolbox_installation_dir,
+        dist_classes_path,
+        dist_rules_path,
+    ]
     output_paths = [results_database_path, tempfiles_output_dir, stdout_path]
     all_paths = existing_paths + output_paths
     for path in all_paths:
@@ -146,7 +164,8 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
         if not os.path.isabs(path):
             raise ValueError(
                 "Relative paths detected. They may cause failures in CBM "
-                f"model command line processes: '{path}'")
+                f"model command line processes: '{path}'"
+            )
     for path in existing_paths:
         if path is None:
             continue
@@ -156,19 +175,22 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
     if tempfiles_output_dir:
         _delete_old_tempfiles(tempfiles_output_dir)
 
-    with AIDB(aidb_path, False) as aidb, \
-            ProjectDB(project_path, False) as proj:
+    with AIDB(aidb_path, False) as aidb, ProjectDB(
+        project_path, False
+    ) as proj:
 
         if use_existing_makelist_output and not skip_makelist:
             raise ValueError(
                 "conflicting arguments: Cannot both use "
-                "existing makelist output and run makelist.")
+                "existing makelist output and run makelist."
+            )
 
         if not use_existing_makelist_output:
             clear_old_results(proj)
 
         simId = aidb.AddProjectToAIDB(
-            proj, project_sim_id=project_simulation_id)
+            proj, project_sim_id=project_simulation_id
+        )
         original_run_length = None
         if n_timesteps:
             original_run_length = proj.get_run_length(project_simulation_id)
@@ -181,7 +203,8 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
                 os.path.dirname(project_path),
                 cbm_wd,
                 toolbox_installation_dir,
-                stdout_path)
+                stdout_path,
+            )
             aidb_path_original = s.getDefaultArchiveIndexPath()
             s.setDefaultArchiveIndexPath(aidb_path)
             s.removeCBMProjfile(project_path)
@@ -203,8 +226,9 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
             if dist_classes_path is not None:
                 # support for extended "kf6" results tracking
                 with AccessDB(project_path, False) as proj:
-                    cr = CreateAccountingRules(proj, dist_classes_path,
-                                               dist_rules_path)
+                    cr = CreateAccountingRules(
+                        proj, dist_classes_path, dist_rules_path
+                    )
                     cr.create_accounting_rules()
                 # copy the modified db to the working dir
                 s.CopyToWorkingDir(project_path)
@@ -225,7 +249,8 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
             if loader_settings is None:
                 if results_database_path:
                     results_database_dir = os.path.dirname(
-                        results_database_path)
+                        results_database_path
+                    )
                 if not os.path.exists(results_database_dir):
                     os.makedirs(results_database_dir)
                 s.LoadCBMResults(output_path=results_database_path)
@@ -239,20 +264,26 @@ def run(project_path, project_simulation_id=None, n_timesteps=None,
                 cbm3_output_loader.load(
                     loader_settings,
                     os.path.join(load_dir, "CBMRun", "output"),
-                    project_path, aidb_path)
+                    project_path,
+                    aidb_path,
+                )
         finally:
             # cleanup
             if original_run_length:
                 proj.set_run_length(original_run_length, project_simulation_id)
             s.setDefaultArchiveIndexPath(aidb_path_original)
             aidb.DeleteProjectsFromAIDB(simId)
-        results_path = s.getDefaultResultsPath() if results_database_path \
-            is None else results_database_path
+        results_path = (
+            s.getDefaultResultsPath()
+            if results_database_path is None
+            else results_database_path
+        )
         return results_path
 
 
 def run_concurrent(run_args, toolbox_path, max_workers=None):
     from cbm3_python.simulation.concurrent_runner import ConcurrentRunner
+
     runner = ConcurrentRunner(toolbox_path)
     for finished_task in runner.run(run_args, max_workers=max_workers):
         yield finished_task

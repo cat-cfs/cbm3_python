@@ -15,13 +15,13 @@ def get_db_table_names():
         disturbance_types_table_name="sit_disturbance_types",
         inventory_table_name="sit_inventory",
         transition_rules_table_name="sit_transitions",
-        yield_table_name="sit_yield")
+        yield_table_name="sit_yield",
+    )
 
 
 def import_mdb(working_dir, sit_mdb_path, mapping_file_path):
 
-    imported_project_path = os.path.join(
-        working_dir, "cbm3_project.mdb")
+    imported_project_path = os.path.join(working_dir, "cbm3_project.mdb")
 
     import_args = dict(
         mdb_xls_path=sit_mdb_path,
@@ -30,7 +30,8 @@ def import_mdb(working_dir, sit_mdb_path, mapping_file_path):
         initialize_mapping=False,
         archive_index_db_path=None,
         working_dir=working_dir,
-        toolbox_install_dir=None)
+        toolbox_install_dir=None,
+    )
 
     table_names = get_db_table_names()
 
@@ -46,8 +47,7 @@ def simulate(**kwargs):
     mapping_file_path = os.path.join(this_dir, "mapping.json")
     sit_mdb_path = os.path.join(this_dir, "cbm3_sit.mdb")
     with tempfile.TemporaryDirectory() as tempdir:
-        project_path = import_mdb(
-            tempdir, sit_mdb_path, mapping_file_path)
+        project_path = import_mdb(tempdir, sit_mdb_path, mapping_file_path)
         results_path = os.path.join(tempdir, "results.mdb")
         tempfiles_dir = os.path.join(tempdir, "tempfiles")
         aidb_path = toolbox_defaults.get_archive_index_path()
@@ -58,13 +58,14 @@ def simulate(**kwargs):
             results_database_path=results_path,
             tempfiles_output_dir=tempfiles_dir,
             aidb_path=aidb_path,
-            cbm_exe_path=cbm_exe_path
+            cbm_exe_path=cbm_exe_path,
         )
         run_kwargs.update(kwargs)
-        list(projectsimulator.run_concurrent(
-            run_args=[run_kwargs],
-            toolbox_path=toolbox_path,
-            max_workers=1))
+        list(
+            projectsimulator.run_concurrent(
+                run_args=[run_kwargs], toolbox_path=toolbox_path, max_workers=1
+            )
+        )
 
         yield SimpleNamespace(
             tempdir=tempdir,
@@ -73,4 +74,5 @@ def simulate(**kwargs):
             tempfiles_dir=run_kwargs["tempfiles_output_dir"],
             aidb_path=run_kwargs["aidb_path"],
             cbm_exe_path=run_kwargs["cbm_exe_path"],
-            toolbox_path=toolbox_path)
+            toolbox_path=toolbox_path,
+        )

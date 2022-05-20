@@ -41,7 +41,7 @@ def _iterate_svl_lines(svl_file_path):
     if os.path.splitext(svl_file_path)[1].lower() == ".dat":
         dat_file = True
 
-    with open(svl_file_path, 'r') as fp:
+    with open(svl_file_path, "r") as fp:
         if dat_file:
             for i_line, line in enumerate(fp):
                 if i_line == 0:  # first line is not part of the data
@@ -76,15 +76,12 @@ def _iterate_svl_lines(svl_file_path):
 
 
 def _build_col_def(*args):
-    column_def = SimpleNamespace(
-        column_names=[],
-        column_types={}
-    )
+    column_def = SimpleNamespace(column_names=[], column_types={})
     for arg in args:
-        column_def.column_names.extend(
-            arg["column_names"])
+        column_def.column_names.extend(arg["column_names"])
         column_def.column_types.update(
-            {name: arg["column_type"] for name in arg["column_names"]})
+            {name: arg["column_type"] for name in arg["column_names"]}
+        )
     return column_def
 
 
@@ -93,38 +90,98 @@ def _get_column_defintion():
         dict(column_names=["TimeStep"], column_type="int64"),
         dict(column_names=["SPUID"], column_type="int64"),
         dict(column_names=["Area"], column_type="float64"),
-        dict(column_names=[
-            "SVOID", "LastDisturbanceTypeID", "YearsSinceLastDisturbance"],
-             column_type="int64"),
+        dict(
+            column_names=[
+                "SVOID",
+                "LastDisturbanceTypeID",
+                "YearsSinceLastDisturbance",
+            ],
+            column_type="int64",
+        ),
         # YearsSinceLUC this can be null
         dict(column_names=["YearsSinceLUC"], column_type="object"),
-        dict(column_names=[
-            "SWForestType", "SWGrowthCurveID", "SWManagementType",
-            "SWMaturityState", "SWYearsInMaturityState", "SWAge"],
-             column_type="int64"),
-        dict(column_names=[
-            "SWTotalBio_C_Density", "SWMerch_C_Density",
-            "SWFoliage_C_Density", "SWSubMerch_C_Density",
-            "SWOther_C_Density", "SWCoarseRoot_C_Density",
-            "SWFineRoot_C_Density"], column_type="float64"),
-        dict(column_names=[
-            "HWForestType", "HWGrowthCurveID", "HWManagementType",
-            "HWMaturityState", "HWYearsInMaturityState", "HWAge"],
-            column_type="int64"),
-        dict(column_names=[
-            "HWTotalBio_C_Density", "HWMerch_C_Density",
-            "HWFoliage_C_Density", "HWSubMerch_C_Density",
-            "HWOther_C_Density", "HWCoarseRoot_C_Density",
-            "HWFineRoot_C_Density", "TotalDOMC_Density",
-            "VeryFastCAG_Density", "VeryFastCBG_Density",
-            "FastCAG_Density", "FastCBG_Density", "MediumC_Density",
-            "SlowCAG_Density", "SlowCBG_Density", "SWSSnagC_Density",
-            "SWBSnagC_Density", "HWSSnagC_Density", "HWBSnagC_Density",
-            "BlackC_Density", "PeatC_Density"], column_type="float64"),
-        dict(column_names=[
-            "c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9", "c10",
-            "landclass", "kf2", "kf3", "kf4", "kf5", "kf6"],
-            column_type="int64"))
+        dict(
+            column_names=[
+                "SWForestType",
+                "SWGrowthCurveID",
+                "SWManagementType",
+                "SWMaturityState",
+                "SWYearsInMaturityState",
+                "SWAge",
+            ],
+            column_type="int64",
+        ),
+        dict(
+            column_names=[
+                "SWTotalBio_C_Density",
+                "SWMerch_C_Density",
+                "SWFoliage_C_Density",
+                "SWSubMerch_C_Density",
+                "SWOther_C_Density",
+                "SWCoarseRoot_C_Density",
+                "SWFineRoot_C_Density",
+            ],
+            column_type="float64",
+        ),
+        dict(
+            column_names=[
+                "HWForestType",
+                "HWGrowthCurveID",
+                "HWManagementType",
+                "HWMaturityState",
+                "HWYearsInMaturityState",
+                "HWAge",
+            ],
+            column_type="int64",
+        ),
+        dict(
+            column_names=[
+                "HWTotalBio_C_Density",
+                "HWMerch_C_Density",
+                "HWFoliage_C_Density",
+                "HWSubMerch_C_Density",
+                "HWOther_C_Density",
+                "HWCoarseRoot_C_Density",
+                "HWFineRoot_C_Density",
+                "TotalDOMC_Density",
+                "VeryFastCAG_Density",
+                "VeryFastCBG_Density",
+                "FastCAG_Density",
+                "FastCBG_Density",
+                "MediumC_Density",
+                "SlowCAG_Density",
+                "SlowCBG_Density",
+                "SWSSnagC_Density",
+                "SWBSnagC_Density",
+                "HWSSnagC_Density",
+                "HWBSnagC_Density",
+                "BlackC_Density",
+                "PeatC_Density",
+            ],
+            column_type="float64",
+        ),
+        dict(
+            column_names=[
+                "c1",
+                "c2",
+                "c3",
+                "c4",
+                "c5",
+                "c6",
+                "c7",
+                "c8",
+                "c9",
+                "c10",
+                "landclass",
+                "kf2",
+                "kf3",
+                "kf4",
+                "kf5",
+                "kf6",
+            ],
+            column_type="int64",
+        ),
+    )
 
 
 def _typed_dataframe(col_def, data):
@@ -134,8 +191,13 @@ def _typed_dataframe(col_def, data):
         if col_name == "YearsSinceLUC":
             # fix this col since it is defined in the input svl files, but not
             # the output ones
-            df["YearsSinceLUC"] = df["YearsSinceLUC"] \
-                .astype("str").str.strip().replace("", -1).astype("int64")
+            df["YearsSinceLUC"] = (
+                df["YearsSinceLUC"]
+                .astype("str")
+                .str.strip()
+                .replace("", -1)
+                .astype("int64")
+            )
         else:
             df[col_name] = df[col_name].astype(col_def.column_types[col_name])
     return df

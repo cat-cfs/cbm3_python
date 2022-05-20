@@ -27,10 +27,12 @@ def copy_accdb_template(destination):
 def copy_rrdb_template(destination):
     make_dir(destination)
     shutil.copy(
-        os.path.join(get_script_dir(), "RRDB_Template.accdb"), destination)
+        os.path.join(get_script_dir(), "RRDB_Template.accdb"), destination
+    )
 
 
 def copy_rollup_template(destination):
     make_dir(destination)
     shutil.copy(
-        os.path.join(get_script_dir(), "rollup_template.accdb"), destination)
+        os.path.join(get_script_dir(), "rollup_template.accdb"), destination
+    )

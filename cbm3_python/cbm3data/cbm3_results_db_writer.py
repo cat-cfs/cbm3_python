@@ -5,9 +5,13 @@ from sqlalchemy import create_engine
 
 
 class CBMResultsDBWriter:
-
-    def __init__(self, url, constraint_defs, create_engine_kwargs=None,
-                 multi_update_variable_limit=None):
+    def __init__(
+        self,
+        url,
+        constraint_defs,
+        create_engine_kwargs=None,
+        multi_update_variable_limit=None,
+    ):
         """Create object to insert dataframes to a relational database.
 
         Args:
@@ -22,9 +26,11 @@ class CBMResultsDBWriter:
                 The integer value is used to set the upper limit on batch
                 size. Defaults to None.
         """
-        self._engine = \
-            create_engine(url, **create_engine_kwargs) \
-            if create_engine_kwargs else create_engine(url)
+        self._engine = (
+            create_engine(url, **create_engine_kwargs)
+            if create_engine_kwargs
+            else create_engine(url)
+        )
         self._constraint_defs = constraint_defs
         self._variable_limit = multi_update_variable_limit
         self._meta = MetaData()
@@ -57,20 +63,20 @@ class CBMResultsDBWriter:
         if table_name not in self._created_tables:
             # create the table defintion
             table = Table(
-                table_name, self._meta,
+                table_name,
+                self._meta,
                 *cbm3_results_db_schema.create_column_definitions(
-                    table_name, df, self._constraint_defs))
+                    table_name, df, self._constraint_defs
+                )
+            )
             table.create(self._engine)
             self._created_tables[table_name] = table
         # insert the values in df
         table = self._created_tables[table_name]
         to_sql_kwargs = dict(
-            name=table_name,
-            con=self._engine,
-            if_exists="append",
-            index=False)
+            name=table_name, con=self._engine, if_exists="append", index=False
+        )
         if self._variable_limit:
             max_rows = self._variable_limit // len(df.columns)
-            to_sql_kwargs.update(
-                dict(method="multi", chunksize=max_rows))
+            to_sql_kwargs.update(dict(method="multi", chunksize=max_rows))
         df.to_sql(**to_sql_kwargs)

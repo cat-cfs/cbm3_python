@@ -30,9 +30,12 @@ def get_db_writer(loader_config):
         loader_config["url"],
         cbm3_results_db_schema.get_constraints(),
         loader_config["create_engine_kwargs"]
-        if "create_engine_kwargs" in loader_config else None,
+        if "create_engine_kwargs" in loader_config
+        else None,
         loader_config["multi_update_variable_limit"]
-        if "multi_update_variable_limit" in loader_config else None)
+        if "multi_update_variable_limit" in loader_config
+        else None,
+    )
     with writer:
         yield writer
 
@@ -55,11 +58,14 @@ def get_file_writer(loader_config):
         object: an object to write dataframes, or dataframe chunks to the
             configured file output.
     """
-    writer_kwargs = loader_config["writer_kwargs"] \
-        if "writer_kwargs" in loader_config else None
+    writer_kwargs = (
+        loader_config["writer_kwargs"]
+        if "writer_kwargs" in loader_config
+        else None
+    )
     writer = CBM3ResultsFileWriter(
-        loader_config["type"], loader_config["output_path"],
-        writer_kwargs)
+        loader_config["type"], loader_config["output_path"], writer_kwargs
+    )
     yield writer
 
 
@@ -82,15 +88,26 @@ def load(loader_config, cbm_output_dir, project_db_path, aidb_path):
     """
     if loader_config["type"] in cbm3_results_file_writer.FORMATS:
         with get_file_writer(loader_config) as writer:
-            load_file(writer, cbm_output_dir, project_db_path, aidb_path,
-                      _parse_chunksize(loader_config))
+            load_file(
+                writer,
+                cbm_output_dir,
+                project_db_path,
+                aidb_path,
+                _parse_chunksize(loader_config),
+            )
     elif loader_config["type"] == "db":
         with get_db_writer(loader_config) as db_writer:
-            load_db(db_writer, cbm_output_dir, project_db_path, aidb_path,
-                    _parse_chunksize(loader_config))
+            load_db(
+                db_writer,
+                cbm_output_dir,
+                project_db_path,
+                aidb_path,
+                _parse_chunksize(loader_config),
+            )
     else:
         raise ValueError(
-            f"unsupported loader_config type {loader_config['type']}")
+            f"unsupported loader_config type {loader_config['type']}"
+        )
 
 
 def _parse_chunksize(loader_config):
@@ -99,8 +116,9 @@ def _parse_chunksize(loader_config):
     return None
 
 
-def load_db(db_writer, cbm_output_dir, project_db_path, aidb_path,
-            chunksize=None):
+def load_db(
+    db_writer, cbm_output_dir, project_db_path, aidb_path, chunksize=None
+):
     """Load CBM3 results into a relational database.
 
     Args:
@@ -120,12 +138,14 @@ def load_db(db_writer, cbm_output_dir, project_db_path, aidb_path,
         project_db_path=project_db_path,
         aidb_path=aidb_path,
         out_func=db_writer.write,
-        chunksize=chunksize)
+        chunksize=chunksize,
+    )
 
 
-def load_file(writer, cbm_output_dir, project_db_path, aidb_path,
-              chunksize=None):
-    """Loads CBM3 output using descriptive dataframes 
+def load_file(
+    writer, cbm_output_dir, project_db_path, aidb_path, chunksize=None
+):
+    """Loads CBM3 output using descriptive dataframes
 
     Args:
         writer (object): an object with a function
@@ -143,4 +163,5 @@ def load_file(writer, cbm_output_dir, project_db_path, aidb_path,
         project_db_path=project_db_path,
         aidb_path=aidb_path,
         out_func=writer.write,
-        chunksize=chunksize)
+        chunksize=chunksize,
+    )

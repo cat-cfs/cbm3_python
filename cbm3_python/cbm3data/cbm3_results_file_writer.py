@@ -2,13 +2,10 @@ import os
 import pandas as pd
 
 
-FORMATS = [
-    "csv", "hdf"
-]
+FORMATS = ["csv", "hdf"]
 
 
 class CBM3ResultsFileWriter:
-
     def __init__(self, format, out_path, writer_kwargs):
         """Create object to append dataframes to file
 
@@ -25,8 +22,7 @@ class CBM3ResultsFileWriter:
                 supported formats.
         """
         if format not in FORMATS:
-            raise ValueError(
-                f"format must be one of: {FORMATS}")
+            raise ValueError(f"format must be one of: {FORMATS}")
 
         self.format = format
         out_path = os.path.abspath(out_path)
@@ -78,8 +74,8 @@ class CBM3ResultsFileWriter:
 
         if self.format == "csv":
             kwargs = dict(
-                mode='a', index=False,
-                header=not os.path.exists(out_path))
+                mode="a", index=False, header=not os.path.exists(out_path)
+            )
             if self.writer_kwargs:
                 kwargs.update(self.writer_kwargs)
             df.to_csv(*args, **kwargs)
@@ -90,7 +86,7 @@ class CBM3ResultsFileWriter:
                 self._hdf_table_index_offset[table_name] += len(df.index)
             else:
                 self._hdf_table_index_offset[table_name] = len(df.index)
-            kwargs = dict(key=table_name, mode="a", format='t', append=True)
+            kwargs = dict(key=table_name, mode="a", format="t", append=True)
             if self.writer_kwargs:
                 kwargs.update(self.writer_kwargs)
             df.index = pd.Series(df.index) + row_offset
