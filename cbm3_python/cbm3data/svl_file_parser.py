@@ -256,5 +256,5 @@ def parse_all(input_dir, output_dir, chunksize=None):
         chunks = _parse_all_chunked(input_dir, output_dir, None)
         out_data = pd.DataFrame()
         for chunk in chunks:
-            out_data = out_data.append(chunk, ignore_index=True)
+            out_data = pd.concat([out_data, chunk], ignore_index=True)
         yield out_data

@@ -75,10 +75,15 @@ def load_archive_index_data(aidb_path):
     # note in current build v1.2.7739.338 tblKP3334Flags is missing a row,
     # and the following lines compensate for that
     if len(aidb_data.tblKP3334Flags.index) == 9:
-        aidb_data.tblKP3334Flags = pd.DataFrame(
-            columns=["KP3334ID", "Name", "Description"],
-            data=[[0, "Undetermined", "Undetermined"]],
-        ).append(aidb_data.tblKP3334Flags)
+        aidb_data.tblKP3334Flags = pd.concat(
+            [
+                pd.DataFrame(
+                    columns=["KP3334ID", "Name", "Description"],
+                    data=[[0, "Undetermined", "Undetermined"]],
+                ),
+                aidb_data.tblKP3334Flags,
+            ]
+        )
         aidb_data.tblKP3334Flags.KP3334ID = list(range(0, 10))
     return aidb_data
 
@@ -100,19 +105,20 @@ def load_project_level_data(project_db_path):
     )
     if not (tblDisturbanceType.DistTypeID == 0).any():
         # add disturbance type 0
-        tblDisturbanceType = (
-            pd.DataFrame(
-                columns=[
-                    "DistTypeID",
-                    "DistTypeName",
-                    "Description",
-                    "DefaultDistTypeID",
-                ],
-                data=[[0, "Annual Processes", "Annual Processes", 0]],
-            )
-            .append(tblDisturbanceType)
-            .reset_index(drop=True)
-        )
+        tblDisturbanceType = pd.concat(
+            [
+                pd.DataFrame(
+                    columns=[
+                        "DistTypeID",
+                        "DistTypeName",
+                        "Description",
+                        "DefaultDistTypeID",
+                    ],
+                    data=[[0, "Annual Processes", "Annual Processes", 0]],
+                ),
+                tblDisturbanceType,
+            ]
+        ).reset_index(drop=True)
 
     return SimpleNamespace(
         tblEcoBoundary=accessdb.as_data_frame(

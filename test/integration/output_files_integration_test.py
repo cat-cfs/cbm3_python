@@ -21,8 +21,8 @@ class OutputFilesIntegrationTests(unittest.TestCase):
             def create_out_func(output_table_name_pair):
                 def out_func(name, df):
                     if name == output_table_name_pair.name:
-                        output_table_name_pair.df = (
-                            output_table_name_pair.df.append(df)
+                        output_table_name_pair.df = pd.concat(
+                            [output_table_name_pair.df, df]
                         )
 
                 return out_func

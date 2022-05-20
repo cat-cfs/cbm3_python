@@ -190,8 +190,8 @@ def _create_merged_disturbance_events(
         direction="nearest",
     )
 
-    merged_events = merged_area_target_events.append(
-        merged_merch_target_events
+    merged_events = pd.concat(
+        [merged_area_target_events, merged_merch_target_events]
     ).sort_values(
         by=[
             "TimeStepFinish",

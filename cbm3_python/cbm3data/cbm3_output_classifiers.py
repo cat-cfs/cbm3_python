@@ -68,8 +68,8 @@ def create_loaded_classifiers(
     for chunk in pool_indicators:
         for col in raw_cset_columns:
             chunk.loc[chunk[col] <= 0, col] = 1
-        raw_classifier_data = raw_classifier_data.append(
-            chunk[raw_cset_columns]
+        raw_classifier_data = pd.concat(
+            [raw_classifier_data, chunk[raw_cset_columns]]
         ).drop_duplicates()
 
     missing_csets = cset_pivot.merge(
@@ -80,7 +80,7 @@ def create_loaded_classifiers(
     missing_csets.ClassifierSetID = (
         missing_csets.index + cset_pivot.ClassifierSetID.max() + 1
     )
-    cset_pivot = cset_pivot.append(missing_csets)
+    cset_pivot = pd.concat([cset_pivot, missing_csets])
 
     return cset_pivot
 
