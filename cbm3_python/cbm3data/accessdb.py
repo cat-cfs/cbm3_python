@@ -1,6 +1,7 @@
 # Copyright (C) Her Majesty the Queen in Right of Canada,
 #  as represented by the Minister of Natural Resources Canada
 
+import sqlalchemy as sa
 import pandas as pd
 import pyodbc
 from cbm3_python.util import loghelper
@@ -11,22 +12,6 @@ try:
     from collections.abc import Iterable
 except ImportError:
     from collections import Iterable
-
-
-def as_data_frame(query, access_db_path):
-    """Return the result of the specified query on the access database located
-    at access_db_path as a pandas DataFrame.
-
-    Args:
-        query (str): access database SQL query
-        results_db_path (str): path to access database
-
-    Returns:
-        pandas.DataFrame: the query result
-    """
-    with AccessDB(access_db_path) as results_db:
-        df = pd.read_sql(query, results_db.connection)
-    return df
 
 
 class AccessDB(object):
@@ -176,3 +161,29 @@ class AccessDB(object):
                 )
             )
         return ranges
+
+    def as_data_frame(self, query):
+        """Return the result of the specified query as a pandas DataFrame.
+
+        Args:
+            query (str): access database SQL query
+            results_db_path (str): path to access database
+
+        Returns:
+            pandas.DataFrame: the query result
+        """
+
+        connection_string = (
+            r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
+            f"DBQ={self.path};"
+            r"ExtendedAnsiSQL=1;"
+        )
+        connection_url = sa.engine.URL.create(
+            "access+pyodbc", query={"odbc_connect": connection_string}
+        )
+        engine = sa.create_engine(connection_url)
+        try:
+            df = pd.read_sql(query, engine)
+            return df
+        finally:
+            engine.dispose()
