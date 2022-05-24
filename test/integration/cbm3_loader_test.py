@@ -39,7 +39,7 @@ class CBMOutputLoaderTest(unittest.TestCase):
                 )
                 tbl_svl_total_dom = tblSVL[
                     ["TimeStep", "Area", "TotalDOMC_Density"]
-                ]
+                ].copy()
                 tbl_svl_total_dom["Dead Organic Matter"] = (
                     tbl_svl_total_dom.Area
                     * tbl_svl_total_dom.TotalDOMC_Density
