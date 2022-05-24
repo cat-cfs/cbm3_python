@@ -129,9 +129,7 @@ def load_project_level_data(project_db_path):
                 "SELECT SPUID, AdminBoundaryID, EcoBoundaryID, DefaultSPUID "
                 "FROM tblSPU",
             ),
-            tblSPUGroup=accessdb.as_data_frame(
-                "SELECT * from tblSPUGroup"
-                ),
+            tblSPUGroup=accessdb.as_data_frame("SELECT * from tblSPUGroup"),
             tblSPUGroupLookup=accessdb.as_data_frame(
                 "SELECT * from tblSPUGroupLookup"
             ),
