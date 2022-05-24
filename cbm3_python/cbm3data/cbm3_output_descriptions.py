@@ -1,11 +1,11 @@
 import os
 from types import SimpleNamespace
-from cbm3_python.cbm3data import accessdb
+from cbm3_python.cbm3data.accessdb import AccessDB
 import pandas as pd
 from warnings import warn
 
 
-def _load_substituted(aidb_path, table_name):
+def _load_substituted(aidb: AccessDB, table_name):
     """workaround for older versions of archive index that do not have
     certain tables.  If the table is present, return that table,
     otherwise load a packaged copy of the table (packaged csv file)
@@ -14,26 +14,26 @@ def _load_substituted(aidb_path, table_name):
     substitute csv file.
 
     Args:
-        aidb_path (str): path to the archive index
+        aidb_path (AccessDB): instance of AccessDB
         table_name (str): name of the table to fetch
 
     Returns:
         pandas.DataFrame: the resulting table derived from the aidb or csv
             file.
     """
-    with accessdb.AccessDB(aidb_path, False) as aidb:
-        if aidb.tableExists(table_name):
-            return pd.read_sql(f"SELECT * FROM {table_name}", aidb.connection)
-        else:
-            warn(
-                f"{table_name} not found in archive index database "
-                f"'{aidb_path}' loading packaged substitute"
-            )
-            path = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                f"{table_name}.csv",
-            )
-            return pd.read_csv(path)
+
+    if aidb.tableExists(table_name):
+        return aidb.as_data_frame(f"SELECT * FROM {table_name}")
+    else:
+        warn(
+            f"{table_name} not found in archive index database "
+            f"'{aidb.path}' loading packaged substitute"
+        )
+        path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            f"{table_name}.csv",
+        )
+        return pd.read_csv(path)
 
 
 def load_archive_index_data(aidb_path):
@@ -46,31 +46,29 @@ def load_archive_index_data(aidb_path):
     Returns:
         namespace: A namespace of descriptive pandas.DataFrame
     """
-
-    aidb_data = SimpleNamespace(
-        tblEcoBoundaryDefault=accessdb.as_data_frame(
-            "SELECT EcoBoundaryID, EcoBoundaryName "
-            "FROM tblEcoBoundaryDefault",
-            aidb_path,
-        ),
-        tblAdminBoundaryDefault=accessdb.as_data_frame(
-            "SELECT AdminBoundaryID, AdminBoundaryName "
-            "FROM tblAdminBoundaryDefault",
-            aidb_path,
-        ),
-        tblSPUDefault=accessdb.as_data_frame(
-            "SELECT SPUID, AdminBoundaryID, EcoBoundaryID "
-            "FROM tblSPUDefault",
-            aidb_path,
-        ),
-        tblDisturbanceTypeDefault=accessdb.as_data_frame(
-            "SELECT DistTypeID, DistTypeName, Description "
-            "FROM tblDisturbanceTypeDefault",
-            aidb_path,
-        ),
-        tblUNFCCCLandClass=_load_substituted(aidb_path, "tblUNFCCCLandClass"),
-        tblKP3334Flags=_load_substituted(aidb_path, "tblKP3334Flags"),
-    )
+    with AccessDB(aidb_path) as accessdb:
+        aidb_data = SimpleNamespace(
+            tblEcoBoundaryDefault=accessdb.as_data_frame(
+                "SELECT EcoBoundaryID, EcoBoundaryName "
+                "FROM tblEcoBoundaryDefault",
+            ),
+            tblAdminBoundaryDefault=accessdb.as_data_frame(
+                "SELECT AdminBoundaryID, AdminBoundaryName "
+                "FROM tblAdminBoundaryDefault",
+            ),
+            tblSPUDefault=accessdb.as_data_frame(
+                "SELECT SPUID, AdminBoundaryID, EcoBoundaryID "
+                "FROM tblSPUDefault",
+            ),
+            tblDisturbanceTypeDefault=accessdb.as_data_frame(
+                "SELECT DistTypeID, DistTypeName, Description "
+                "FROM tblDisturbanceTypeDefault",
+            ),
+            tblUNFCCCLandClass=_load_substituted(
+                accessdb, "tblUNFCCCLandClass"
+            ),
+            tblKP3334Flags=_load_substituted(accessdb, "tblKP3334Flags"),
+        )
 
     # note in current build v1.2.7739.338 tblKP3334Flags is missing a row,
     # and the following lines compensate for that
@@ -98,60 +96,59 @@ def load_project_level_data(project_db_path):
     Returns:
         namespace: A namespace of descriptive pandas.DataFrames
     """
-    tblDisturbanceType = accessdb.as_data_frame(
-        "SELECT DistTypeID, DistTypeName, Description, DefaultDistTypeID "
-        "FROM tblDisturbanceType",
-        project_db_path,
-    )
-    if not (tblDisturbanceType.DistTypeID == 0).any():
-        # add disturbance type 0
-        tblDisturbanceType = pd.concat(
-            [
-                pd.DataFrame(
-                    columns=[
-                        "DistTypeID",
-                        "DistTypeName",
-                        "Description",
-                        "DefaultDistTypeID",
-                    ],
-                    data=[[0, "Annual Processes", "Annual Processes", 0]],
-                ),
-                tblDisturbanceType,
-            ]
-        ).reset_index(drop=True)
+    with AccessDB(project_db_path) as accessdb:
+        tblDisturbanceType = accessdb.as_data_frame(
+            "SELECT DistTypeID, DistTypeName, Description, DefaultDistTypeID "
+            "FROM tblDisturbanceType",
+        )
+        if not (tblDisturbanceType.DistTypeID == 0).any():
+            # add disturbance type 0
+            tblDisturbanceType = pd.concat(
+                [
+                    pd.DataFrame(
+                        columns=[
+                            "DistTypeID",
+                            "DistTypeName",
+                            "Description",
+                            "DefaultDistTypeID",
+                        ],
+                        data=[[0, "Annual Processes", "Annual Processes", 0]],
+                    ),
+                    tblDisturbanceType,
+                ]
+            ).reset_index(drop=True)
 
-    return SimpleNamespace(
-        tblEcoBoundary=accessdb.as_data_frame(
-            "SELECT * FROM tblEcoBoundary", project_db_path
-        ),
-        tblAdminBoundary=accessdb.as_data_frame(
-            "SELECT * FROM tblAdminBoundary", project_db_path
-        ),
-        tblSPU=accessdb.as_data_frame(
-            "SELECT SPUID, AdminBoundaryID, EcoBoundaryID, DefaultSPUID "
-            "FROM tblSPU",
-            project_db_path,
-        ),
-        tblSPUGroup=accessdb.as_data_frame(
-            "SELECT * from tblSPUGroup", project_db_path
-        ),
-        tblSPUGroupLookup=accessdb.as_data_frame(
-            "SELECT * from tblSPUGroupLookup", project_db_path
-        ),
-        tblDisturbanceType=tblDisturbanceType,
-        tblClassifiers=accessdb.as_data_frame(
-            "SELECT ClassifierID, Name FROM tblClassifiers", project_db_path
-        ),
-        tblClassifierValues=accessdb.as_data_frame(
-            "SELECT * FROM tblClassifierValues", project_db_path
-        ),
-        tblClassifierSetValues=accessdb.as_data_frame(
-            "SELECT * FROM tblClassifierSetValues", project_db_path
-        ),
-        tblClassifierAggregates=accessdb.as_data_frame(
-            "SELECT * FROM tblClassifierAggregate", project_db_path
-        ),
-    )
+        return SimpleNamespace(
+            tblEcoBoundary=accessdb.as_data_frame(
+                "SELECT * FROM tblEcoBoundary"
+            ),
+            tblAdminBoundary=accessdb.as_data_frame(
+                "SELECT * FROM tblAdminBoundary"
+            ),
+            tblSPU=accessdb.as_data_frame(
+                "SELECT SPUID, AdminBoundaryID, EcoBoundaryID, DefaultSPUID "
+                "FROM tblSPU",
+            ),
+            tblSPUGroup=accessdb.as_data_frame(
+                "SELECT * from tblSPUGroup"
+                ),
+            tblSPUGroupLookup=accessdb.as_data_frame(
+                "SELECT * from tblSPUGroupLookup"
+            ),
+            tblDisturbanceType=tblDisturbanceType,
+            tblClassifiers=accessdb.as_data_frame(
+                "SELECT ClassifierID, Name FROM tblClassifiers"
+            ),
+            tblClassifierValues=accessdb.as_data_frame(
+                "SELECT * FROM tblClassifierValues"
+            ),
+            tblClassifierSetValues=accessdb.as_data_frame(
+                "SELECT * FROM tblClassifierSetValues"
+            ),
+            tblClassifierAggregates=accessdb.as_data_frame(
+                "SELECT * FROM tblClassifierAggregate"
+            ),
+        )
 
 
 def create_project_level_output_tables(project_descriptions):

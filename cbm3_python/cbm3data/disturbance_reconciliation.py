@@ -6,7 +6,7 @@ import re
 import csv
 import pandas as pd
 import numpy as np
-from cbm3_python.cbm3data import accessdb
+from cbm3_python.cbm3data.accessdb import AccessDB
 
 from tempfile import TemporaryFile
 
@@ -127,7 +127,8 @@ def _get_project_events(project_path):
           tblDisturbanceEvents.DisturbanceEventID,
           tblDisturbanceEvents.TimeStepFinish;
     """
-    project_events = accessdb.as_data_frame(events_sql, project_path)
+    with AccessDB(project_path) as accessdb:
+        project_events = accessdb.as_data_frame(events_sql)
     return project_events
 
 

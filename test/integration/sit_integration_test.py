@@ -5,7 +5,7 @@ import unittest
 from cbm3_python.cbm3data import sit_helper
 import numpy as np
 from cbm3_python import toolbox_defaults
-from cbm3_python.cbm3data import accessdb
+from cbm3_python.cbm3data.accessdb import AccessDB
 from cbm3_python.simulation import projectsimulator
 from cbm3_python.cbm3data import cbm3_results
 
@@ -69,9 +69,12 @@ def mdb_to_delimited(sit_mdb_path, ext, output_dir):
         sep = ","
     else:
         raise ValueError()
-    for k, v in get_db_table_names().items():
-        df = accessdb.as_data_frame(f"SELECT * FROM {v}", sit_mdb_path)
-        df.to_csv(os.path.join(output_dir, f"{v}{ext}"), sep=sep, index=False)
+    with AccessDB(sit_mdb_path) as accessdb:
+        for k, v in get_db_table_names().items():
+            df = accessdb.as_data_frame(f"SELECT * FROM {v}")
+            df.to_csv(
+                os.path.join(output_dir, f"{v}{ext}"), sep=sep, index=False
+            )
 
 
 class IntegrationTests(unittest.TestCase):

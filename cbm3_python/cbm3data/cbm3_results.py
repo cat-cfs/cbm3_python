@@ -5,10 +5,11 @@ from cbm3_python.cbm3data.results_queries import stock_changes_view
 
 
 def _load_df(sql, results_db):
-    from cbm3_python.cbm3data import accessdb
+    from cbm3_python.cbm3data.accessdb import AccessDB
 
     if isinstance(results_db, str):
-        return accessdb.as_data_frame(sql, results_db)
+        with AccessDB(results_db) as access_db:
+            return access_db.as_data_frame(sql)
     else:
         return pd.read_sql(sql, results_db)
 
