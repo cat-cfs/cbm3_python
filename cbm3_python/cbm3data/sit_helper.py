@@ -5,49 +5,7 @@ import os
 import subprocess
 import json
 import tempfile
-from io import BytesIO
-from urllib.request import urlopen
-from zipfile import ZipFile
 from cbm3_python import toolbox_defaults
-
-
-def load_standard_import_tool_plugin(local_dir=None):
-    """
-    # DEPRECATED StandardImportToolPlugin on Github has been moved into
-    # the Operational-Scale CBM-CFS3 1.2.7606.313 and newer versions
-
-    Download the 1.4.0.1 release of StandardImportToolPlugin from Github and
-    unzip it locally.
-
-    If the arg local_dir is specified, the tool is downloaded to that
-    directory, and otherwise it is downloaded to {cwd}/StandardImportToolPlugin
-    """
-
-    from warnings import warn
-
-    warn(
-        "This method is deprecated, please acquire and install "
-        "Operational-Scale CBM-CFS3 version 1.2.7606.313 or newer."
-    )
-
-    StandardImportToolPluginDir = (
-        os.path.join(".", "StandardImportToolPlugin")
-        if local_dir is None
-        else local_dir
-    )
-    # extra subdir in the archive
-    StandardImportToolPluginExe = os.path.join(
-        StandardImportToolPluginDir, "Release", "StandardImportToolPlugin.exe"
-    )
-    if not os.path.exists(StandardImportToolPluginExe):
-        resp = urlopen(
-            "https://github.com/cat-cfs/StandardImportToolPlugin/releases"
-            "/download/1.4.0.2/Release.zip"
-        )
-        zipfile = ZipFile(BytesIO(resp.read()))
-
-        zipfile.extractall(path=StandardImportToolPluginDir)
-    return StandardImportToolPluginExe
 
 
 def sit_executable(toolbox_install_dir=None):
@@ -63,11 +21,10 @@ def sit_executable(toolbox_install_dir=None):
         toolbox_install_dir, "StandardImportToolPlugin.exe"
     )
     if not os.path.exists(sit_path):
-        # fall back to deprecated method (pull app from github)
-        sit_plugin_dir = os.path.join(
-            os.getenv("LOCALAPPDATA"), "StandardImportToolPlugin_v1.4.0.2"
-        )
-        sit_path = load_standard_import_tool_plugin(sit_plugin_dir)
+        raise ValueError(
+            "StandardImportToolPlugin.exe app not found in toolbox "
+            "installation dir, please obtain and install the latest "
+            "version of the Operational-Scale CBM-CFS3")
     return sit_path
 
 
