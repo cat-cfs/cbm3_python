@@ -737,3 +737,12 @@ def load_spatial_flux(dir, chunksize=None):
             chunksize=chunksize,
             quoting=csv.QUOTE_NONE,
         )
+
+
+def load_row_counts(dir):
+    files = ["ageind.out", "fluxind.out", "poolind.out", "distinds.out"]
+    lines_summary = {}
+    for file in files:
+        full_path = (os.path.join(dir, "ageind.out"),)
+        lines_summary[file] = sum(1 for _ in open(full_path))
+    return pd.DataFrame(index=[0], columns=files, data=lines_summary)
