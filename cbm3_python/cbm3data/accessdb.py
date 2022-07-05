@@ -167,7 +167,6 @@ class AccessDB(object):
 
         Args:
             query (str): access database SQL query
-            results_db_path (str): path to access database
 
         Returns:
             pandas.DataFrame: the query result
