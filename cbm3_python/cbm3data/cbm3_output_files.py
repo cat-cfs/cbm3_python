@@ -739,10 +739,98 @@ def load_spatial_flux(dir, chunksize=None):
         )
 
 
-def load_row_counts(dir):
-    files = ["ageind.out", "fluxind.out", "poolind.out", "distinds.out"]
+def load_row_counts(dir, include_duplicate_key_cols=False):
+    def count_lines(path):
+        return sum(1 for _ in open(path))
+
+    duplicate_key_col_info = {
+        "fluxind.out": {
+            "load_method": load_flux_indicators,
+            "key_cols": [
+                "DistTypeID",
+                "KF33_Year",
+                "KFProjectID",
+                "KFProjectType",
+                "KP33_34",
+                "RunID",
+                "SPUID",
+                "TimeStep",
+                "UNFCCC_ForestType",
+                "UNFCCC_Year",
+                "c1",
+                "c10",
+                "c2",
+                "c3",
+                "c4",
+                "c5",
+                "c6",
+                "c7",
+                "c8",
+                "c9",
+            ],
+        },
+        "poolind.out": {
+            "load_method": load_pool_indicators,
+            "key_cols": [
+                "RunID",
+                "TimeStep",
+                "SPUID",
+                "UNFCCC_ForestType",
+                "KP33_34",
+                "UNFCCC_Year",
+                "KF33_Year",
+                "KFProjectType",
+                "KFProjectID",
+                "c1",
+                "c10",
+                "c2",
+                "c3",
+                "c4",
+                "c5",
+                "c6",
+                "c7",
+                "c8",
+                "c9",
+            ],
+        },
+        "ageind.out": {
+            "load_method": load_age_indicators,
+            "key_cols": [
+                "RunID",
+                "TimeStep",
+                "SPUID",
+                "AgeClass",
+                "c1",
+                "c2",
+                "c3",
+                "c4",
+                "c5",
+                "c6",
+                "c7",
+                "c8",
+                "c9",
+                "c10",
+                "UNFCCC_ForestType",
+                "KP33_34",
+                "UNFCCC_Year",
+                "KF33_Year",
+                "KFProjectType",
+                "KFProjectID",
+            ],
+        },
+    }
+    files = ["poolind.out", "fluxind.out", "ageind.out", "distinds.out"]
     lines_summary = {}
     for file in files:
-        full_path = (os.path.join(dir, "ageind.out"),)
-        lines_summary[file] = sum(1 for _ in open(full_path))
+        if include_duplicate_key_cols:
+            lines_summary[file] = count_lines(os.path.join(dir, file))
+        else:
+            if file in duplicate_key_col_info:
+                info = duplicate_key_col_info[file]
+                df = info["load_method"](dir)
+                lines_summary[file] = len(
+                    df.drop_duplicates(info["key_cols"]).index
+                )
+            else:
+                lines_summary[file] = count_lines(os.path.join(dir, file))
     return pd.DataFrame(index=[0], columns=files, data=lines_summary)
