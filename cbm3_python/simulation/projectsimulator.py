@@ -224,12 +224,9 @@ def run(
             if not use_existing_makelist_output:
                 s.loadMakelistSVLS()
             if dist_classes_path is not None:
-                # support for extended "kf6" results tracking
-                with AccessDB(project_path, False) as proj:
-                    cr = CreateAccountingRules(
-                        proj, dist_classes_path, dist_rules_path
-                    )
-                    cr.create_accounting_rules()
+                setup_accounting_rules(
+                    project_path, dist_classes_path, dist_rules_path
+                )
                 # copy the modified db to the working dir
                 s.CopyToWorkingDir(project_path)
 
@@ -279,6 +276,13 @@ def run(
             else results_database_path
         )
         return results_path
+
+
+def setup_accounting_rules(project_path, dist_classes_path, dist_rules_path):
+    # support for extended "kf6" results tracking
+    with AccessDB(project_path, False) as proj:
+        cr = CreateAccountingRules(proj, dist_classes_path, dist_rules_path)
+        cr.create_accounting_rules()
 
 
 def run_concurrent(run_args, toolbox_path, max_workers=None):
