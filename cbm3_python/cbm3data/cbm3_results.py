@@ -45,7 +45,7 @@ def load_row_counts(results_db):
         ),
     }
     data = {
-        name: int(_load_df(query)["_count"].iloc[0])
+        name: int(_load_df(query, results_db)["_count"].iloc[0])
         for name, query in queries.items()
     }
     return pd.DataFrame(index=[0], columns=data.keys(), data=data)
