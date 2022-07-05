@@ -34,7 +34,6 @@ import os
 import shutil
 import subprocess
 import glob
-import re
 import xml.etree.ElementTree as ET
 from cbm3_python.util import loghelper
 from cbm3_python.util import file_replace
