@@ -29,6 +29,28 @@ def _get_classifier_values(results_db):
     )
 
 
+def load_row_counts(results_db):
+    queries = {
+        "tblPoolIndicators": (
+            "SELECT Count([PoolIndID]) AS _count FROM tblPoolIndicators"
+        ),
+        "tblFluxIndicators": (
+            "SELECT Count([FluxIndicatorID]) AS _count FROM tblFluxIndicators;"
+        ),
+        "tblAgeIndicators": (
+            "SELECT Count([AgeIndID]) AS _count FROM tblAgeIndicators;"
+        ),
+        "tblDistIndicators": (
+            "SELECT Count([DistIndID]) AS _count FROM tblDistIndicators"
+        ),
+    }
+    data = {
+        name: int(_load_df(query)["_count"].iloc[0])
+        for name, query in queries.items()
+    }
+    return pd.DataFrame(index=[0], columns=data.keys(), data=data)
+
+
 def load_pool_indicators(
     results_db,
     spatial_unit_grouping=False,
