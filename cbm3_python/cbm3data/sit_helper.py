@@ -24,7 +24,8 @@ def sit_executable(toolbox_install_dir=None):
         raise ValueError(
             "StandardImportToolPlugin.exe app not found in toolbox "
             "installation dir, please obtain and install the latest "
-            "version of the Operational-Scale CBM-CFS3")
+            "version of the Operational-Scale CBM-CFS3"
+        )
     return sit_path
 
 
