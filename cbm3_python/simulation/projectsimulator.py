@@ -251,8 +251,8 @@ def run(
                     results_database_dir = os.path.dirname(
                         results_database_path
                     )
-                if not os.path.exists(results_database_dir):
-                    os.makedirs(results_database_dir)
+                    if not os.path.exists(results_database_dir):
+                        os.makedirs(results_database_dir)
                 s.LoadCBMResults(output_path=results_database_path)
             elif loader_settings == {} or loader_settings["type"] is None:
                 return None
