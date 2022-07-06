@@ -2,6 +2,7 @@ import os
 import shutil
 import traceback
 from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import as_completed
 import tempfile
 
 from cbm3_python.simulation import toolbox_env
@@ -130,7 +131,9 @@ class ConcurrentRunner:
         """
         exceptions = []
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            for item in executor.map(self.run_func, run_args):
+            futures = [executor.submit(self.run_func, arg) for arg in run_args]
+            for future in as_completed(futures):
+                item = future.result()
                 if raise_exceptions and item["Exception"]:
                     exceptions.append(item)
                 yield item
