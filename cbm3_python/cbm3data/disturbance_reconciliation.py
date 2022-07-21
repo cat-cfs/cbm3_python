@@ -7,8 +7,11 @@ import csv
 import pandas as pd
 import numpy as np
 from cbm3_python.cbm3data.accessdb import AccessDB
-
+from warnings import warn
 from tempfile import TemporaryFile
+from cbm3_python.util import loghelper
+
+logger = loghelper.get_logger()
 
 
 def _read_disturb_list(path):
@@ -204,18 +207,38 @@ def _create_merged_disturbance_events(
 
     # qaqc
     if len(merged_events.index) != len(project_events.index):
-        raise ValueError("Num records mismatch")
+        warning_text = (
+            "In processing disturbance_reconcilition, the number "
+            "of records found in report.fil does not correspond to "
+            "the number of records in tblDisturbanceEvents."
+        )
+        logger.warning(warning_text)
+        warn(warning_text)
+    merged_dist_area = merged_events["DistArea"].sum()
+    merged_merch_c = merged_events["MerchCarbonToDisturb"].sum()
+    project_dist_area = project_events["DistArea"].sum()
+    project_merch_c = project_events["MerchCarbonToDisturb"].sum()
     if not np.allclose(
         [
-            merged_events.DistArea.sum(),
-            merged_events.MerchCarbonToDisturb.sum(),
+            merged_dist_area,
+            merged_merch_c,
         ],
         [
-            project_events.DistArea.sum(),
-            project_events.MerchCarbonToDisturb.sum(),
+            project_dist_area,
+            project_merch_c,
         ],
     ):
-        raise ValueError("sum of targets does not match")
+        warning_text = (
+            "In processing disturbance_reconcilition table, the areas "
+            "or merch C targets derived from the report.fil log did not "
+            "match closely with those in the project database: Sum of "
+            f"project area targets {project_dist_area}, Sum of report.fil "
+            f"derived area targets {merged_dist_area}, Sum of project "
+            f"merch C targets {project_merch_c}, sum of report.fil "
+            f"derived merch C targets {merged_merch_c}"
+        )
+        logger.warning(warning_text)
+        warn(warning_text)
 
     # select and rename_columns
     return merged_events[
