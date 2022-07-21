@@ -83,6 +83,15 @@ def get_stock_changes_view(tfi):
         + tfi.GrossGrowth_BG
         - tfi.DOMCO2Emission
         - tfi.BioCO2Emission
+        - tfi.SoftProduction
+        - tfi.HardProduction
+        - tfi.DOMProduction
+    ) * (-44 / 12)
+    df["NetCO2emissions_removals_CO2e_no_hwp"] = (
+        tfi.GrossGrowth_AG
+        + tfi.GrossGrowth_BG
+        - tfi.DOMCO2Emission
+        - tfi.BioCO2Emission
     ) * (-44 / 12)
     df["SumofCOProduction_CO2e"] = tfi.COProduction * 44 / 12
     df["SumofCH4Production_CO2e"] = tfi.CH4Production * 16 / 12 * 25
