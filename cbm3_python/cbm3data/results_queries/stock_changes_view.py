@@ -113,7 +113,7 @@ def get_stock_changes_view(tfi):
 
     df["Net forest-atmosphere exchange_C"] = (
         - df["Delta Total Ecosystem"]
-        + df["Total Harvest (Biomass + Snags)"]
+        - df["Total Harvest (Biomass + Snags)"]
     )
 
     df["Total Harvest (Biomass)"] = tfi.SoftProduction + tfi.HardProduction
