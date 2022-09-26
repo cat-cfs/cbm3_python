@@ -2,7 +2,7 @@ import numpy as np
 
 
 def get_stock_changes_view(tfi):
-    df = tfi.iloc[:, 0 : tfi.columns.get_loc("CO2Production")].copy()
+    df = tfi.iloc[:, 0 : tfi.columns.get_loc("CO2Production")].copy()  # noqa E203
 
     df["Delta Total Ecosystem"] = (
         tfi.GrossGrowth_AG
@@ -87,12 +87,7 @@ def get_stock_changes_view(tfi):
         - tfi.HardProduction
         - tfi.DOMProduction
     ) * (-44 / 12)
-    df["NetCO2emissions_removals_CO2e_no_hwp"] = (
-        tfi.GrossGrowth_AG
-        + tfi.GrossGrowth_BG
-        - tfi.DOMCO2Emission
-        - tfi.BioCO2Emission
-    ) * (-44 / 12)
+
     df["SumofCOProduction_CO2e"] = tfi.COProduction * 44 / 12
     df["SumofCH4Production_CO2e"] = tfi.CH4Production * 16 / 12 * 25
     df["N2O_CO2e"] = np.where(
@@ -103,9 +98,24 @@ def get_stock_changes_view(tfi):
     df["ToFps_CO2e"] = (
         (tfi.SoftProduction + tfi.HardProduction + tfi.DOMProduction) * 44 / 12
     )
+
     df["Total Harvest (Biomass + Snags)"] = (
         tfi.SoftProduction + tfi.HardProduction + tfi.DOMProduction
     )
+
+    df["Net Forest Atmosphere Exchange CO2e"] = (
+        df["NetCO2emissions_removals_CO2e"]
+        - df["ToFps_CO2e"]
+        + df["SumofCOProduction_CO2e"]
+        + df["SumofCH4Production_CO2e"]
+        + df["N2O_CO2e"]
+    )
+
+    df["Net forest-atmosphere exchange_C"] = (
+        - df["Delta Total Ecosystem"]
+        + df["Total Harvest (Biomass + Snags)"]
+    )
+
     df["Total Harvest (Biomass)"] = tfi.SoftProduction + tfi.HardProduction
     df["Total Harvest (Snags)"] = tfi.DOMProduction
     df["Softwood Harvest (Biomass)"] = tfi.SoftProduction
