@@ -103,7 +103,7 @@ def get_stock_changes_view(tfi):
         tfi.SoftProduction + tfi.HardProduction + tfi.DOMProduction
     )
 
-    df["Net Forest Atmosphere Exchange CO2e"] = (
+    df["Net forest-atmosphere exchange_CO2e"] = (
         df["NetCO2emissions_removals_CO2e"]
         - df["ToFps_CO2e"]
         + df["SumofCOProduction_CO2e"]
