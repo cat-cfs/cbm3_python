@@ -111,15 +111,14 @@ def get_stock_changes_view(tfi):
     df["Softwood Harvest (Biomass)"] = tfi.SoftProduction
     df["Hardwood Harvest (Biomass)"] = tfi.HardProduction
     df["Deadwood"] = (
-        tfi.FastAGToAir
-        + tfi.FastBGToAir
+        tfi.FastBGToAir
         + tfi.MediumToAir
         + tfi.SWStemSnagToAir
         + tfi.SWBranchSnagToAir
         + tfi.HWStemSnagToAir
         + tfi.HWBranchSnagToAir
     )
-    df["Litter"] = tfi.VFastAGToAir + tfi.SlowAGToAir
+    df["Litter"] = tfi.FastAGToAir + tfi.VFastAGToAir + tfi.SlowAGToAir
     df["Soil C"] = tfi.VFastBGToAir + tfi.SlowBGToAir + tfi.BlackCarbonToAir
     df["Aboveground Very Fast DOM Emissions"] = tfi.VFastBGToAir
     df["Belowground Very Fast DOM Emissions"] = tfi.VFastAGToAir
