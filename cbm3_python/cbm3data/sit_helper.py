@@ -45,7 +45,9 @@ def mdb_xls_import(
     working_dir=None,
     toolbox_install_dir=None,
 ):
-
+    if not working_dir:
+        working_dir = os.path.dirname(os.path.abspath(imported_project_path))
+        
     config = get_sit_config(
         imported_project_path,
         mapping_path,
