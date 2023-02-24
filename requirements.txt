@@ -5,5 +5,5 @@ numpy
 xlrd
 matplotlib
 gitpython
-sqlalchemy
+sqlalchemy<2.0.0
 sqlalchemy-access
