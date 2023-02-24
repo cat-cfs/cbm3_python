@@ -7,6 +7,7 @@ import pyodbc
 from cbm3_python.util import loghelper
 import os
 from pyodbc import ProgrammingError
+from urllib.parse import quote_plus
 
 try:
     from collections.abc import Iterable
@@ -177,9 +178,7 @@ class AccessDB(object):
             f"DBQ={self.path};"
             r"ExtendedAnsiSQL=1;"
         )
-        connection_url = sa.engine.URL.create(
-            "access+pyodbc", query={"odbc_connect": connection_string}
-        )
+        connection_url = f"access+pyodbc:///?odbc_connect={quote_plus(connection_string)}"
         engine = sa.create_engine(connection_url)
         try:
             df = pd.read_sql(query, engine)
