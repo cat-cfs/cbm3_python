@@ -2,6 +2,7 @@
 #  as represented by the Minister of Natural Resources Canada
 
 import sqlalchemy as sa
+from sqlalchemy import text as sa_text
 import pandas as pd
 import pyodbc
 from cbm3_python.util import loghelper
@@ -183,7 +184,8 @@ class AccessDB(object):
         )
         engine = sa.create_engine(connection_url)
         try:
-            df = pd.read_sql(query, engine)
+            with engine.begin() as conn:
+                df = pd.read_sql(sa_text(query), conn)
             return df
         finally:
             engine.dispose()
