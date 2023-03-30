@@ -40,7 +40,6 @@ def import_delimited(working_dir, mapping_file_path, sit_import_method):
 
 
 def import_mdb_xls(working_dir, sit_mdb_path, mapping_file_path, xls=False):
-
     imported_project_path = os.path.join(working_dir, "cbm3_project.mdb")
 
     import_args = dict(
@@ -84,7 +83,6 @@ class IntegrationTests(unittest.TestCase):
         sit_mdb_path = os.path.join(this_dir, "cbm3_sit.mdb")
         sit_xls_path = os.path.join(this_dir, "cbm3_sit.xls")
         with tempfile.TemporaryDirectory() as tempdir:
-
             mdb_working_dir = os.path.join(tempdir, "mdb")
             os.makedirs(mdb_working_dir)
             mdb_project = import_mdb_xls(

@@ -35,7 +35,6 @@ def _process_token_types(tokens):
 
 
 def _iterate_svl_lines(svl_file_path):
-
     dat_file = False
     if os.path.splitext(svl_file_path)[1].lower() == ".dat":
         dat_file = True
@@ -247,7 +246,6 @@ def _parse_all_chunked(input_dir, output_dir, chunksize):
 
 
 def parse_all(input_dir, output_dir, chunksize=None):
-
     if chunksize:
         for chunk in _parse_all_chunked(input_dir, output_dir, chunksize):
             yield chunk

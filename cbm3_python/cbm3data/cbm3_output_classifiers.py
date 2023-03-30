@@ -173,7 +173,6 @@ def melt_loaded_csets(csets):
 def create_classifier_sets(
     loaded_csets, tblClassifiers, tblClassifierValues, tblClassifierAggregates
 ):
-
     mapped_output_series_list = []
     sorted_classifiers = enumerate(
         tblClassifiers.sort_values(by="ClassifierID").ClassifierID

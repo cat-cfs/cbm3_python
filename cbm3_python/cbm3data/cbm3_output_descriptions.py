@@ -215,7 +215,6 @@ class ResultsDescriber:
         loaded_csets,
         classifier_value_field="Name",
     ):
-
         self.project_data = load_project_level_data(project_db_path)
         self.aidb_data = load_archive_index_data(aidb_path)
         self.default_view = self._create_default_data_views()

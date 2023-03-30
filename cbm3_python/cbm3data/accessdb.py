@@ -178,7 +178,9 @@ class AccessDB(object):
             f"DBQ={self.path};"
             r"ExtendedAnsiSQL=1;"
         )
-        connection_url = f"access+pyodbc:///?odbc_connect={quote_plus(connection_string)}"
+        connection_url = (
+            f"access+pyodbc:///?odbc_connect={quote_plus(connection_string)}"
+        )
         engine = sa.create_engine(connection_url)
         try:
             df = pd.read_sql(query, engine)

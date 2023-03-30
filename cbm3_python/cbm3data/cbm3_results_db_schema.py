@@ -336,7 +336,6 @@ def create_column_definitions(name, df, constraint_defs):
     """
     result = []
     for i_column, column in enumerate(df.columns):
-
         column_args = [column, _map_pandas_dtype(df.dtypes[i_column])]
         column_kwargs = {}
 

@@ -10,7 +10,6 @@ from test.integration import import_run_helper
 class CBMResultsIntegrationTests(unittest.TestCase):
     def test_integration(self):
         with import_run_helper.simulate() as sim:
-
             output_sqlite = os.path.join(sim.tempdir, "results_sqlite.db")
             cbm3_output_loader.load(
                 loader_config={

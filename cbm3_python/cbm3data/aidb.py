@@ -224,7 +224,6 @@ class AIDB(AccessDB):
             )
 
     def getKeys(self, simulation_id=None):
-
         filterString = None
         if simulation_id is None:
             filterString = ";"

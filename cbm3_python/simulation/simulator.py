@@ -231,7 +231,6 @@ class Simulator(object):
         return replace_func
 
     def CreateCBMFiles(self, save_svl_by_timestep=False):
-
         loghelper.get_logger().info("\n\n Creating CBM files...\n")
         cmd = (
             '"'

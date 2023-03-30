@@ -47,7 +47,7 @@ def mdb_xls_import(
 ):
     if not working_dir:
         working_dir = os.path.dirname(os.path.abspath(imported_project_path))
-        
+
     config = get_sit_config(
         imported_project_path,
         mapping_path,
@@ -78,7 +78,6 @@ def get_sit_config(
     initialize_mapping=False,
     archive_index_db_path=None,
 ):
-
     sit_config = SITConfig(
         imported_project_path, initialize_mapping, archive_index_db_path
     )
@@ -392,7 +391,6 @@ class SITConfig(object):
         transition_rules_table_name,
         yield_table_name,
     ):
-
         if "import_config" in self.config or "data" in self.config:
             raise ValueError(
                 "only one call of function of text_file_paths, "
@@ -411,7 +409,6 @@ class SITConfig(object):
         }
 
     def data_config(self, age_class_size, num_age_classes, classifiers):
-
         if "import_config" in self.config or "data" in self.config:
             raise ValueError(
                 "only one call of function of text_file_paths, database_path, "

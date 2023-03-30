@@ -15,7 +15,6 @@ def get_classifiers_view():
 
 
 def get_spatial_units_view(rollup_format=False):
-
     if rollup_format:
         query_file = "spatial_units_rollup_view.sql"
     else:
@@ -26,7 +25,6 @@ def get_spatial_units_view(rollup_format=False):
 
 
 def get_disturbance_types_view(rollup_format=False):
-
     if rollup_format:
         query_file = "disturbance_types_rollup_view.sql"
     else:

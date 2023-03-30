@@ -2,7 +2,9 @@ import numpy as np
 
 
 def get_stock_changes_view(tfi):
-    df = tfi.iloc[:, 0 : tfi.columns.get_loc("CO2Production")].copy()  # noqa E203
+    df = tfi.iloc[
+        :, 0 : tfi.columns.get_loc("CO2Production")  # noqa E203
+    ].copy()
 
     df["Delta Total Ecosystem"] = (
         tfi.GrossGrowth_AG
@@ -112,8 +114,7 @@ def get_stock_changes_view(tfi):
     )
 
     df["Net forest-atmosphere exchange_C"] = (
-        - df["Delta Total Ecosystem"]
-        - df["Total Harvest (Biomass + Snags)"]
+        -df["Delta Total Ecosystem"] - df["Total Harvest (Biomass + Snags)"]
     )
 
     df["Total Harvest (Biomass)"] = tfi.SoftProduction + tfi.HardProduction

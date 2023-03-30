@@ -337,7 +337,6 @@ def test_case_3(
 
 def test_delete_old_tempfiles_error():
     with TemporaryDirectory() as tempdir:
-
         project_path = os.path.join(tempdir, "project.mdb")
         access_templates.copy_mdb_template(project_path)
         os.makedirs(os.path.join(tempdir, "tempfiles", "some_other_folder"))
@@ -350,7 +349,6 @@ def test_delete_old_tempfiles_error():
 
 def test_non_abspath_error():
     with TemporaryDirectory() as tempdir:
-
         project_path = os.path.join(tempdir, "project.mdb")
         access_templates.copy_mdb_template(project_path)
 
@@ -363,7 +361,6 @@ def test_non_abspath_error():
 
 def test_non_existing_path_error():
     with TemporaryDirectory() as tempdir:
-
         project_path = os.path.join(tempdir, "project.mdb")
         access_templates.copy_mdb_template(project_path)
 
@@ -378,7 +375,6 @@ def test_non_existing_path_error():
 
 def test_conflicting_args_error():
     with TemporaryDirectory() as tempdir:
-
         project_path = os.path.join(tempdir, "project.mdb")
         access_templates.copy_mdb_template(project_path)
 

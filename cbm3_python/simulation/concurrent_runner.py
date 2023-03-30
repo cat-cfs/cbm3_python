@@ -15,7 +15,6 @@ class ConcurrentRunner:
         self.toolbox_path = toolbox_path
 
     def _run_func(self, run_args):
-
         # the following args that are optional in the
         # non-concurrent run function are required here
         required_kwargs = ["aidb_path", "cbm_exe_path"]

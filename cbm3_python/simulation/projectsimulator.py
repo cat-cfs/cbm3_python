@@ -178,7 +178,6 @@ def run(
     with AIDB(aidb_path, False) as aidb, ProjectDB(
         project_path, False
     ) as proj:
-
         if use_existing_makelist_output and not skip_makelist:
             raise ValueError(
                 "conflicting arguments: Cannot both use "

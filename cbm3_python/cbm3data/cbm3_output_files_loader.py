@@ -18,7 +18,6 @@ class LoadFunctionFactory:
         cbm_input_dir,
         chunksize,
     ):
-
         self.describer = describer
         self.cbm_project_db_path = cbm_project_db_path
         self.loaded_csets = loaded_csets

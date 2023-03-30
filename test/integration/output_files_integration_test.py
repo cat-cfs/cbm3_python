@@ -12,7 +12,6 @@ from test.integration import import_run_helper
 
 class OutputFilesIntegrationTests(unittest.TestCase):
     def test_integration(self):
-
         with import_run_helper.simulate() as sim:
             cbm_results_db_flux_ind = cbm3_results.load_flux_indicators(
                 sim.results_path

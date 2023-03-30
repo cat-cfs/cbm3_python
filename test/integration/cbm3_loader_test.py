@@ -11,7 +11,6 @@ from test.integration import import_run_helper
 class CBMOutputLoaderTest(unittest.TestCase):
     def test_save_svl_by_timestep_feature(self):
         with import_run_helper.simulate(save_svl_by_timestep=True) as sim:
-
             output_sqlite = os.path.join(sim.tempdir, "results_sqlite.db")
             cbm3_output_loader.load(
                 loader_config={
@@ -66,7 +65,6 @@ class CBMOutputLoaderTest(unittest.TestCase):
 
     def test_load_methods_sqlite(self):
         with import_run_helper.simulate() as sim:
-
             output_sqlite1 = os.path.join(sim.tempdir, "results_sqlite.db")
             cbm3_output_loader.load(
                 loader_config={
@@ -114,7 +112,6 @@ class CBMOutputLoaderTest(unittest.TestCase):
 
     def test_load_methods_files(self):
         with import_run_helper.simulate() as sim:
-
             hdf1_path = os.path.join(sim.tempdir, "hdf1")
             hdf2_path = os.path.join(sim.tempdir, "hdf2")
 

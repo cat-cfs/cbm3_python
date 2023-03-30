@@ -138,7 +138,6 @@ def _get_project_events(project_path):
 def _create_merged_disturbance_events(
     project_events, disturb_lst, report_fil_data
 ):
-
     # check that Proportion Targets are not used
     if (project_events["PropOfRecordToDisturb"] > 0).any():
         # this function does not support proportion targets
@@ -288,7 +287,6 @@ def _create_merged_disturbance_events(
 
 
 def _parse_report_fil(inputFile):
-
     fileContents = inputFile.read()
     matches = re.findall(
         "Disturbance Reconciliation.+?Records Changed:[ \t0-9]+",
@@ -408,7 +406,6 @@ def parse_report_file(report_fil_path):
 
 
 def create(project_path, cbm_input_dir, cbm_output_dir):
-
     return _create_merged_disturbance_events(
         project_events=_get_project_events(project_path),
         disturb_lst=_read_disturb_list(

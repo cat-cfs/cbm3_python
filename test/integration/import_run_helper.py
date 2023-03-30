@@ -20,7 +20,6 @@ def get_db_table_names():
 
 
 def import_mdb(working_dir, sit_mdb_path, mapping_file_path):
-
     imported_project_path = os.path.join(working_dir, "cbm3_project.mdb")
 
     import_args = dict(
