@@ -34,14 +34,11 @@ def get_stock_changes_view(tfi):
         )
     )
     df["Delta Total DOM"] = (
-        tfi.GrossGrowth_AG
-        + tfi.GrossGrowth_BG
-        - (
-            tfi.DOMCO2Emission
+        tfi.BiomassToSoil - (
+            tfi.DOMProduction
+            + tfi.DOMCO2Emission
             + tfi.DOMCH4Emssion
             + tfi.DOMCOEmission
-            + tfi.DOMProduction
-            + tfi.BiomassToSoil
         )
     )
     df["Net Primary Productivity (NPP)"] = np.where(
