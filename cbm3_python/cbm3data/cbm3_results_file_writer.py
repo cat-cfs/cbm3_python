@@ -1,8 +1,7 @@
 import os
-import pandas as pd
 
 
-FORMATS = ["csv", "hdf"]
+FORMATS = ["csv"]
 
 
 class CBM3ResultsFileWriter:
@@ -10,12 +9,11 @@ class CBM3ResultsFileWriter:
         """Create object to append dataframes to file
 
         Args:
-            format (str): either "csv" or "hdf"
+            format (str): the format name ("csv")
             out_path (str): Location into which DataFrames will be appended.
-                For csv format this is a directory, and for hdf this is a
-                filename.
+                For csv format this is a directory
             writer_kwargs (dict): extra keyword arguments to pass to the
-                underlying pandas write methods
+                underlying write methods
 
         Raises:
             ValueError: the specified format string does not match one of the
@@ -35,10 +33,6 @@ class CBM3ResultsFileWriter:
             os.makedirs(self.out_dir)
         self.created_files = set()
         self.writer_kwargs = writer_kwargs
-        # workaround for the lack of support for index control in pandas
-        # append to hdf
-        # https://github.com/pandas-dev/pandas/issues/7363
-        self._hdf_table_index_offset = {}
 
     def __enter__(self):
         return self
@@ -79,15 +73,3 @@ class CBM3ResultsFileWriter:
             if self.writer_kwargs:
                 kwargs.update(self.writer_kwargs)
             df.to_csv(*args, **kwargs)
-        elif self.format == "hdf":
-            row_offset = 0
-            if table_name in self._hdf_table_index_offset:
-                row_offset = self._hdf_table_index_offset[table_name]
-                self._hdf_table_index_offset[table_name] += len(df.index)
-            else:
-                self._hdf_table_index_offset[table_name] = len(df.index)
-            kwargs = dict(key=table_name, mode="a", format="t", append=True)
-            if self.writer_kwargs:
-                kwargs.update(self.writer_kwargs)
-            df.index = pd.Series(df.index) + row_offset
-            df.to_hdf(*args, **kwargs)

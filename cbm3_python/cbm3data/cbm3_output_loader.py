@@ -45,11 +45,11 @@ def get_file_writer(loader_config):
     """Yield an object for writing loaded CBM results to file(s). The
     loader_config parameter is a dictionary with the following fields:
 
-      * type - a string specifying "csv" or "hdf"
+      * type - a string specifying the load format ("csv")
       * output_path - either a directory or filename depending on if
-        the configured output is multiple files (csv) or a single file (hdf)
+        the configured output is multiple files (csv) or a single file
       * writer_kwargs - extra keyword arguments passed to pandas.to_csv if
-        type "csv" or pandas.to_hdf if type is "hdf"
+        type "csv"
 
     Args:
         loader_config (dict): a configuration dictionary
