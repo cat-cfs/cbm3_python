@@ -174,7 +174,7 @@ def run(
 
     if tempfiles_output_dir:
         _delete_old_tempfiles(tempfiles_output_dir)
-
+    temp_files_copied = False
     with AIDB(aidb_path, False) as aidb, ProjectDB(
         project_path, False
     ) as proj:
@@ -242,6 +242,7 @@ def run(
 
             if tempfiles_output_dir:
                 s.CopyTempFiles(output_dir=tempfiles_output_dir)
+                temp_files_copied = True
             if loader_settings is None:
                 if results_database_path:
                     results_database_dir = os.path.dirname(
@@ -269,6 +270,8 @@ def run(
                 proj.set_run_length(original_run_length, project_simulation_id)
             s.setDefaultArchiveIndexPath(aidb_path_original)
             aidb.DeleteProjectsFromAIDB(simId)
+            if not temp_files_copied and tempfiles_output_dir:
+                s.CopyTempFiles(output_dir=tempfiles_output_dir)
         results_path = (
             s.getDefaultResultsPath()
             if results_database_path is None
