@@ -15,7 +15,7 @@ def start_logging(fn, fmode="w", use_console=True):
             is written to console. Defaults to True.
     """
     rootLogger = logging.getLogger()
-
+    rootLogger.handlers.clear()
     logFormatter = logging.Formatter(
         "%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
         datefmt="%m-%d %H:%M",
