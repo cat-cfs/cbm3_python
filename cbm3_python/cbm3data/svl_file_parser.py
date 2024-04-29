@@ -193,7 +193,7 @@ def _typed_dataframe(col_def, data):
                 df["YearsSinceLUC"]
                 .astype("str")
                 .str.strip()
-                .replace("", -1)
+                .replace("", "-1")
                 .astype("int64")
             )
         else:
