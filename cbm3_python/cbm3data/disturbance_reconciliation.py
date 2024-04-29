@@ -98,7 +98,7 @@ def _read_disturb_list(path):
 
         return pd.read_csv(
             t,
-            delim_whitespace=True,
+            sep=r'\s+',
             header=None,
             names=column_names,
             quoting=csv.QUOTE_NONE,

@@ -103,7 +103,7 @@ def load_pool_indicators(dir, chunksize=None):
     return pd.read_csv(
         os.path.join(dir, "poolind.out"),
         header=None,
-        delim_whitespace=True,
+        sep=r'\s+',
         names=col_def.column_names,
         dtype=col_def.column_types,
         chunksize=chunksize,
@@ -192,7 +192,7 @@ def load_flux_indicators(dir, chunksize=None):
     return pd.read_csv(
         os.path.join(dir, "fluxind.out"),
         header=None,
-        delim_whitespace=True,
+        sep=r'\s+',
         names=col_def.column_names,
         dtype=col_def.column_types,
         chunksize=chunksize,
@@ -239,7 +239,7 @@ def load_age_indicators(dir, chunksize=None):
     return pd.read_csv(
         os.path.join(dir, "ageind.out"),
         header=None,
-        delim_whitespace=True,
+        sep=r'\s+',
         names=col_def.column_names,
         dtype=col_def.column_types,
         chunksize=chunksize,
@@ -283,7 +283,7 @@ def load_dist_indicators(dir, chunksize=None):
     return pd.read_csv(
         os.path.join(dir, "distinds.out"),
         header=None,
-        delim_whitespace=True,
+        sep=r'\s+',
         names=col_def.column_names,
         dtype=col_def.column_types,
         chunksize=chunksize,
@@ -372,7 +372,7 @@ def load_nir_output(dir, chunksize=None):
     return pd.read_csv(
         os.path.join(dir, filename),
         header=None,
-        delim_whitespace=True,
+        sep=r'\s+',
         names=col_def.column_names,
         dtype=col_def.column_types,
         chunksize=chunksize,
@@ -404,7 +404,7 @@ def load_nodist(dir, chunksize=None):
     return pd.read_csv(
         os.path.join(dir, filename),
         header=None,
-        delim_whitespace=True,
+        sep=r'\s+',
         names=col_def.column_names,
         dtype=col_def.column_types,
         chunksize=chunksize,
@@ -562,7 +562,7 @@ def load_seed(dir, chunksize=None):
         return pd.read_csv(
             path,
             header=None,
-            delim_whitespace=True,
+            sep=r'\s+',
             names=col_def.column_names,
             dtype=col_def.column_types,
             chunksize=chunksize,
@@ -636,7 +636,7 @@ def load_spatial_pools(dir, chunksize=None):
     return pd.read_csv(
         os.path.join(dir, filename),
         header=None,
-        delim_whitespace=True,
+        sep=r'\s+',
         names=col_def.column_names,
         dtype=col_def.column_types,
         chunksize=chunksize,
@@ -731,7 +731,7 @@ def load_spatial_flux(dir, chunksize=None):
         return pd.read_csv(
             file_path,
             header=None,
-            delim_whitespace=True,
+            sep=r'\s+',
             names=col_def.column_names,
             dtype=col_def.column_types,
             chunksize=chunksize,
